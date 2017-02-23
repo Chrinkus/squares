@@ -10,11 +10,12 @@
 // TextBoxes will be of multiple types as required by the game. Typical boxes
 // will be dialogue, pause menu, and instructions.
 
-function TextDialogue(msg, color) {
+function TextDialogue(msg, color, rounded) {
     "use strict";
 
     this.msg = msg;
     this.color = color;
+    this.rounded = rounded || false;
     this.setIn = 8;         // pull box off edge of canvas
 
     // Toggles
@@ -43,16 +44,38 @@ function TextDialogue(msg, color) {
 
     // Paths
     this.bgPath = () => {
-        var path = new Path2D();
-        path.rect(this.x, this.y, this.w, this.h);
-        return path;
+
+        if (this.rounded) {
+            
+            return roundedRect(this.x, this.y, this.w, this.h, this.setIn);
+
+        } else {
+
+            var path = new Path2D();
+            path.rect(this.x, this.y, this.w, this.h);
+            return path;
+        }
     };
 
     this.borderPath = () => {
-        var path = new Path2D();
-        path.rect(this.x + this.bHalf, this.y + this.bHalf,
-                this.w - this.bW, this.h - this.bW);
-        return path;
+
+        var x = this.x + this.bHalf,
+            y = this.y + this.bHalf,
+            w = this.w - this.bW,
+            h = this.h - this.bW,
+            path;
+        
+        if (this.rounded) {
+
+            return roundedRect(x, y, w, h, this.setIn);
+
+        } else {
+
+            path = new Path2D();
+            path.rect(this.x + this.bHalf, this.y + this.bHalf,
+                    this.w - this.bW, this.h - this.bW);
+            return path;
+        }
     };
 }
 
@@ -102,7 +125,7 @@ var message = [
     "There's always a lighthouse, a man, a city."
 ];
 
-var hello = new TextDialogue(message, "green");
+var hello = new TextDialogue(message, "green", false);
 
 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
