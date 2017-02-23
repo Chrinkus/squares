@@ -42,25 +42,21 @@ function TextDialogue(msg, color) {
     this.bY = this.y + this.bHalf;
 
     // Paths
-    this.bgPath = function() {
+    this.bgPath = () => {
         var path = new Path2D();
         path.rect(this.x, this.y, this.w, this.h);
         return path;
     };
 
-    this.borderPath = function() {
+    this.borderPath = () => {
         var path = new Path2D();
         path.rect(this.x + this.bHalf, this.y + this.bHalf,
                 this.w - this.bW, this.h - this.bW);
         return path;
     };
-
 }
 
 TextDialogue.prototype.draw = function() {
-
-    // callback reference
-    var that = this;
 
     // Background
     if (this.background) {
@@ -79,11 +75,21 @@ TextDialogue.prototype.draw = function() {
     ctx.fillStyle = "white";
     ctx.font = this.font;
 
-    this.msg.forEach(function(line, i) {
-        var y = that.tY + (i * that.newline);
-        ctx.fillText(line, that.tX, y);
+    this.msg.forEach((line, i) => {
+        var y = this.tY + (i * this.newline);
+        ctx.fillText(line, this.tX, y);
     });
 };
+
+function roundedRect(x, y, w, h, r) {
+	var rr = new Path2D();
+	rr.moveTo(x + r, y);
+	rr.arcTo(x + w, y, x + w, y + r, r);
+	rr.arcTo(x + w, y + h, x + w - r, y + h, r);
+	rr.arcTo(x, y + h, x, y + h - r, r);
+	rr.arcTo(x, y, x + r, y, r);
+	return rr;
+}
 
 // Temp for testing
 var canvas = document.getElementById("viewport");
