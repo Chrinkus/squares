@@ -8,6 +8,7 @@
 // * add support for longer messages (scrolling or waiting until confirmation)
 // * add update function to progress conversations
 // * add functions to activate dialogue box and kill it
+// * pass in canvas more explicitly, current model relies on global var
 
 function TextDialogue(msg, color, rounded) {
     "use strict";
