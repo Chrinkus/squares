@@ -1,14 +1,13 @@
-// TextBox constructor
+// Dialogue box
 //
-// TextBoxes will be loaded into scenes at init but remain unrendered until
-// needed. When they are called upon, a status parameter will be set to "true"
-// and the box will be displayed.
+// This creates a new dialogue box. In this current state the constructor takes
+// a message argument but in actual implementation it will be initialized and
+// wait unrendered until needed.
 //
-// TextBoxes will consist of 1-3 layers: background, border, and text. Borders
-// will be rounded or square.
-//
-// TextBoxes will be of multiple types as required by the game. Typical boxes
-// will be dialogue, pause menu, and instructions.
+// TO DO:
+// * add support for longer messages (scrolling or waiting until confirmation)
+// * add update function to progress conversations
+// * add functions to activate dialogue box and kill it
 
 function TextDialogue(msg, color, rounded) {
     "use strict";
@@ -17,6 +16,7 @@ function TextDialogue(msg, color, rounded) {
     this.color = color;
     this.rounded = rounded || false;
     this.setIn = 8;         // pull box off edge of canvas
+    this.lines = 7;         // number derived from 4 lines plus spaces
 
     // Toggles
     this.border = true;
@@ -29,7 +29,7 @@ function TextDialogue(msg, color, rounded) {
     this.h = canvas.height - this.y - this.setIn;
 
     // Text - the 7 in the next line changes number of lines you can fit
-    this.fontHeight = Math.floor(this.h / 7);
+    this.fontHeight = Math.floor(this.h / this.lines);
     this.padding = Math.floor(this.fontHeight / 2);
     this.font = this.fontHeight + "px sans-serif";
     this.tX = this.x + this.padding;
@@ -72,8 +72,7 @@ function TextDialogue(msg, color, rounded) {
         } else {
 
             path = new Path2D();
-            path.rect(this.x + this.bHalf, this.y + this.bHalf,
-                    this.w - this.bW, this.h - this.bW);
+            path.rect(x, y, w, h);
             return path;
         }
     };
