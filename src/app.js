@@ -1,26 +1,36 @@
-var app = {};
+var Background = require("./background");
+var Player = require("./player");
+
+var app = {
+
+    assets: [
+
+        background: {},
+        actors: [],
+        messages: []
+    ]
+};
+
+app.init = function(canvas) {
+    "use strict";
+
+    this.assets.background = new Background(canvas, "green");
+    this.assets.actors[0] = new Player(canvas);
+};
 
 app.render = function(canvas) {
     "use strict";
 
-    // Easy references
-    const ctx = canvas.ctx;
-    const CW = canvas.width;
-    const CH = canvas.height;
-
     // Wipe canvas
-    ctx.clearRect(0, 0, CW, CH);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Background
-    ctx.fillStyle = "green";
-    ctx.fillRect(0, 0, CW, CH);
+    this.assets.background.draw(canvas.ctx);
 
-    // Simple ball
-    ctx.beginPath();
-    ctx.arc(200, 200, 50, 0, Math.PI * 2);
-    ctx.fillStyle = "white";
-    ctx.fill();
-    ctx.closePath();
+    // Static Player
+    this.assets.actors.forEach((actor) => {
+        actor.draw(canvas.ctx);
+    });
 };
 
 app.update = function(tStamp) {

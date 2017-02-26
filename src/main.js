@@ -5,6 +5,8 @@ var app = require("./app");
 
     var canvas = require("./canvas");
 
+    app.init(canvas);
+
     var main = function(tStamp) {
 
         app.stopMain = window.requestAnimationFrame(main);
