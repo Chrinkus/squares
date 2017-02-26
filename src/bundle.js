@@ -15,8 +15,27 @@ var app = {
 app.init = function(canvas) {
     "use strict";
 
+    this.inputs.init();
+
     this.assets.background = new Background(canvas, "green");
     this.assets.actors[0] = new Player(canvas);
+};
+
+app.inputs = {
+
+    keysDown: {},
+
+    init: function () {
+        "use strict";
+
+        window.addEventListener("keydown", function (e) {
+            this.keysDown[e.keyCode] = true;
+        }.bind(this), false);
+
+        window.addEventListener("keyup", function (e) {
+            delete this.keysDown[e.keyCode];
+        }.bind(this), false);
+    }
 };
 
 app.render = function(canvas) {
@@ -37,7 +56,11 @@ app.render = function(canvas) {
 app.update = function(tStamp) {
     "use strict";
 
-    // Do nothing
+    // Consider checking for game state: live, pause, chat, choice
+
+    this.assets.actors.forEach((actor) => {
+        actor.update(this.inputs.keysDown);
+    });
 };
 
 module.exports = app;
@@ -112,9 +135,14 @@ function Player(canvas) {
 
     var block = 64;
 
+    // Initial settings
     this.x = canvas.width / 2 - block / 2;
     this.y = canvas.height / 2 - block / 2;
     this.color = "white";
+
+    // Movement speed
+    this.dx = 5;
+    this.dy = 5;
 
     this.path = function(x, y) {
         
@@ -128,6 +156,34 @@ Player.prototype.draw = function(ctx) {
 
     ctx.fillStyle = this.color;
     ctx.fill(this.path(this.x, this.y));
+};
+
+Player.prototype.update = function(keysDown) {
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+    // Keyboard Input Legend
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+    // Key          Keycode         Action
+    // ===          =======         ======
+    // w            87              Move upwards
+    // a            65              Move leftwards
+    // s            83              Move downwards
+    // d            68              Move rightwards
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+    // Movement inputs
+    if (87 in keysDown) {
+        this.y -= this.dy;
+    }
+    if (83 in keysDown) {
+        this.y += this.dy;
+    }
+    if (65 in keysDown) {
+        this.x -= this.dx;
+    }
+    if (68 in keysDown) {
+        this.x += this.dx;
+    }
 };
 
 module.exports = Player;
