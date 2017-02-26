@@ -3,12 +3,12 @@ var Player = require("./player");
 
 var app = {
 
-    assets: [
+    assets: {
 
-        background: {},
+        background: null,
         actors: [],
         messages: []
-    ]
+    }
 };
 
 app.init = function(canvas) {
@@ -22,7 +22,7 @@ app.render = function(canvas) {
     "use strict";
 
     // Wipe canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Background
     this.assets.background.draw(canvas.ctx);
