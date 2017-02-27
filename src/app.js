@@ -15,10 +15,12 @@ var app = {
 app.init = function(canvas) {
     "use strict";
 
+    var blockSize = 32;         // temp data: will acquire from scene
+
     this.inputs.init();
 
     this.assets.background = new Background(canvas, "green");
-    this.assets.player = new Player(canvas);
+    this.assets.player = new Player(canvas, blockSize);
 };
 
 app.inputs = {

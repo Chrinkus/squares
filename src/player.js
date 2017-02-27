@@ -1,11 +1,11 @@
-function Player(canvas) {
+function Player(canvas, blockSize) {
     "use strict";
 
-    var block = 64;
+    var _playerSize = blockSize * 2;
 
     // Initial settings
-    this.x = canvas.width / 2 - block / 2;
-    this.y = canvas.height / 2 - block / 2;
+    this.x = canvas.width / 2 - blockSize;
+    this.y = canvas.height / 2 - blockSize;
     this.color = "white";
 
     // Movement speed
@@ -15,7 +15,7 @@ function Player(canvas) {
     this.path = function(x, y) {
         
         var path = new Path2D();
-        path.rect(x, y, block, block);
+        path.rect(x, y, _playerSize, _playerSize);
         return path;
     };
 }
