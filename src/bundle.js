@@ -16,10 +16,12 @@ var app = {
 app.init = function(canvas) {
     "use strict";
 
+    var blockSize = 32;         // temp data: will acquire from scene
+
     this.inputs.init();
 
     this.assets.background = new Background(canvas, "green");
-    this.assets.player = new Player(canvas);
+    this.assets.player = new Player(canvas, blockSize);
 };
 
 app.inputs = {
@@ -137,14 +139,14 @@ var app = require("./app");
 }());
 
 },{"./app":1,"./canvas":3}],5:[function(require,module,exports){
-function Player(canvas) {
+function Player(canvas, blockSize) {
     "use strict";
 
-    var block = 64;
+    var _playerSize = blockSize * 2;
 
     // Initial settings
-    this.x = canvas.width / 2 - block / 2;
-    this.y = canvas.height / 2 - block / 2;
+    this.x = canvas.width / 2 - blockSize;
+    this.y = canvas.height / 2 - blockSize;
     this.color = "white";
 
     // Movement speed
@@ -154,7 +156,7 @@ function Player(canvas) {
     this.path = function(x, y) {
         
         var path = new Path2D();
-        path.rect(x, y, block, block);
+        path.rect(x, y, _playerSize, _playerSize);
         return path;
     };
 }
