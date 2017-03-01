@@ -3,8 +3,8 @@ function Pellet(x, y, color, blockSize) {
     var that = this;
 
     this.w = blockSize / 2;
-    this.x = x + blockSize - this.w;
-    this.y = y + blockSize - this.w;
+    this.x = x + this.w / 2;
+    this.y = y + this.w / 2;
     this.color = color;
 
     this.collision = "hard";

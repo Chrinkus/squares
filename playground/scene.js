@@ -20,8 +20,8 @@ Scene.prototype.planReader = function() {
 
         row.split("").forEach((character, j) => {
 
-            var x = j * BS,
-                y = i * BS;
+            var x = j * this.blockSize,
+                y = i * this.blockSize;
 
             switch (character) {
                 case "#":
@@ -50,3 +50,5 @@ Scene.prototype.bgInit = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
 };
+
+module.exports = Scene;
