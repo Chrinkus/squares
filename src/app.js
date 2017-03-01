@@ -19,6 +19,7 @@ app.init = function(canvas) {
 
     this.inputs.init();
 
+    // actual background will be initialized here w/scenario.bgInit(canvas);
     this.assets.background = new Background(canvas, "green");
     this.assets.player = new Player(canvas, blockSize);
 };
