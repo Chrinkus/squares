@@ -1,27 +1,22 @@
-var Background = require("./background");
 var Player = require("./player");
+var level1 = require("./level1");
 
 var app = {
 
-    assets: {
-
-        background: null,
-        player: null,
-        actors: [],
-        messages: []
-    }
+    player: null,
+    scenario: null
 };
 
 app.init = function(canvas) {
     "use strict";
 
-    var blockSize = 32;         // temp data: will acquire from scene
-
     this.inputs.init();
 
-    // actual background will be initialized here w/scenario.bgInit(canvas);
-    this.assets.background = new Background(canvas, "green");
-    this.assets.player = new Player(canvas, blockSize);
+    this.scenario = level1;
+    this.scenario.bgInit(canvas);
+    this.scenario.planReader();
+
+    this.player = new Player(canvas, this.scenario.blockSize);
 };
 
 app.inputs = {
@@ -48,23 +43,21 @@ app.render = function(canvas) {
     canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Background
-    this.assets.background.draw(canvas.ctx);
+    this.scenario.background.draw(canvas.ctx);
 
     // Player
-    this.assets.player.draw(canvas.ctx);
+    this.player.draw(canvas.ctx);
 
-    /* Draw other assets
-    this.assets.actors.forEach((actor) => {
+    this.scenario.actors.forEach((actor) => {
         actor.draw(canvas.ctx);
     });
-    */
 };
 
 app.update = function(tStamp) {
     "use strict";
 
     // Consider checking for game state: live, pause, chat, choice
-    this.assets.player.update(this.inputs.keysDown);
+    this.player.update(this.inputs.keysDown);
 
     /*this.assets.actors.forEach((actor) => {
         actor.update(this.inputs.keysDown);

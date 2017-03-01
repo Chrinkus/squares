@@ -1,7 +1,7 @@
 var Block = require("../Path2D/block");
 var Coin = require("../Path2D/coin");
 var Pellet = require("../Path2D/pellet");
-var Background = require("../src/background");
+var Background = require("./background");
 
 function Scene() {
     "use strict";
