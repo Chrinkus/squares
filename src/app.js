@@ -16,7 +16,8 @@ app.init = function(canvas) {
     this.scenario.bgInit(canvas);
     this.scenario.planReader();
 
-    this.player = new Player(canvas, this.scenario.blockSize);
+    this.player = new Player(canvas, this.scenario.colors.player,
+            this.scenario.blockSize);
 };
 
 app.inputs = {
@@ -49,6 +50,11 @@ app.render = function(canvas) {
     this.player.draw(canvas.ctx);
 
     this.scenario.actors.forEach((actor) => {
+
+        if (!actor.statusCode) {
+            return;
+        }
+
         actor.draw(canvas.ctx);
     });
 };
@@ -57,7 +63,7 @@ app.update = function(tStamp) {
     "use strict";
 
     // Consider checking for game state: live, pause, chat, choice
-    this.player.update(this.inputs.keysDown);
+    this.player.update(this.inputs.keysDown, this.scenario.actors);
 
     /*this.assets.actors.forEach((actor) => {
         actor.update(this.inputs.keysDown);

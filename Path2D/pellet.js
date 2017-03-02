@@ -7,7 +7,7 @@ function Pellet(x, y, color, blockSize) {
     this.y = y + this.w / 2;
     this.color = color;
 
-    this.collision = "hard";
+    this.collision = "soft";
     this.statusCode = 1;            // status codes to be defined in app.js
 
     // Static path pattern
