@@ -7,14 +7,14 @@ var app = require("./app");
 
     app.init(canvas);
 
-    var main = function(tStamp) {
+    function main(tStamp) {
 
         app.stopMain = window.requestAnimationFrame(main);
 
         app.render(canvas);
 
         app.update(tStamp);
-    };
+    }
 
     main();
 
