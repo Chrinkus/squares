@@ -1,4 +1,5 @@
 var collision = require("./collision");
+var move8 = require("./input.js").move8;
 
 function Player(canvas, color, blockSize) {
     "use strict";
@@ -46,35 +47,15 @@ Player.prototype.draw = function(ctx) {
 
 Player.prototype.update = function(keysDown, entities) {
 
+    // Process move
     var snapshot = {
         x: this.x,
         y: this.y
     };
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-    // Keyboard Input Legend
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-    // Key          Keycode         Action
-    // ===          =======         ======
-    // w            87              Move upwards
-    // a            65              Move leftwards
-    // s            83              Move downwards
-    // d            68              Move rightwards
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+    move8(this, keysDown);
 
-    if (87 in keysDown) {
-        this.y -= this.dy;
-    }
-    if (83 in keysDown) {
-        this.y += this.dy;
-    }
-    if (65 in keysDown) {
-        this.x -= this.dx;
-    }
-    if (68 in keysDown) {
-        this.x += this.dx;
-    }
-    
+    //Check collision
     entities.forEach((entity) => {
         
         if (entity.statusCode === 0) {

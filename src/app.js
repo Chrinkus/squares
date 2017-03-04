@@ -1,4 +1,5 @@
 var Player = require("./player");
+var keysDown = require("./input").keysDown;
 var level1 = require("./level1");
 
 var app = {
@@ -10,7 +11,7 @@ var app = {
 app.init = function(canvas) {
     "use strict";
 
-    this.inputs.init();
+    this.keysDown = keysDown();
 
     this.scenario = level1;
     this.scenario.bgInit(canvas);
@@ -18,23 +19,6 @@ app.init = function(canvas) {
 
     this.player = new Player(canvas, this.scenario.colors.player,
             this.scenario.blockSize);
-};
-
-app.inputs = {
-
-    keysDown: {},
-
-    init: function () {
-        "use strict";
-
-        document.addEventListener("keydown", function (e) {
-            this.keysDown[e.keyCode] = true;
-        }.bind(this), false);
-
-        document.addEventListener("keyup", function (e) {
-            delete this.keysDown[e.keyCode];
-        }.bind(this), false);
-    }
 };
 
 app.render = function(canvas) {
@@ -63,12 +47,7 @@ app.update = function(tStamp) {
     "use strict";
 
     // Consider checking for game state: live, pause, chat, choice
-    this.player.update(this.inputs.keysDown, this.scenario.actors);
-
-    /*this.assets.actors.forEach((actor) => {
-        actor.update(this.inputs.keysDown);
-    });
-    */
+    this.player.update(this.keysDown, this.scenario.actors);
 };
 
 module.exports = app;

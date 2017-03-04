@@ -83,6 +83,7 @@ module.exports = Pellet;
 
 },{}],4:[function(require,module,exports){
 var Player = require("./player");
+var keysDown = require("./input").keysDown;
 var level1 = require("./level1");
 
 var app = {
@@ -94,7 +95,7 @@ var app = {
 app.init = function(canvas) {
     "use strict";
 
-    this.inputs.init();
+    this.keysDown = keysDown();
 
     this.scenario = level1;
     this.scenario.bgInit(canvas);
@@ -102,23 +103,6 @@ app.init = function(canvas) {
 
     this.player = new Player(canvas, this.scenario.colors.player,
             this.scenario.blockSize);
-};
-
-app.inputs = {
-
-    keysDown: {},
-
-    init: function () {
-        "use strict";
-
-        document.addEventListener("keydown", function (e) {
-            this.keysDown[e.keyCode] = true;
-        }.bind(this), false);
-
-        document.addEventListener("keyup", function (e) {
-            delete this.keysDown[e.keyCode];
-        }.bind(this), false);
-    }
 };
 
 app.render = function(canvas) {
@@ -147,17 +131,12 @@ app.update = function(tStamp) {
     "use strict";
 
     // Consider checking for game state: live, pause, chat, choice
-    this.player.update(this.inputs.keysDown, this.scenario.actors);
-
-    /*this.assets.actors.forEach((actor) => {
-        actor.update(this.inputs.keysDown);
-    });
-    */
+    this.player.update(this.keysDown, this.scenario.actors);
 };
 
 module.exports = app;
 
-},{"./level1":8,"./player":10}],5:[function(require,module,exports){
+},{"./input":8,"./level1":9,"./player":11}],5:[function(require,module,exports){
 function Background(canvas, color) {
     "use strict";
 
@@ -209,6 +188,67 @@ module.exports = (mov, tar) => {
 };
 
 },{}],8:[function(require,module,exports){
+exports.keysDown = () => {
+    "use strict";
+
+    var keysDown = {};
+
+    document.addEventListener("keydown", function(e) {
+        keysDown[e.keyCode] = true;
+    }, false);
+
+    document.addEventListener("keyup", function(e) {
+        delete keysDown[e.keyCode];
+    }, false);
+
+    return keysDown; // WORKS!!
+};
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// Keyboard Input Legend
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// Key          Keycode         Action
+// ===          =======         ======
+// w            87              Move upwards
+// a            65              Move leftwards
+// s            83              Move downwards
+// d            68              Move rightwards
+//
+// left arrow   37              Move leftwards
+// up arrow     38              Move upwards
+// right arrow  39              Move rightwards
+// down arrow   40              Move downwards
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+exports.move8 = (mover, keysDown) => {
+    "use strict";
+
+    if (87 in keysDown || 38 in keysDown) {
+        mover.y -= mover.dy;
+    }
+    if (83 in keysDown || 40 in keysDown) {
+        mover.y += mover.dy;
+    }
+    if (65 in keysDown || 37 in keysDown) {
+        mover.x -= mover.dx;
+    }
+    if (68 in keysDown || 39 in keysDown) {
+        mover.x += mover.dx;
+    }
+};
+
+exports.moveCursor = (cursor, keysDown) => {
+    "use strict";
+
+    if (87 in keysDown || 38 in keysDown) {
+        cursor.i -= 1;
+    }
+    if (83 in keysDown || 40 in keysDown) {
+        cursor.i += 1;
+    }
+};
+
+},{}],9:[function(require,module,exports){
 var Scene = require("./scene");
 
 var level1 = new Scene();
@@ -247,7 +287,7 @@ level1.planReader();
 
 module.exports = level1;
 
-},{"./scene":11}],9:[function(require,module,exports){
+},{"./scene":12}],10:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -270,8 +310,9 @@ var app = require("./app");
 
 }());
 
-},{"./app":4,"./canvas":6}],10:[function(require,module,exports){
+},{"./app":4,"./canvas":6}],11:[function(require,module,exports){
 var collision = require("./collision");
+var move8 = require("./input.js").move8;
 
 function Player(canvas, color, blockSize) {
     "use strict";
@@ -319,35 +360,15 @@ Player.prototype.draw = function(ctx) {
 
 Player.prototype.update = function(keysDown, entities) {
 
+    // Process move
     var snapshot = {
         x: this.x,
         y: this.y
     };
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-    // Keyboard Input Legend
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-    // Key          Keycode         Action
-    // ===          =======         ======
-    // w            87              Move upwards
-    // a            65              Move leftwards
-    // s            83              Move downwards
-    // d            68              Move rightwards
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+    move8(this, keysDown);
 
-    if (87 in keysDown) {
-        this.y -= this.dy;
-    }
-    if (83 in keysDown) {
-        this.y += this.dy;
-    }
-    if (65 in keysDown) {
-        this.x -= this.dx;
-    }
-    if (68 in keysDown) {
-        this.x += this.dx;
-    }
-    
+    //Check collision
     entities.forEach((entity) => {
         
         if (entity.statusCode === 0) {
@@ -382,7 +403,7 @@ Player.prototype.update = function(keysDown, entities) {
 
 module.exports = Player;
 
-},{"./collision":7}],11:[function(require,module,exports){
+},{"./collision":7,"./input.js":8}],12:[function(require,module,exports){
 var Block = require("../Path2D/block");
 var Coin = require("../Path2D/coin");
 var Pellet = require("../Path2D/pellet");
@@ -438,4 +459,4 @@ Scene.prototype.bgInit = function(canvas) {
 
 module.exports = Scene;
 
-},{"../Path2D/block":1,"../Path2D/coin":2,"../Path2D/pellet":3,"./background":5}]},{},[9]);
+},{"../Path2D/block":1,"../Path2D/coin":2,"../Path2D/pellet":3,"./background":5}]},{},[10]);
