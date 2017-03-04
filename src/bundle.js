@@ -346,9 +346,9 @@ function Player(canvas, color, blockSize) {
     };
 
     this.grow = function() {
-        this.x -= 2;
-        this.y -= 2;
-        this.w += 4;
+        this.x -= 1;
+        this.y -= 1;
+        this.w += 2;
     };
 }
 
