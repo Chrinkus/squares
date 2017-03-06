@@ -16,7 +16,7 @@ mainMenu.selections = [
 ];
 
 // TODO make a separate file for the main title and import it
-mainMenu.mainTitle = {
+/*mainMenu.mainTitle = {
 
     gameTitle: "squares",
     titleFontSize: 100,
@@ -27,10 +27,16 @@ mainMenu.mainTitle = {
         ctx.font = this.titleFontSize + "px monospace";
         this.textWidth = Math.floor(ctx.measureText(this.gameTitle).width);
     }
-};
+};*/
 
 mainMenu.draw = function(ctx) {
+
+    ctx.fillStyle = this.colors.selections;
+    ctx.font = this.font;
     
+    this.selections.forEach((selection, i) => {
+        ctx.fillText(selection, this.menuX, this.menuY + this.lineHeight * i);
+    };
 };
 
 module.exports = mainMenu;

@@ -1,8 +1,11 @@
 var Background = require("./background");
 var Cursor = require("./cursor");
 
-function Menu(fontSize) {
+function Menu(fontSize, sceneLoader) {
     "use strict";
+
+    // main app hook
+    this.sceneLoader = sceneLoader;
 
     // arg defined
     this.fontSize = fontSize;
@@ -15,21 +18,24 @@ function Menu(fontSize) {
 
     // defined in this.init(canvas)
     this.background = null;
-    this.player = null;
-
-    // contains selections & associated actions
-    this.actors = [];
+    this.cursor = null;
 }
 
 Menu.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
 
-    this.player = new Cursor(this);
+    this.cursor = new Cursor(this);
+};
 
-    if (this.mainTitle) {
-        mainTitle.init(canvas.ctx);
-    }
+Menu.prototype.draw = function(ctx) {
+
+    ctx.fillStyle = this.colors.selections;
+    ctx.font = this.font;
+    
+    this.selections.forEach((selection, i) => {
+        ctx.fillText(selection, this.menuX, this.menuY + this.lineHeight * i);
+    };
 };
 
 Menu.prototype.select = function(i) {
@@ -37,6 +43,7 @@ Menu.prototype.select = function(i) {
     switch (this.selections[i]) {
         case "new game":
             // Launch new game at level 1
+            this.sceneLoader(0);
             break;
 
         case "leaderboards":
