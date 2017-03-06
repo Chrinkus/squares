@@ -82,15 +82,10 @@ Pellet.prototype.draw = function(ctx) {
 module.exports = Pellet;
 
 },{}],4:[function(require,module,exports){
-var Player = require("./player");
 var keysDown = require("./input").keysDown;
 var level1 = require("./level1");
 
-var app = {
-
-    player: null,
-    scenario: null
-};
+var app = {};
 
 app.init = function(canvas) {
     "use strict";
@@ -98,11 +93,7 @@ app.init = function(canvas) {
     this.keysDown = keysDown();
 
     this.scenario = level1;
-    this.scenario.bgInit(canvas);
-    this.scenario.planReader();
-
-    this.player = new Player(canvas, this.scenario.colors.player,
-            this.scenario.blockSize);
+    this.scenario.init(canvas);
 };
 
 app.render = function(canvas) {
@@ -115,7 +106,7 @@ app.render = function(canvas) {
     this.scenario.background.draw(canvas.ctx);
 
     // Player
-    this.player.draw(canvas.ctx);
+    this.scenario.player.draw(canvas.ctx);
 
     this.scenario.actors.forEach((actor) => {
 
@@ -131,12 +122,12 @@ app.update = function(tStamp) {
     "use strict";
 
     // Consider checking for game state: live, pause, chat, choice
-    this.player.update(this.keysDown, this.scenario.actors);
+    this.scenario.player.update(this.keysDown, this.scenario.actors);
 };
 
 module.exports = app;
 
-},{"./input":8,"./level1":9,"./player":11}],5:[function(require,module,exports){
+},{"./input":8,"./level1":9}],5:[function(require,module,exports){
 function Background(canvas, color) {
     "use strict";
 
@@ -404,6 +395,7 @@ Player.prototype.update = function(keysDown, entities) {
 module.exports = Player;
 
 },{"./collision":7,"./input.js":8}],12:[function(require,module,exports){
+var Player = require("./player");
 var Block = require("../Path2D/block");
 var Coin = require("../Path2D/coin");
 var Pellet = require("../Path2D/pellet");
@@ -412,12 +404,18 @@ var Background = require("./background");
 function Scene() {
     "use strict";
 
+    // explicitly defined in level files
     this.blockSize = 0;
     this.plan = [];
     this.colors = null;
 
+    // defined in this.init(canvas)
     this.background = null;
+    this.player = null;
+
+    // defined in this.planReader()
     this.actors = [];
+    this.playerLocation = null;
 }
 
 Scene.prototype.planReader = function() {
@@ -445,6 +443,16 @@ Scene.prototype.planReader = function() {
                                 this.blockSize));
                     break;
 
+                case "@":
+                    if (!this.playerLocation) {
+
+                        this.playerLocation = {
+                            x: x,
+                            y: y
+                        };
+                    }
+                    break;
+
                 default:
                     // Do nothing
             }
@@ -452,11 +460,18 @@ Scene.prototype.planReader = function() {
     });
 };
 
-Scene.prototype.bgInit = function(canvas) {
+Scene.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
+
+    this.player = new Player(canvas, this.colors.player, this.blockSize);
+
+    if (this.playerLocation) {
+        this.player.x = this.playerLocation.x;
+        this.player.y = this.playerLocation.y;
+    }
 };
 
 module.exports = Scene;
 
-},{"../Path2D/block":1,"../Path2D/coin":2,"../Path2D/pellet":3,"./background":5}]},{},[10]);
+},{"../Path2D/block":1,"../Path2D/coin":2,"../Path2D/pellet":3,"./background":5,"./player":11}]},{},[10]);

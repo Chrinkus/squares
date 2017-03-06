@@ -1,24 +1,17 @@
-var Player = require("./player");
 var keysDown = require("./input").keysDown;
 var level1 = require("./level1");
 
-var app = {
-
-    player: null,
-    scenario: null
-};
+var app = {};
 
 app.init = function(canvas) {
     "use strict";
 
     this.keysDown = keysDown();
+    // TODO init main menu w/main title here. pass it sceneLoader
 
+    // split out to a scenario loader
     this.scenario = level1;
-    this.scenario.bgInit(canvas);
-    this.scenario.planReader();
-
-    this.player = new Player(canvas, this.scenario.colors.player,
-            this.scenario.blockSize);
+    this.scenario.init(canvas);
 };
 
 app.render = function(canvas) {
@@ -31,7 +24,7 @@ app.render = function(canvas) {
     this.scenario.background.draw(canvas.ctx);
 
     // Player
-    this.player.draw(canvas.ctx);
+    this.scenario.player.draw(canvas.ctx);
 
     this.scenario.actors.forEach((actor) => {
 
@@ -47,7 +40,7 @@ app.update = function(tStamp) {
     "use strict";
 
     // Consider checking for game state: live, pause, chat, choice
-    this.player.update(this.keysDown, this.scenario.actors);
+    this.scenario.player.update(this.keysDown, this.scenario.actors);
 };
 
 module.exports = app;

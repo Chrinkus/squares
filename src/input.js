@@ -28,6 +28,8 @@ exports.keysDown = () => {
 // up arrow     38              Move upwards
 // right arrow  39              Move rightwards
 // down arrow   40              Move downwards
+//
+// spacebar     32              Action (context sensitive)
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 
 exports.move8 = (mover, keysDown) => {
@@ -50,10 +52,13 @@ exports.move8 = (mover, keysDown) => {
 exports.moveCursor = (cursor, keysDown) => {
     "use strict";
 
-    if (87 in keysDown || 38 in keysDown) {
+    if (87 in keysDown || 38 in keysDown && cursor.i > cursor.iMin) {
         cursor.i -= 1;
     }
-    if (83 in keysDown || 40 in keysDown) {
+    if (83 in keysDown || 40 in keysDown && cursor.i < cursor.iMax) {
         cursor.i += 1;
+    }
+    if (32 in keysDown) {
+        cursor.select(cursor.i);
     }
 };
