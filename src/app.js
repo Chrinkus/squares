@@ -1,17 +1,28 @@
-var keysDown = require("./input").keysDown;
-var level1 = require("./level1");
+var keysDown    = require("./input").keysDown;
+var mainMenu    = require("./mainMenu");
+var level1      = require("./level1");
 
-var app = {};
+var app = {
+    mainMenu: mainMenu,
+    scenario: null
+};
+
+app.sceneLoader = function(i) {
+    "use strict";
+
+    var scenes = [
+        level1
+    ];
+
+    this.scenario = scenes[i];
+    this.scenario.init();       // TODO needs canvas!!
+};
 
 app.init = function(canvas) {
     "use strict";
 
     this.keysDown = keysDown();
-    // TODO init main menu w/main title here. pass it sceneLoader
-
-    // split out to a scenario loader
-    this.scenario = level1;
-    this.scenario.init(canvas);
+    this.mainMenu.init(canvas, this.sceneLoader);
 };
 
 app.render = function(canvas) {

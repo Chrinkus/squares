@@ -13,9 +13,7 @@ module.exports = {
 
     init: function(canvas) {
 
-        var cX = canvas.width / 2,
-            cY = canvas.height / 2,
-            ctx = canvas.ctx;
+        var ctx = canvas.ctx;
 
         ctx.font = this.font;
         this.textW = Math.floor(ctx.measureText(this.text).width);
