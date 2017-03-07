@@ -82,18 +82,42 @@ Pellet.prototype.draw = function(ctx) {
 module.exports = Pellet;
 
 },{}],4:[function(require,module,exports){
-var keysDown = require("./input").keysDown;
-var level1 = require("./level1");
+var keysDown    = require("./input").keysDown;
+var mainMenu    = require("./mainMenu");
+var level1      = require("./level1");
 
-var app = {};
+var app = {
+    mainMenu: mainMenu,
+    scenario: null,
+    scenes: [
+        level1
+    ]
+};
+
+app.sceneLoader = function(canvas, i) {
+    "use strict";
+
+    if (i) {
+        this.scenario = this.scenes[i];
+    } else {
+        this.scenario = this.scenes[0];
+    }
+
+    this.scenario.init(canvas);
+    this.mainMenu.active = false;
+};
 
 app.init = function(canvas) {
     "use strict";
+    var that = this;
+
+    function play(i) {
+        that.sceneLoader(canvas, i);
+    }
 
     this.keysDown = keysDown();
-
-    this.scenario = level1;
-    this.scenario.init(canvas);
+    this.mainMenu.init(canvas, play);
+    this.mainMenu.active = true;
 };
 
 app.render = function(canvas) {
@@ -101,6 +125,11 @@ app.render = function(canvas) {
 
     // Wipe canvas
     canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (this.mainMenu.active) {
+        mainMenu.draw(canvas.ctx);
+        return;
+    }
 
     // Background
     this.scenario.background.draw(canvas.ctx);
@@ -121,13 +150,17 @@ app.render = function(canvas) {
 app.update = function(tStamp) {
     "use strict";
 
-    // Consider checking for game state: live, pause, chat, choice
+    if (this.mainMenu.active) {
+        this.mainMenu.cursor.update(this.keysDown);
+        return;
+    }
+    
     this.scenario.player.update(this.keysDown, this.scenario.actors);
 };
 
 module.exports = app;
 
-},{"./input":8,"./level1":9}],5:[function(require,module,exports){
+},{"./input":9,"./level1":10,"./mainMenu":12}],5:[function(require,module,exports){
 function Background(canvas, color) {
     "use strict";
 
@@ -179,6 +212,47 @@ module.exports = (mov, tar) => {
 };
 
 },{}],8:[function(require,module,exports){
+var moveCursor = require("./input").moveCursor;
+
+function Cursor(menu) {
+    "use strict";
+    this.menu = menu;
+
+    this.x = menu.cursorData.x;
+    this.y = menu.cursorData.y;
+    this.w = menu.cursorData.w;
+    this.color = menu.colors.cursor;
+    
+    this.i = 0;
+    this.iMin = 0;
+    this.iMax = menu.selections.length - 1;
+    this.offSet = menu.lineHeight;
+
+    this.path = function(y) {
+        var path = new Path2D();
+        path.rect(this.x, y, this.w, this.w);
+        return path;
+    };
+
+    this.select = function() {
+        menu.select(this.i);
+    };
+}
+
+Cursor.prototype.draw = function(ctx) {
+    
+    ctx.fillStyle = this.color;
+    ctx.fill(this.path(this.y + this.i * this.offSet));
+};
+
+Cursor.prototype.update = function(keysDown) {
+
+    moveCursor(this, keysDown);
+};
+
+module.exports = Cursor;
+
+},{"./input":9}],9:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -209,6 +283,8 @@ exports.keysDown = () => {
 // up arrow     38              Move upwards
 // right arrow  39              Move rightwards
 // down arrow   40              Move downwards
+//
+// spacebar     32              Action (context sensitive)
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 
 exports.move8 = (mover, keysDown) => {
@@ -231,15 +307,18 @@ exports.move8 = (mover, keysDown) => {
 exports.moveCursor = (cursor, keysDown) => {
     "use strict";
 
-    if (87 in keysDown || 38 in keysDown) {
+    if ((87 in keysDown || 38 in keysDown) && (cursor.i > cursor.iMin)) {
         cursor.i -= 1;
     }
-    if (83 in keysDown || 40 in keysDown) {
+    if ((83 in keysDown || 40 in keysDown) && (cursor.i < cursor.iMax)) {
         cursor.i += 1;
+    }
+    if (32 in keysDown) {
+        cursor.select();
     }
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var Scene = require("./scene");
 
 var level1 = new Scene();
@@ -278,7 +357,7 @@ level1.planReader();
 
 module.exports = level1;
 
-},{"./scene":12}],10:[function(require,module,exports){
+},{"./scene":16}],11:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -301,7 +380,183 @@ var app = require("./app");
 
 }());
 
-},{"./app":4,"./canvas":6}],11:[function(require,module,exports){
+},{"./app":4,"./canvas":6}],12:[function(require,module,exports){
+var Menu        = require("./menu.js");
+var mainTitle   = require("./mainTitle");
+
+var mainMenu = new Menu(42);
+
+mainMenu.colors = {
+    background: "black",
+    selections: "white",
+    cursor: "gold"
+};
+
+mainMenu.selections = [
+    "new game",
+    "leaderboards",
+    "controls"
+];
+
+mainMenu.mainTitle = mainTitle;
+
+mainMenu.cursorData.w = 24;
+
+module.exports = mainMenu;
+
+},{"./mainTitle":13,"./menu.js":14}],13:[function(require,module,exports){
+module.exports = {
+
+    text: "squares",
+    textX: 0,
+    textY: 0,
+    textW: 0,
+    font: "100px monospace",
+
+    colors: {
+        primary: "white",
+        secondary: "gold"
+    },
+
+    init: function(canvas) {
+
+        var ctx = canvas.ctx;
+
+        ctx.font = this.font;
+        this.textW = Math.floor(ctx.measureText(this.text).width);
+        this.titleWidth = this.textW + 128;
+
+        this.textX = canvas.width / 2 - this.titleWidth / 2 + 128;
+        this.textY = canvas.height / 2 - 64;
+    },
+
+    draw: function(ctx) {
+
+        // Main title
+        ctx.fillStyle = this.colors.primary;
+        ctx.font = this.font;
+        ctx.fillText(this.text, this.textX, this.textY);
+
+        // Large square
+        ctx.fillRect(this.textX - 68, this.textY - 46, 48, 48);
+
+        // Small squares
+        ctx.fillStyle = this.colors.secondary;
+        ctx.fillRect(this.textX - 68, this.textY - 82, 24, 24);
+        ctx.fillRect(this.textX - 128, this.textY - 46, 24, 24);
+    }
+};
+
+},{}],14:[function(require,module,exports){
+var Background  = require("./background");
+var Cursor      = require("./cursor");
+
+function Menu(fontSize) {
+    "use strict";
+
+    // arg defined
+    this.fontSize = fontSize;
+    this.font = fontSize + "px monospace";
+    this.lineHeight = Math.floor(fontSize * 1.2);
+
+    // explicitly defined
+    this.colors = null;
+    this.selections = null;
+    this.mainTitle = null;
+
+    // defined in this.init(canvas)
+    this.background = null;
+    this.cursor = null;
+    this.menuX = 0;
+    this.menuY = 0;
+    this.sceneLoaderHook = null;
+
+    // REVIEW need better solution 
+    this.cursorData = {
+        x: 0,
+        y: 0,
+        w: fontSize
+    };
+
+    // display toggle
+    this.active = false;
+}
+
+Menu.prototype.init = function(canvas, sceneLoaderHook) {
+
+    // main app hook
+    this.sceneLoaderHook = sceneLoaderHook;
+
+    // center menu by default
+    this.menuX = canvas.width / 2;
+    this.menuY = canvas.height / 2 + this.lineHeight;
+
+    this.cursorData.x = this.menuX;
+    this.cursorData.y = this.menuY - this.cursorData.w + 2;
+
+    this.background = new Background(canvas, this.colors.background);
+
+    if (this.mainTitle) {
+        this.mainTitle.init(canvas);
+
+        // menu adjusments
+        this.menuX = this.mainTitle.textX;
+        this.cursorData.x = this.menuX - 40;
+    }
+
+    this.cursor = new Cursor(this);
+
+};
+
+Menu.prototype.draw = function(ctx) {
+
+    this.background.draw(ctx);
+
+    ctx.fillStyle = this.colors.selections;
+    ctx.font = this.font;
+    
+    this.selections.forEach((selection, i) => {
+        ctx.fillText(selection, this.menuX, this.menuY + this.lineHeight * i);
+    });
+
+    if (this.mainTitle) {
+        this.mainTitle.draw(ctx);
+    }
+
+    this.cursor.draw(ctx);
+};
+
+Menu.prototype.select = function(i) {
+
+    switch (this.selections[i]) {
+        case "new game":
+            // Launch new game at level 1
+            this.sceneLoaderHook();
+            break;
+
+        case "leaderboards":
+            // Display local leaderboards
+            console.log("leaderboards selected");
+            break;
+
+        case "level select":
+            // Choose a level to start at
+            console.log("level select selected");
+            break;
+
+        case "controls":
+            // Display a list of the game controls
+            console.log("controls selected");
+            break;
+
+        default:
+            // Do nothing
+    }
+};
+
+module.exports = Menu;
+
+},{"./background":5,"./cursor":8}],15:[function(require,module,exports){
 var collision = require("./collision");
 var move8 = require("./input.js").move8;
 
@@ -394,12 +649,12 @@ Player.prototype.update = function(keysDown, entities) {
 
 module.exports = Player;
 
-},{"./collision":7,"./input.js":8}],12:[function(require,module,exports){
-var Player = require("./player");
-var Block = require("../Path2D/block");
-var Coin = require("../Path2D/coin");
-var Pellet = require("../Path2D/pellet");
-var Background = require("./background");
+},{"./collision":7,"./input.js":9}],16:[function(require,module,exports){
+var Player      = require("./player");
+var Block       = require("../Path2D/block");
+var Coin        = require("../Path2D/coin");
+var Pellet      = require("../Path2D/pellet");
+var Background  = require("./background");
 
 function Scene() {
     "use strict";
@@ -474,4 +729,4 @@ Scene.prototype.init = function(canvas) {
 
 module.exports = Scene;
 
-},{"../Path2D/block":1,"../Path2D/coin":2,"../Path2D/pellet":3,"./background":5,"./player":11}]},{},[10]);
+},{"../Path2D/block":1,"../Path2D/coin":2,"../Path2D/pellet":3,"./background":5,"./player":15}]},{},[11]);

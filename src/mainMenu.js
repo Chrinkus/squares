@@ -12,9 +12,11 @@ mainMenu.colors = {
 mainMenu.selections = [
     "new game",
     "leaderboards",
-    "exit"
+    "controls"
 ];
 
 mainMenu.mainTitle = mainTitle;
+
+mainMenu.cursorData.w = 24;
 
 module.exports = mainMenu;

@@ -4,25 +4,36 @@ var level1      = require("./level1");
 
 var app = {
     mainMenu: mainMenu,
-    scenario: null
+    scenario: null,
+    scenes: [
+        level1
+    ]
 };
 
-app.sceneLoader = function(i) {
+app.sceneLoader = function(canvas, i) {
     "use strict";
 
-    var scenes = [
-        level1
-    ];
+    if (i) {
+        this.scenario = this.scenes[i];
+    } else {
+        this.scenario = this.scenes[0];
+    }
 
-    this.scenario = scenes[i];
-    this.scenario.init();       // TODO needs canvas!!
+    this.scenario.init(canvas);
+    this.mainMenu.active = false;
 };
 
 app.init = function(canvas) {
     "use strict";
+    var that = this;
+
+    function play(i) {
+        that.sceneLoader(canvas, i);
+    }
 
     this.keysDown = keysDown();
-    this.mainMenu.init(canvas, this.sceneLoader);
+    this.mainMenu.init(canvas, play);
+    this.mainMenu.active = true;
 };
 
 app.render = function(canvas) {
@@ -30,6 +41,11 @@ app.render = function(canvas) {
 
     // Wipe canvas
     canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (this.mainMenu.active) {
+        mainMenu.draw(canvas.ctx);
+        return;
+    }
 
     // Background
     this.scenario.background.draw(canvas.ctx);
@@ -50,7 +66,11 @@ app.render = function(canvas) {
 app.update = function(tStamp) {
     "use strict";
 
-    // Consider checking for game state: live, pause, chat, choice
+    if (this.mainMenu.active) {
+        this.mainMenu.cursor.update(this.keysDown);
+        return;
+    }
+    
     this.scenario.player.update(this.keysDown, this.scenario.actors);
 };
 

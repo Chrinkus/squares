@@ -4,9 +4,9 @@ function Cursor(menu) {
     "use strict";
     this.menu = menu;
 
-    this.x = menu.cusor.x;
-    this.y = menu.cusor.y;
-    this.w = menu.cusor.w;
+    this.x = menu.cursorData.x;
+    this.y = menu.cursorData.y;
+    this.w = menu.cursorData.w;
     this.color = menu.colors.cursor;
     
     this.i = 0;
@@ -28,10 +28,12 @@ function Cursor(menu) {
 Cursor.prototype.draw = function(ctx) {
     
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.path(this.y + this.i * this.offSet));
+    ctx.fill(this.path(this.y + this.i * this.offSet));
 };
 
 Cursor.prototype.update = function(keysDown) {
 
     moveCursor(this, keysDown);
 };
+
+module.exports = Cursor;

@@ -52,13 +52,13 @@ exports.move8 = (mover, keysDown) => {
 exports.moveCursor = (cursor, keysDown) => {
     "use strict";
 
-    if (87 in keysDown || 38 in keysDown && cursor.i > cursor.iMin) {
+    if ((87 in keysDown || 38 in keysDown) && (cursor.i > cursor.iMin)) {
         cursor.i -= 1;
     }
-    if (83 in keysDown || 40 in keysDown && cursor.i < cursor.iMax) {
+    if ((83 in keysDown || 40 in keysDown) && (cursor.i < cursor.iMax)) {
         cursor.i += 1;
     }
     if (32 in keysDown) {
-        cursor.select(cursor.i);
+        cursor.select();
     }
 };

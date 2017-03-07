@@ -19,42 +19,61 @@ function Menu(fontSize) {
     this.cursor = null;
     this.menuX = 0;
     this.menuY = 0;
-    this.sceneLoader = null;        // Expected function
+    this.sceneLoaderHook = null;
+
+    // REVIEW need better solution 
+    this.cursorData = {
+        x: 0,
+        y: 0,
+        w: fontSize
+    };
+
+    // display toggle
+    this.active = false;
 }
 
-Menu.prototype.init = function(canvas, sceneLoader) {
+Menu.prototype.init = function(canvas, sceneLoaderHook) {
 
     // main app hook
-    this.sceneLoader = sceneLoader;
+    this.sceneLoaderHook = sceneLoaderHook;
+
+    // center menu by default
+    this.menuX = canvas.width / 2;
+    this.menuY = canvas.height / 2 + this.lineHeight;
+
+    this.cursorData.x = this.menuX;
+    this.cursorData.y = this.menuY - this.cursorData.w + 2;
 
     this.background = new Background(canvas, this.colors.background);
 
-    this.cursor = new Cursor(this);
-
     if (this.mainTitle) {
         this.mainTitle.init(canvas);
-        this.menuX = mainTitle.textX;
+
+        // menu adjusments
+        this.menuX = this.mainTitle.textX;
+        this.cursorData.x = this.menuX - 40;
     }
 
-    this.menuY = canvas.height / 2 - this.lineHeight;
+    this.cursor = new Cursor(this);
 
-    if (!this.menuX) {
-        this.menuX = canvas.width / 2;  // Not used in main menu
-    }
 };
 
 Menu.prototype.draw = function(ctx) {
+
+    this.background.draw(ctx);
 
     ctx.fillStyle = this.colors.selections;
     ctx.font = this.font;
     
     this.selections.forEach((selection, i) => {
         ctx.fillText(selection, this.menuX, this.menuY + this.lineHeight * i);
-    };
+    });
 
     if (this.mainTitle) {
         this.mainTitle.draw(ctx);
     }
+
+    this.cursor.draw(ctx);
 };
 
 Menu.prototype.select = function(i) {
@@ -62,27 +81,22 @@ Menu.prototype.select = function(i) {
     switch (this.selections[i]) {
         case "new game":
             // Launch new game at level 1
-            this.sceneLoader(0);
+            this.sceneLoaderHook();
             break;
 
         case "leaderboards":
             // Display local leaderboards
-            break;
-
-        case "exit":
-            // Close window &/or return to previous page
+            console.log("leaderboards selected");
             break;
 
         case "level select":
             // Choose a level to start at
+            console.log("level select selected");
             break;
 
         case "controls":
             // Display a list of the game controls
-            break;
-
-        case "credits":
-            // List my name a bunch of times
+            console.log("controls selected");
             break;
 
         default:

@@ -17,9 +17,9 @@ module.exports = {
 
         ctx.font = this.font;
         this.textW = Math.floor(ctx.measureText(this.text).width);
-        this.titleWidth = textW + 128;
+        this.titleWidth = this.textW + 128;
 
-        this.textX = canvas.width / 2 - titleWidth / 2 + 128; // REVIEW
+        this.textX = canvas.width / 2 - this.titleWidth / 2 + 128;
         this.textY = canvas.height / 2 - 64;
     },
 
@@ -31,11 +31,11 @@ module.exports = {
         ctx.fillText(this.text, this.textX, this.textY);
 
         // Large square
-        ctx.fillRect(textX - 68, textY - 46, 48, 48);
+        ctx.fillRect(this.textX - 68, this.textY - 46, 48, 48);
 
         // Small squares
         ctx.fillStyle = this.colors.secondary;
-        ctx.fillRect(textX - 68, textY - 82, 24, 24);
-        ctx.fillRect(textX - 128, textY - 46, 24, 24);
+        ctx.fillRect(this.textX - 68, this.textY - 82, 24, 24);
+        ctx.fillRect(this.textX - 128, this.textY - 46, 24, 24);
     }
 };
