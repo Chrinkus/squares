@@ -1,6 +1,6 @@
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
-var level1      = require("./level1");
+var level1      = require("./Levels/level1");
 
 var app = {
     mainMenu: mainMenu,

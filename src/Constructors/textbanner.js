@@ -1,9 +1,3 @@
-// Banner
-//
-// Banners will be used similarly to DBM alerts, as instructional queues to the
-// player. Colour will be tricky as banners will not have control over their
-// backgrounds.
-
 function TextBanner(msg, color, shadow) {
     "use strict";
 
@@ -45,16 +39,4 @@ TextBanner.prototype.draw = function() {
     ctx.fillText(this.msg, this.x, this.y);
 };
 
-// Temp for testing
-var canvas = document.getElementById("viewport");
-var ctx = canvas.getContext("2d");
-
-var message = "Get bannered!!";
-var banner = new TextBanner(message, "white", true);
-
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-ctx.fillStyle = "indigo";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-banner.draw();
+module.exports = TextBanner;

@@ -1,4 +1,21 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+function Background(canvas, color) {
+    "use strict";
+
+    this.xMax = canvas.width;
+    this.yMax = canvas.height;
+    this.color = color;
+}
+
+Background.prototype.draw = function(ctx) {
+
+    ctx.fillStyle = this.color;
+    ctx.fillRect(0, 0, this.xMax, this.yMax);
+};
+
+module.exports = Background;
+
+},{}],2:[function(require,module,exports){
 function Block(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -26,193 +43,8 @@ Block.prototype.draw = function(ctx) {
 
 module.exports = Block;
 
-},{}],2:[function(require,module,exports){
-function Coin(x, y, color, blockSize) {
-    "use strict";
-    var that = this;
-
-    this.r = blockSize / 2;
-    this.x = x + this.r;
-    this.y = y + this.r;
-    this.color = color;
-
-    this.collision = "soft";
-    this.statusCode = 1;
-
-    this.path = (function() {
-        var path = new Path2D();
-        path.arc(that.x, that.y, that.r, 0, Math.PI * 2);
-        return path;
-    }());
-}
-
-Coin.prototype.draw = function(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.fill(this.path);
-};
-
-module.exports = Coin;
-
 },{}],3:[function(require,module,exports){
-function Pellet(x, y, color, blockSize) {
-    "use strict";
-    var that = this;
-
-    this.w = blockSize / 2;
-    this.x = x + this.w / 2;
-    this.y = y + this.w / 2;
-    this.color = color;
-
-    this.collision = "soft";
-    this.statusCode = 1;            // status codes to be defined in app.js
-
-    // Static path pattern
-    this.path = (function() {
-        var path = new Path2D();
-        path.rect(that.x, that.y, that.w, that.w);
-        return path;
-    }());
-}
-
-Pellet.prototype.draw = function(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.fill(this.path);
-};
-
-module.exports = Pellet;
-
-},{}],4:[function(require,module,exports){
-var keysDown    = require("./input").keysDown;
-var mainMenu    = require("./mainMenu");
-var level1      = require("./level1");
-
-var app = {
-    mainMenu: mainMenu,
-    scenario: null,
-    scenes: [
-        level1
-    ]
-};
-
-app.sceneLoader = function(canvas, i) {
-    "use strict";
-
-    if (i) {
-        this.scenario = this.scenes[i];
-    } else {
-        this.scenario = this.scenes[0];
-    }
-
-    this.scenario.init(canvas);
-    this.mainMenu.active = false;
-};
-
-app.init = function(canvas) {
-    "use strict";
-    var that = this;
-
-    function play(i) {
-        that.sceneLoader(canvas, i);
-    }
-
-    this.keysDown = keysDown();
-    this.mainMenu.init(canvas, play);
-    this.mainMenu.active = true;
-};
-
-app.render = function(canvas) {
-    "use strict";
-
-    // Wipe canvas
-    canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (this.mainMenu.active) {
-        mainMenu.draw(canvas.ctx);
-        return;
-    }
-
-    // Background
-    this.scenario.background.draw(canvas.ctx);
-
-    // Player
-    this.scenario.player.draw(canvas.ctx);
-
-    this.scenario.actors.forEach((actor) => {
-
-        if (!actor.statusCode) {
-            return;
-        }
-
-        actor.draw(canvas.ctx);
-    });
-};
-
-app.update = function(tStamp) {
-    "use strict";
-
-    if (this.mainMenu.active) {
-        this.mainMenu.cursor.update(this.keysDown);
-        return;
-    }
-    
-    this.scenario.player.update(this.keysDown, this.scenario.actors);
-};
-
-module.exports = app;
-
-},{"./input":9,"./level1":10,"./mainMenu":12}],5:[function(require,module,exports){
-function Background(canvas, color) {
-    "use strict";
-
-    this.xMax = canvas.width;
-    this.yMax = canvas.height;
-    this.color = color;
-}
-
-Background.prototype.draw = function(ctx) {
-
-    ctx.fillStyle = this.color;
-    ctx.fillRect(0, 0, this.xMax, this.yMax);
-};
-
-module.exports = Background;
-
-},{}],6:[function(require,module,exports){
-module.exports = (function() {
-
-    var _canvasRef = document.getElementById("viewport");
-
-    return {
-
-        ctx: _canvasRef.getContext("2d"),
-
-        get width() {
-            // Lazy getter
-            delete this.width;
-            return this.width = _canvasRef.width;
-        },
-
-        get height() {
-            // Lazy getter
-            delete this.height;
-            return this.height = _canvasRef.height;
-
-        }
-    };
-}());
-
-},{}],7:[function(require,module,exports){
-module.exports = (mov, tar) => {
-    "use strict";
-
-    return mov.x < tar.x + tar.w &&
-           mov.y < tar.y + tar.w &&
-           tar.x < mov.x + mov.w &&
-           tar.y < mov.y + mov.w;
-};
-
-},{}],8:[function(require,module,exports){
-var moveCursor = require("./input").moveCursor;
+var moveCursor = require("../input").moveCursor;
 
 function Cursor(menu) {
     "use strict";
@@ -252,202 +84,7 @@ Cursor.prototype.update = function(keysDown) {
 
 module.exports = Cursor;
 
-},{"./input":9}],9:[function(require,module,exports){
-exports.keysDown = () => {
-    "use strict";
-
-    var keysDown = {};
-
-    document.addEventListener("keydown", function(e) {
-        keysDown[e.keyCode] = true;
-    }, false);
-
-    document.addEventListener("keyup", function(e) {
-        delete keysDown[e.keyCode];
-    }, false);
-
-    return keysDown; // WORKS!!
-};
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-// Keyboard Input Legend
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-// Key          Keycode         Action
-// ===          =======         ======
-// w            87              Move upwards
-// a            65              Move leftwards
-// s            83              Move downwards
-// d            68              Move rightwards
-//
-// left arrow   37              Move leftwards
-// up arrow     38              Move upwards
-// right arrow  39              Move rightwards
-// down arrow   40              Move downwards
-//
-// spacebar     32              Action (context sensitive)
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
-
-exports.move8 = (mover, keysDown) => {
-    "use strict";
-
-    if (87 in keysDown || 38 in keysDown) {
-        mover.y -= mover.dy;
-    }
-    if (83 in keysDown || 40 in keysDown) {
-        mover.y += mover.dy;
-    }
-    if (65 in keysDown || 37 in keysDown) {
-        mover.x -= mover.dx;
-    }
-    if (68 in keysDown || 39 in keysDown) {
-        mover.x += mover.dx;
-    }
-};
-
-exports.moveCursor = (cursor, keysDown) => {
-    "use strict";
-
-    if ((87 in keysDown || 38 in keysDown) && (cursor.i > cursor.iMin)) {
-        cursor.i -= 1;
-    }
-    if ((83 in keysDown || 40 in keysDown) && (cursor.i < cursor.iMax)) {
-        cursor.i += 1;
-    }
-    if (32 in keysDown) {
-        cursor.select();
-    }
-};
-
-},{}],10:[function(require,module,exports){
-var Scene = require("./scene");
-
-var level1 = new Scene();
-
-level1.blockSize = 32;
-
-level1.plan = [
-    "################################",
-    "###                          ###",
-    "##    *   *          *   *    ##",
-    "#                              #",
-    "#  *                        *  #",
-    "#      ###            ###      #",
-    "#     ####            ####     #",
-    "#  *  ####            ####  *  #",
-    "#     ####            ####     #",
-    "#     ####            ####     #",
-    "#  *  ####            ####  *  #",
-    "#     ####            ####     #",
-    "#      ###            ###      #",
-    "#  *                        *  #",
-    "#                              #",
-    "##    *   *          *   *    ##",
-    "###                          ###",
-    "################################"
-];
-
-level1.colors = {
-    background: "red",
-    wall: "black",
-    pellet: "gold",
-    player: "white"
-};
-
-level1.planReader();
-
-module.exports = level1;
-
-},{"./scene":16}],11:[function(require,module,exports){
-var app = require("./app");
-
-(function() {
-    "use strict";
-
-    var canvas = require("./canvas");
-
-    app.init(canvas);
-
-    function main(tStamp) {
-
-        app.stopMain = window.requestAnimationFrame(main);
-
-        app.render(canvas);
-
-        app.update(tStamp);
-    }
-
-    main();
-
-}());
-
-},{"./app":4,"./canvas":6}],12:[function(require,module,exports){
-var Menu        = require("./menu.js");
-var mainTitle   = require("./mainTitle");
-
-var mainMenu = new Menu(42);
-
-mainMenu.colors = {
-    background: "black",
-    selections: "white",
-    cursor: "gold"
-};
-
-mainMenu.selections = [
-    "new game",
-    "leaderboards",
-    "controls"
-];
-
-mainMenu.mainTitle = mainTitle;
-
-mainMenu.cursorData.w = 24;
-
-module.exports = mainMenu;
-
-},{"./mainTitle":13,"./menu.js":14}],13:[function(require,module,exports){
-module.exports = {
-
-    text: "squares",
-    textX: 0,
-    textY: 0,
-    textW: 0,
-    font: "100px monospace",
-
-    colors: {
-        primary: "white",
-        secondary: "gold"
-    },
-
-    init: function(canvas) {
-
-        var ctx = canvas.ctx;
-
-        ctx.font = this.font;
-        this.textW = Math.floor(ctx.measureText(this.text).width);
-        this.titleWidth = this.textW + 128;
-
-        this.textX = canvas.width / 2 - this.titleWidth / 2 + 128;
-        this.textY = canvas.height / 2 - 64;
-    },
-
-    draw: function(ctx) {
-
-        // Main title
-        ctx.fillStyle = this.colors.primary;
-        ctx.font = this.font;
-        ctx.fillText(this.text, this.textX, this.textY);
-
-        // Large square
-        ctx.fillRect(this.textX - 68, this.textY - 46, 48, 48);
-
-        // Small squares
-        ctx.fillStyle = this.colors.secondary;
-        ctx.fillRect(this.textX - 68, this.textY - 82, 24, 24);
-        ctx.fillRect(this.textX - 128, this.textY - 46, 24, 24);
-    }
-};
-
-},{}],14:[function(require,module,exports){
+},{"../input":12}],4:[function(require,module,exports){
 var Background  = require("./background");
 var Cursor      = require("./cursor");
 
@@ -556,9 +193,37 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"./background":5,"./cursor":8}],15:[function(require,module,exports){
-var collision = require("./collision");
-var move8 = require("./input.js").move8;
+},{"./background":1,"./cursor":3}],5:[function(require,module,exports){
+function Pellet(x, y, color, blockSize) {
+    "use strict";
+    var that = this;
+
+    this.w = blockSize / 2;
+    this.x = x + this.w / 2;
+    this.y = y + this.w / 2;
+    this.color = color;
+
+    this.collision = "soft";
+    this.statusCode = 1;            // status codes to be defined in app.js
+
+    // Static path pattern
+    this.path = (function() {
+        var path = new Path2D();
+        path.rect(that.x, that.y, that.w, that.w);
+        return path;
+    }());
+}
+
+Pellet.prototype.draw = function(ctx) {
+    ctx.fillStyle = this.color;
+    ctx.fill(this.path);
+};
+
+module.exports = Pellet;
+
+},{}],6:[function(require,module,exports){
+var collision = require("../collision");
+var move8 = require("../input.js").move8;
 
 function Player(canvas, color, blockSize) {
     "use strict";
@@ -649,11 +314,10 @@ Player.prototype.update = function(keysDown, entities) {
 
 module.exports = Player;
 
-},{"./collision":7,"./input.js":9}],16:[function(require,module,exports){
+},{"../collision":11,"../input.js":12}],7:[function(require,module,exports){
 var Player      = require("./player");
-var Block       = require("../Path2D/block");
-var Coin        = require("../Path2D/coin");
-var Pellet      = require("../Path2D/pellet");
+var Block       = require("./block");
+var Pellet      = require("./pellet");
 var Background  = require("./background");
 
 function Scene() {
@@ -685,11 +349,6 @@ Scene.prototype.planReader = function() {
             switch (character) {
                 case "#":
                     this.actors.push(new Block(x, y, this.colors.wall,
-                                this.blockSize));
-                    break;
-
-                case "$":
-                    this.actors.push(new Coin(x, y, this.colors.coin,
                                 this.blockSize));
                     break;
 
@@ -729,4 +388,312 @@ Scene.prototype.init = function(canvas) {
 
 module.exports = Scene;
 
-},{"../Path2D/block":1,"../Path2D/coin":2,"../Path2D/pellet":3,"./background":5,"./player":15}]},{},[11]);
+},{"./background":1,"./block":2,"./pellet":5,"./player":6}],8:[function(require,module,exports){
+var Scene = require("../Constructors/scene");
+
+var level1 = new Scene();
+
+level1.blockSize = 32;
+
+level1.plan = [
+    "################################",
+    "###                          ###",
+    "##    *   *          *   *    ##",
+    "#                              #",
+    "#  *                        *  #",
+    "#      ###            ###      #",
+    "#     ####            ####     #",
+    "#  *  ####            ####  *  #",
+    "#     ####            ####     #",
+    "#     ####            ####     #",
+    "#  *  ####            ####  *  #",
+    "#     ####            ####     #",
+    "#      ###            ###      #",
+    "#  *                        *  #",
+    "#                              #",
+    "##    *   *          *   *    ##",
+    "###                          ###",
+    "################################"
+];
+
+level1.colors = {
+    background: "red",
+    wall: "black",
+    pellet: "gold",
+    player: "white"
+};
+
+level1.planReader();
+
+module.exports = level1;
+
+},{"../Constructors/scene":7}],9:[function(require,module,exports){
+var keysDown    = require("./input").keysDown;
+var mainMenu    = require("./mainMenu");
+var level1      = require("./Levels/level1");
+
+var app = {
+    mainMenu: mainMenu,
+    scenario: null,
+    scenes: [
+        level1
+    ]
+};
+
+app.sceneLoader = function(canvas, i) {
+    "use strict";
+
+    if (i) {
+        this.scenario = this.scenes[i];
+    } else {
+        this.scenario = this.scenes[0];
+    }
+
+    this.scenario.init(canvas);
+    this.mainMenu.active = false;
+};
+
+app.init = function(canvas) {
+    "use strict";
+    var that = this;
+
+    function play(i) {
+        that.sceneLoader(canvas, i);
+    }
+
+    this.keysDown = keysDown();
+    this.mainMenu.init(canvas, play);
+    this.mainMenu.active = true;
+};
+
+app.render = function(canvas) {
+    "use strict";
+
+    // Wipe canvas
+    canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (this.mainMenu.active) {
+        mainMenu.draw(canvas.ctx);
+        return;
+    }
+
+    // Background
+    this.scenario.background.draw(canvas.ctx);
+
+    // Player
+    this.scenario.player.draw(canvas.ctx);
+
+    this.scenario.actors.forEach((actor) => {
+
+        if (!actor.statusCode) {
+            return;
+        }
+
+        actor.draw(canvas.ctx);
+    });
+};
+
+app.update = function(tStamp) {
+    "use strict";
+
+    if (this.mainMenu.active) {
+        this.mainMenu.cursor.update(this.keysDown);
+        return;
+    }
+    
+    this.scenario.player.update(this.keysDown, this.scenario.actors);
+};
+
+module.exports = app;
+
+},{"./Levels/level1":8,"./input":12,"./mainMenu":14}],10:[function(require,module,exports){
+module.exports = (function() {
+
+    var _canvasRef = document.getElementById("viewport");
+
+    return {
+
+        ctx: _canvasRef.getContext("2d"),
+
+        get width() {
+            // Lazy getter
+            delete this.width;
+            return this.width = _canvasRef.width;
+        },
+
+        get height() {
+            // Lazy getter
+            delete this.height;
+            return this.height = _canvasRef.height;
+
+        }
+    };
+}());
+
+},{}],11:[function(require,module,exports){
+module.exports = (mov, tar) => {
+    "use strict";
+
+    return mov.x < tar.x + tar.w &&
+           mov.y < tar.y + tar.w &&
+           tar.x < mov.x + mov.w &&
+           tar.y < mov.y + mov.w;
+};
+
+},{}],12:[function(require,module,exports){
+exports.keysDown = () => {
+    "use strict";
+
+    var keysDown = {};
+
+    document.addEventListener("keydown", function(e) {
+        keysDown[e.keyCode] = true;
+    }, false);
+
+    document.addEventListener("keyup", function(e) {
+        delete keysDown[e.keyCode];
+    }, false);
+
+    return keysDown; // WORKS!!
+};
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// Keyboard Input Legend
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// Key          Keycode         Action
+// ===          =======         ======
+// w            87              Move upwards
+// a            65              Move leftwards
+// s            83              Move downwards
+// d            68              Move rightwards
+//
+// left arrow   37              Move leftwards
+// up arrow     38              Move upwards
+// right arrow  39              Move rightwards
+// down arrow   40              Move downwards
+//
+// spacebar     32              Action (context sensitive)
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+exports.move8 = (mover, keysDown) => {
+    "use strict";
+
+    if (87 in keysDown || 38 in keysDown) {
+        mover.y -= mover.dy;
+    }
+    if (83 in keysDown || 40 in keysDown) {
+        mover.y += mover.dy;
+    }
+    if (65 in keysDown || 37 in keysDown) {
+        mover.x -= mover.dx;
+    }
+    if (68 in keysDown || 39 in keysDown) {
+        mover.x += mover.dx;
+    }
+};
+
+exports.moveCursor = (cursor, keysDown) => {
+    "use strict";
+
+    if ((87 in keysDown || 38 in keysDown) && (cursor.i > cursor.iMin)) {
+        cursor.i -= 1;
+    }
+    if ((83 in keysDown || 40 in keysDown) && (cursor.i < cursor.iMax)) {
+        cursor.i += 1;
+    }
+    if (32 in keysDown) {
+        cursor.select();
+    }
+};
+
+},{}],13:[function(require,module,exports){
+var app = require("./app");
+
+(function() {
+    "use strict";
+
+    var canvas = require("./canvas");
+
+    app.init(canvas);
+
+    function main(tStamp) {
+
+        app.stopMain = window.requestAnimationFrame(main);
+
+        app.render(canvas);
+
+        app.update(tStamp);
+    }
+
+    main();
+
+}());
+
+},{"./app":9,"./canvas":10}],14:[function(require,module,exports){
+var Menu        = require("./Constructors/menu.js");
+var mainTitle   = require("./mainTitle");
+
+var mainMenu = new Menu(42);
+
+mainMenu.colors = {
+    background: "black",
+    selections: "white",
+    cursor: "gold"
+};
+
+mainMenu.selections = [
+    "new game",
+    "leaderboards",
+    "controls"
+];
+
+mainMenu.mainTitle = mainTitle;
+
+mainMenu.cursorData.w = 24;
+
+module.exports = mainMenu;
+
+},{"./Constructors/menu.js":4,"./mainTitle":15}],15:[function(require,module,exports){
+module.exports = {
+
+    text: "squares",
+    textX: 0,
+    textY: 0,
+    textW: 0,
+    font: "100px monospace",
+
+    colors: {
+        primary: "white",
+        secondary: "gold"
+    },
+
+    init: function(canvas) {
+
+        var ctx = canvas.ctx;
+
+        ctx.font = this.font;
+        this.textW = Math.floor(ctx.measureText(this.text).width);
+        this.titleWidth = this.textW + 128;
+
+        this.textX = canvas.width / 2 - this.titleWidth / 2 + 128;
+        this.textY = canvas.height / 2 - 64;
+    },
+
+    draw: function(ctx) {
+
+        // Main title
+        ctx.fillStyle = this.colors.primary;
+        ctx.font = this.font;
+        ctx.fillText(this.text, this.textX, this.textY);
+
+        // Large square
+        ctx.fillRect(this.textX - 68, this.textY - 46, 48, 48);
+
+        // Small squares
+        ctx.fillStyle = this.colors.secondary;
+        ctx.fillRect(this.textX - 68, this.textY - 82, 24, 24);
+        ctx.fillRect(this.textX - 128, this.textY - 46, 24, 24);
+    }
+};
+
+},{}]},{},[13]);

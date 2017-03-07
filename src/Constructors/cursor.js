@@ -1,4 +1,4 @@
-var moveCursor = require("./input").moveCursor;
+var moveCursor = require("../input").moveCursor;
 
 function Cursor(menu) {
     "use strict";

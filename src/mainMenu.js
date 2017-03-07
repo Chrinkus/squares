@@ -1,4 +1,4 @@
-var Menu        = require("./menu.js");
+var Menu        = require("./Constructors/menu.js");
 var mainTitle   = require("./mainTitle");
 
 var mainMenu = new Menu(42);

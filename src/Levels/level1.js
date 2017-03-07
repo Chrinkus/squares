@@ -1,4 +1,4 @@
-var Scene = require("./scene");
+var Scene = require("../Constructors/scene");
 
 var level1 = new Scene();
 

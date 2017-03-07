@@ -1,7 +1,6 @@
 var Player      = require("./player");
-var Block       = require("../Path2D/block");
-var Coin        = require("../Path2D/coin");
-var Pellet      = require("../Path2D/pellet");
+var Block       = require("./block");
+var Pellet      = require("./pellet");
 var Background  = require("./background");
 
 function Scene() {
@@ -33,11 +32,6 @@ Scene.prototype.planReader = function() {
             switch (character) {
                 case "#":
                     this.actors.push(new Block(x, y, this.colors.wall,
-                                this.blockSize));
-                    break;
-
-                case "$":
-                    this.actors.push(new Coin(x, y, this.colors.coin,
                                 this.blockSize));
                     break;
 
