@@ -1,13 +1,18 @@
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
+var timer       = require("./timer");
 var level1      = require("./Levels/level1");
 
 var app = {
     mainMenu: mainMenu,
+    timer: timer,
+
     scenario: null,
     scenes: [
         level1
-    ]
+    ],
+
+    cooldowns: []
 };
 
 app.sceneLoader = function(canvas, i) {
@@ -65,6 +70,14 @@ app.render = function(canvas) {
 
 app.update = function(tStamp) {
     "use strict";
+    this.timer.progress(tStamp);
+    
+    if (this.cooldowns.length) {
+        this.cooldowns.forEach((cd) => {
+            cd.increment(this.timer.delta);
+            // arr.splice to delete?
+        });
+    }
 
     if (this.mainMenu.active) {
         this.mainMenu.cursor.update(this.keysDown);
