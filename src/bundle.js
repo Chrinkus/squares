@@ -44,7 +44,28 @@ Block.prototype.draw = function(ctx) {
 module.exports = Block;
 
 },{}],3:[function(require,module,exports){
-var moveCursor = require("../input").moveCursor;
+function Cooldown(ms, f) {
+    "use strict";
+    
+    this.ms = ms;
+    this.counter = 0;
+    this.callback = f;
+}
+
+Cooldown.prototype.increment = function(delta) {
+
+    this.counter += delta;
+
+    if (this.counter > this.ms) {
+        this.callback();
+    }
+};
+
+module.exports = Cooldown;
+
+},{}],4:[function(require,module,exports){
+var moveCursor  = require("../input").moveCursor;
+var Cooldown    = require("./cooldown");
 
 function Cursor(menu) {
     "use strict";
@@ -60,14 +81,12 @@ function Cursor(menu) {
     this.iMax = menu.selections.length - 1;
     this.offSet = menu.lineHeight;
 
+    this.cooldown = null;
+
     this.path = function(y) {
         var path = new Path2D();
         path.rect(this.x, y, this.w, this.w);
         return path;
-    };
-
-    this.select = function() {
-        menu.select(this.i);
     };
 }
 
@@ -77,14 +96,26 @@ Cursor.prototype.draw = function(ctx) {
     ctx.fill(this.path(this.y + this.i * this.offSet));
 };
 
-Cursor.prototype.update = function(keysDown) {
+Cursor.prototype.update = function(keysDown, delta) {
 
-    moveCursor(this, keysDown);
+    if (this.cooldown) {
+        this.cooldown.increment(delta);
+        return;
+    } else if (moveCursor(this, keysDown)) {
+        this.cooldown = new Cooldown(250, () => {
+            delete this.cooldown;
+        });
+    }
+    
+    // Temporary solution - confirmations usually fire on keyup
+    if (32 in keysDown) {
+        this.menu.select(this.i);
+    }
 };
 
 module.exports = Cursor;
 
-},{"../input":12}],4:[function(require,module,exports){
+},{"../input":13,"./cooldown":3}],5:[function(require,module,exports){
 var Background  = require("./background");
 var Cursor      = require("./cursor");
 
@@ -193,7 +224,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"./background":1,"./cursor":3}],5:[function(require,module,exports){
+},{"./background":1,"./cursor":4}],6:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -221,7 +252,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
@@ -314,7 +345,7 @@ Player.prototype.update = function(keysDown, entities) {
 
 module.exports = Player;
 
-},{"../collision":11,"../input.js":12}],7:[function(require,module,exports){
+},{"../collision":12,"../input.js":13}],8:[function(require,module,exports){
 var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
@@ -388,7 +419,7 @@ Scene.prototype.init = function(canvas) {
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./pellet":5,"./player":6}],8:[function(require,module,exports){
+},{"./background":1,"./block":2,"./pellet":6,"./player":7}],9:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level1 = new Scene();
@@ -427,13 +458,16 @@ level1.planReader();
 
 module.exports = level1;
 
-},{"../Constructors/scene":7}],9:[function(require,module,exports){
+},{"../Constructors/scene":8}],10:[function(require,module,exports){
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
+var timer       = require("./timer");
 var level1      = require("./Levels/level1");
 
 var app = {
     mainMenu: mainMenu,
+    timer: timer,
+
     scenario: null,
     scenes: [
         level1
@@ -495,9 +529,10 @@ app.render = function(canvas) {
 
 app.update = function(tStamp) {
     "use strict";
-
+    this.timer.progress(tStamp);
+    
     if (this.mainMenu.active) {
-        this.mainMenu.cursor.update(this.keysDown);
+        this.mainMenu.cursor.update(this.keysDown, this.timer.delta);
         return;
     }
     
@@ -506,7 +541,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Levels/level1":8,"./input":12,"./mainMenu":14}],10:[function(require,module,exports){
+},{"./Levels/level1":9,"./input":13,"./mainMenu":15,"./timer":17}],11:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -530,7 +565,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -540,7 +575,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -594,19 +629,21 @@ exports.move8 = (mover, keysDown) => {
 
 exports.moveCursor = (cursor, keysDown) => {
     "use strict";
+    var moved = false;
 
     if ((87 in keysDown || 38 in keysDown) && (cursor.i > cursor.iMin)) {
         cursor.i -= 1;
+        moved = true;
     }
     if ((83 in keysDown || 40 in keysDown) && (cursor.i < cursor.iMax)) {
         cursor.i += 1;
+        moved = true;
     }
-    if (32 in keysDown) {
-        cursor.select();
-    }
+
+    return moved;
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -629,7 +666,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":9,"./canvas":10}],14:[function(require,module,exports){
+},{"./app":10,"./canvas":11}],15:[function(require,module,exports){
 var Menu        = require("./Constructors/menu.js");
 var mainTitle   = require("./mainTitle");
 
@@ -653,7 +690,7 @@ mainMenu.cursorData.w = 24;
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu.js":4,"./mainTitle":15}],15:[function(require,module,exports){
+},{"./Constructors/menu.js":5,"./mainTitle":16}],16:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -696,4 +733,22 @@ module.exports = {
     }
 };
 
-},{}]},{},[13]);
+},{}],17:[function(require,module,exports){
+module.exports = {
+    previous: 0,
+    delta: 0,
+
+    progress: function(tStamp) {
+        "use strict";
+
+        if (!this.previous) {
+            this.previous = tStamp;
+            return;
+        }
+
+        this.delta = tStamp - this.previous;
+        this.previous = tStamp;
+    }
+};
+
+},{}]},{},[14]);

@@ -11,5 +11,6 @@ module.exports = {
         }
 
         this.delta = tStamp - this.previous;
+        this.previous = tStamp;
     }
 };

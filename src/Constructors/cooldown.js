@@ -12,6 +12,7 @@ Cooldown.prototype.increment = function(delta) {
 
     if (this.counter > this.ms) {
         this.callback();
-        return true;
     }
 };
+
+module.exports = Cooldown;

@@ -10,9 +10,7 @@ var app = {
     scenario: null,
     scenes: [
         level1
-    ],
-
-    cooldowns: []
+    ]
 };
 
 app.sceneLoader = function(canvas, i) {
@@ -72,15 +70,8 @@ app.update = function(tStamp) {
     "use strict";
     this.timer.progress(tStamp);
     
-    if (this.cooldowns.length) {
-        this.cooldowns.forEach((cd) => {
-            cd.increment(this.timer.delta);
-            // arr.splice to delete?
-        });
-    }
-
     if (this.mainMenu.active) {
-        this.mainMenu.cursor.update(this.keysDown);
+        this.mainMenu.cursor.update(this.keysDown, this.timer.delta);
         return;
     }
     
