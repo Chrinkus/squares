@@ -115,7 +115,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":13,"./cooldown":3}],5:[function(require,module,exports){
+},{"../input":14,"./cooldown":3}],5:[function(require,module,exports){
 var Background  = require("./background");
 var Cursor      = require("./cursor");
 
@@ -197,14 +197,14 @@ Menu.prototype.draw = function(ctx) {
 Menu.prototype.select = function(i) {
 
     switch (this.selections[i]) {
-        case "new game":
+        case "level 1":
             // Launch new game at level 1
-            this.sceneLoaderHook();
+            this.sceneLoaderHook(i);
             break;
 
-        case "leaderboards":
+        case "level 2":
             // Display local leaderboards
-            console.log("leaderboards selected");
+            this.sceneLoaderHook(i);
             break;
 
         case "level select":
@@ -282,15 +282,15 @@ function Player(canvas, color, blockSize) {
     };
 
     this.shrink = function() {
-        this.x += 2;
-        this.y += 2;
-        this.w -= 4;
+        this.x += 4;
+        this.y += 4;
+        this.w -= 8;
     };
 
     this.grow = function() {
-        this.x -= 1;
-        this.y -= 1;
-        this.w += 2;
+        this.x -= 2;
+        this.y -= 2;
+        this.w += 4;
     };
 }
 
@@ -345,7 +345,7 @@ Player.prototype.update = function(keysDown, entities) {
 
 module.exports = Player;
 
-},{"../collision":12,"../input.js":13}],8:[function(require,module,exports){
+},{"../collision":13,"../input.js":14}],8:[function(require,module,exports){
 var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
@@ -459,10 +459,50 @@ level1.planReader();
 module.exports = level1;
 
 },{"../Constructors/scene":8}],10:[function(require,module,exports){
+var Scene = require("../Constructors/scene");
+
+var level2 = new Scene();
+
+level2.blockSize = 32;
+
+level2.plan = [
+    "################################",
+    "######                    ######",
+    "##        *          *        ##",
+    "#                              #",
+    "#     *    #   **   #    *     #",
+    "#          #        #          #",
+    "#         ##   **   ##         #",
+    "###   ######        ######   ###",
+    "#         ##   **   ##         #",
+    "#          ##      ##          #",
+    "#                              #",
+    "#     *                  *     #",
+    "#                              #",
+    "#   #       ##    ##       #   #",
+    "#  ##   *   #  @   #   *   ##  #",
+    "####        #      #        ####",
+    "###         #      #         ###",
+    "################################"
+];
+
+level2.colors = {
+    background: "coral",
+    wall: "aqua",
+    pellet: "gold",
+    player: "white"
+};
+
+level2.planReader();
+
+module.exports = level2;
+
+},{"../Constructors/scene":8}],11:[function(require,module,exports){
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
 var timer       = require("./timer");
 var level1      = require("./Levels/level1");
+var level2      = require("./Levels/level2");
 
 var app = {
     mainMenu: mainMenu,
@@ -470,7 +510,8 @@ var app = {
 
     scenario: null,
     scenes: [
-        level1
+        level1,
+        level2
     ]
 };
 
@@ -541,7 +582,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Levels/level1":9,"./input":13,"./mainMenu":15,"./timer":17}],11:[function(require,module,exports){
+},{"./Levels/level1":9,"./Levels/level2":10,"./input":14,"./mainMenu":16,"./timer":18}],12:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -565,7 +606,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -575,7 +616,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -643,7 +684,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -666,8 +707,8 @@ var app = require("./app");
 
 }());
 
-},{"./app":10,"./canvas":11}],15:[function(require,module,exports){
-var Menu        = require("./Constructors/menu.js");
+},{"./app":11,"./canvas":12}],16:[function(require,module,exports){
+var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
 var mainMenu = new Menu(42);
@@ -679,8 +720,8 @@ mainMenu.colors = {
 };
 
 mainMenu.selections = [
-    "new game",
-    "leaderboards",
+    "level 1",
+    "level 2",
     "controls"
 ];
 
@@ -690,7 +731,7 @@ mainMenu.cursorData.w = 24;
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu.js":5,"./mainTitle":16}],16:[function(require,module,exports){
+},{"./Constructors/menu":5,"./mainTitle":17}],17:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -733,7 +774,7 @@ module.exports = {
     }
 };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -751,4 +792,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[14]);
+},{}]},{},[15]);

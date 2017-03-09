@@ -27,15 +27,15 @@ function Player(canvas, color, blockSize) {
     };
 
     this.shrink = function() {
-        this.x += 2;
-        this.y += 2;
-        this.w -= 4;
+        this.x += 4;
+        this.y += 4;
+        this.w -= 8;
     };
 
     this.grow = function() {
-        this.x -= 1;
-        this.y -= 1;
-        this.w += 2;
+        this.x -= 2;
+        this.y -= 2;
+        this.w += 4;
     };
 }
 

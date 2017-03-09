@@ -2,6 +2,7 @@ var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
 var timer       = require("./timer");
 var level1      = require("./Levels/level1");
+var level2      = require("./Levels/level2");
 
 var app = {
     mainMenu: mainMenu,
@@ -9,7 +10,8 @@ var app = {
 
     scenario: null,
     scenes: [
-        level1
+        level1,
+        level2
     ]
 };
 

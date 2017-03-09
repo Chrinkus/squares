@@ -1,4 +1,4 @@
-var Menu        = require("./Constructors/menu.js");
+var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
 var mainMenu = new Menu(42);
@@ -10,8 +10,8 @@ mainMenu.colors = {
 };
 
 mainMenu.selections = [
-    "new game",
-    "leaderboards",
+    "level 1",
+    "level 2",
     "controls"
 ];
 

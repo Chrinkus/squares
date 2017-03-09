@@ -79,14 +79,14 @@ Menu.prototype.draw = function(ctx) {
 Menu.prototype.select = function(i) {
 
     switch (this.selections[i]) {
-        case "new game":
+        case "level 1":
             // Launch new game at level 1
-            this.sceneLoaderHook();
+            this.sceneLoaderHook(i);
             break;
 
-        case "leaderboards":
+        case "level 2":
             // Display local leaderboards
-            console.log("leaderboards selected");
+            this.sceneLoaderHook(i);
             break;
 
         case "level select":
