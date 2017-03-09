@@ -20,6 +20,21 @@ function Scene() {
     this.playerLocation = null;
 }
 
+Scene.prototype.draw = function(ctx) {
+
+    this.background.draw(ctx);
+    this.player.draw(ctx);
+
+    this.actors.forEach((actor) => {
+        
+        if (!actor.statusCode) {
+            return;
+        }
+
+        actor.draw(ctx);
+    });
+};
+
 Scene.prototype.planReader = function() {
 
     this.plan.forEach((row, i) => {

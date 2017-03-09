@@ -368,6 +368,21 @@ function Scene() {
     this.playerLocation = null;
 }
 
+Scene.prototype.draw = function(ctx) {
+
+    this.background.draw(ctx);
+    this.player.draw(ctx);
+
+    this.actors.forEach((actor) => {
+        
+        if (!actor.statusCode) {
+            return;
+        }
+
+        actor.draw(ctx);
+    });
+};
+
 Scene.prototype.planReader = function() {
 
     this.plan.forEach((row, i) => {
@@ -507,6 +522,7 @@ var level2      = require("./Levels/level2");
 var app = {
     mainMenu: mainMenu,
     timer: timer,
+    state: "",          // game, mainmenu, pause
 
     scenario: null,
     scenes: [
@@ -525,7 +541,7 @@ app.sceneLoader = function(canvas, i) {
     }
 
     this.scenario.init(canvas);
-    this.mainMenu.active = false;
+    this.state = "game";
 };
 
 app.init = function(canvas) {
@@ -538,7 +554,7 @@ app.init = function(canvas) {
 
     this.keysDown = keysDown();
     this.mainMenu.init(canvas, play);
-    this.mainMenu.active = true;
+    this.state = "mainmenu";
 };
 
 app.render = function(canvas) {
@@ -547,7 +563,20 @@ app.render = function(canvas) {
     // Wipe canvas
     canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (this.mainMenu.active) {
+    switch (this.state) {
+        case "mainmenu":
+            this.mainMenu.draw(canvas.ctx);
+            break;
+
+        case "game":
+            this.scenario.draw(canvas.ctx);
+            break;
+
+        default:
+            // no default
+    }
+
+    /*if (this.state === "mainmenu") {
         mainMenu.draw(canvas.ctx);
         return;
     }
@@ -565,19 +594,32 @@ app.render = function(canvas) {
         }
 
         actor.draw(canvas.ctx);
-    });
+    });*/
 };
 
 app.update = function(tStamp) {
     "use strict";
     this.timer.progress(tStamp);
+
+    switch (this.state) {
+        case "mainmenu":
+            this.mainMenu.cursor.update(this.keysDown, this.timer.delta);
+            break;
+
+        case "game":
+            this.scenario.player.update(this.keysDown, this.scenario.actors);
+            break;
+
+        default:
+            // no default
+    }
     
-    if (this.mainMenu.active) {
+    /*if (this.state === "mainmenu") {
         this.mainMenu.cursor.update(this.keysDown, this.timer.delta);
         return;
     }
     
-    this.scenario.player.update(this.keysDown, this.scenario.actors);
+    this.scenario.player.update(this.keysDown, this.scenario.actors);*/
 };
 
 module.exports = app;
