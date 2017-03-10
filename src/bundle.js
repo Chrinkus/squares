@@ -126,8 +126,13 @@ function HeaderText(cWidth, fontSize, colors, label, val) {
     this.val = val || 0;
 
     this.font = `${this.fontSize}px monospace`;
-    this.padding = fontSize;
-    this.y = this.padding + this.fontSize;
+    this.padding = fontSize / 2;
+    this.y = this.fontSize;
+
+    this.toTenths = function(val) {
+        var inTenths = Math.round(val * 10) / 10;
+        return inTenths % 1 !== 0 ? inTenths : inTenths + ".0";
+    };
 }
 
 HeaderText.prototype.draw = function(ctx) {
@@ -146,10 +151,41 @@ function Left(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "left";
     this.x = this.padding;
-    this.msg = `${this.label}: ${this.val}`;
 }
 
 Left.prototype = Object.create(HeaderText.prototype);
+
+Object.defineProperties(Left.prototype, {
+
+    "valTenths": {
+
+        get: function() {
+
+            if (this.val < 0) {
+                return "0.0";
+            } else {
+                return this.toTenths(this.val);
+            }
+        }
+    },
+
+    "msg": {
+
+        get: function() {
+
+            function output(str, label, valTenths) {
+                return label + str[1] + valTenths;
+            }
+            return output`${this.label}: ${this.valTenths}`;
+        }
+    }
+});
+
+Left.prototype.update = function(delta) {
+
+    // Specific to use as a timer
+    this.val -= delta / 1000;
+};
 
 function Right(cWidth, fontSize, colors, label, val) {
     "use strict";
@@ -415,7 +451,7 @@ var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
-var Headers     = require("./headers");
+var HeaderText  = require("./headertext");
 
 function Scene() {
     "use strict";
@@ -505,18 +541,18 @@ Scene.prototype.init = function(canvas) {
     }
 
     this.messages = {
-        headerLeft: new Headers.Left(canvas.width, 24, this.colors.txt,
-                "Time", 30),
-        headerRight: new Headers.Right(canvas.width, 24, this.colors.txt,
+        headerLeft: new HeaderText.Left(canvas.width, 24, this.colors.txt,
+                "Time", 15),
+        headerRight: new HeaderText.Right(canvas.width, 24, this.colors.txt,
                 "Score", 0),
-        headerCenter: new Headers.Center(canvas.width, 24, this.colors.txt,
-                "Multiplier", 1.0)
+        headerCenter: new HeaderText.Center(canvas.width, 24, this.colors.txt,
+                "Multiplier", 1)
     };
 };
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./headers":5,"./pellet":7,"./player":8}],10:[function(require,module,exports){
+},{"./background":1,"./block":2,"./headertext":5,"./pellet":7,"./player":8}],10:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level1 = new Scene();
@@ -525,8 +561,8 @@ level1.blockSize = 32;
 
 level1.plan = [
     "################################",
-    "###                          ###",
-    "##    *   *          *   *    ##",
+    "###           ####           ###",
+    "##    *   *    ##    *   *    ##",
     "#                              #",
     "#  *                        *  #",
     "#      ###            ###      #",
@@ -539,8 +575,8 @@ level1.plan = [
     "#      ###            ###      #",
     "#  *                        *  #",
     "#                              #",
-    "##    *   *          *   *    ##",
-    "###                          ###",
+    "##    *   *    ##    *   *    ##",
+    "###           ####           ###",
     "################################"
 ];
 
@@ -678,6 +714,7 @@ app.update = function(tStamp) {
 
         case "game":
             this.scenario.player.update(this.keysDown, this.scenario.actors);
+            this.scenario.messages.headerLeft.update(this.timer.delta);
             break;
 
         default:

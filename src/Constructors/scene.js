@@ -2,7 +2,7 @@ var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
-var Headers     = require("./headers");
+var HeaderText  = require("./headertext");
 
 function Scene() {
     "use strict";
@@ -92,12 +92,12 @@ Scene.prototype.init = function(canvas) {
     }
 
     this.messages = {
-        headerLeft: new Headers.Left(canvas.width, 24, this.colors.txt,
-                "Time", 30),
-        headerRight: new Headers.Right(canvas.width, 24, this.colors.txt,
+        headerLeft: new HeaderText.Left(canvas.width, 24, this.colors.txt,
+                "Time", 15),
+        headerRight: new HeaderText.Right(canvas.width, 24, this.colors.txt,
                 "Score", 0),
-        headerCenter: new Headers.Center(canvas.width, 24, this.colors.txt,
-                "Multiplier", 1.0)
+        headerCenter: new HeaderText.Center(canvas.width, 24, this.colors.txt,
+                "Multiplier", 1)
     };
 };
 

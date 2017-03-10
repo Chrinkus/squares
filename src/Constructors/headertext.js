@@ -8,8 +8,13 @@ function HeaderText(cWidth, fontSize, colors, label, val) {
     this.val = val || 0;
 
     this.font = `${this.fontSize}px monospace`;
-    this.padding = fontSize;
-    this.y = this.padding + this.fontSize;
+    this.padding = fontSize / 2;
+    this.y = this.fontSize;
+
+    this.toTenths = function(val) {
+        var inTenths = Math.round(val * 10) / 10;
+        return inTenths % 1 !== 0 ? inTenths : inTenths + ".0";
+    };
 }
 
 HeaderText.prototype.draw = function(ctx) {
@@ -28,10 +33,41 @@ function Left(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "left";
     this.x = this.padding;
-    this.msg = `${this.label}: ${this.val}`;
 }
 
 Left.prototype = Object.create(HeaderText.prototype);
+
+Object.defineProperties(Left.prototype, {
+
+    "valTenths": {
+
+        get: function() {
+
+            if (this.val < 0) {
+                return "0.0";
+            } else {
+                return this.toTenths(this.val);
+            }
+        }
+    },
+
+    "msg": {
+
+        get: function() {
+
+            function output(str, label, valTenths) {
+                return label + str[1] + valTenths;
+            }
+            return output`${this.label}: ${this.valTenths}`;
+        }
+    }
+});
+
+Left.prototype.update = function(delta) {
+
+    // Specific to use as a timer
+    this.val -= delta / 1000;
+};
 
 function Right(cWidth, fontSize, colors, label, val) {
     "use strict";
