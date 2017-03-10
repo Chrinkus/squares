@@ -29,7 +29,11 @@ level2.colors = {
     background: "coral",
     wall: "aqua",
     pellet: "gold",
-    player: "white"
+    player: "white",
+
+    txt: {
+        normal: "white"
+    }
 };
 
 level2.planReader();

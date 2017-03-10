@@ -29,7 +29,11 @@ level1.colors = {
     background: "red",
     wall: "black",
     pellet: "gold",
-    player: "white"
+    player: "white",
+
+    txt: {
+        normal: "white"
+    }
 };
 
 level1.planReader();

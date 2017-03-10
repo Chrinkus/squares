@@ -2,6 +2,7 @@ var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
+var Headers     = require("./headers");
 
 function Scene() {
     "use strict";
@@ -14,6 +15,7 @@ function Scene() {
     // defined in this.init(canvas)
     this.background = null;
     this.player = null;
+    this.messages = null;
 
     // defined in this.planReader()
     this.actors = [];
@@ -21,6 +23,8 @@ function Scene() {
 }
 
 Scene.prototype.draw = function(ctx) {
+
+    var msg;
 
     this.background.draw(ctx);
     this.player.draw(ctx);
@@ -33,6 +37,10 @@ Scene.prototype.draw = function(ctx) {
 
         actor.draw(ctx);
     });
+
+    for (msg in this.messages) {
+        this.messages[msg].draw(ctx);
+    }
 };
 
 Scene.prototype.planReader = function() {
@@ -82,6 +90,15 @@ Scene.prototype.init = function(canvas) {
         this.player.x = this.playerLocation.x;
         this.player.y = this.playerLocation.y;
     }
+
+    this.messages = {
+        headerLeft: new Headers.Left(canvas.width, 24, this.colors.txt,
+                "Time", 30),
+        headerRight: new Headers.Right(canvas.width, 24, this.colors.txt,
+                "Score", 0),
+        headerCenter: new Headers.Center(canvas.width, 24, this.colors.txt,
+                "Multiplier", 1.0)
+    };
 };
 
 module.exports = Scene;

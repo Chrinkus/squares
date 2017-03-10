@@ -115,7 +115,72 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":14,"./cooldown":3}],5:[function(require,module,exports){
+},{"../input":15,"./cooldown":3}],5:[function(require,module,exports){
+function HeaderText(cWidth, fontSize, colors, label, val) {
+    "use strict";
+
+    this.cWidth = cWidth;
+    this.fontSize = fontSize;
+    this.colors = colors;
+    this.label = label;
+    this.val = val || 0;
+
+    this.font = `${this.fontSize}px monospace`;
+    this.padding = fontSize;
+    this.y = this.padding + this.fontSize;
+}
+
+HeaderText.prototype.draw = function(ctx) {
+
+    ctx.font = this.font;
+    ctx.textAlign = this.align || "start";
+    ctx.fillStyle = this.colors.normal;
+    ctx.fillText(this.msg, this.x, this.y);
+};
+
+function Left(cWidth, fontSize, colors, label, val) {
+    "use strict";
+
+    HeaderText.call(this, cWidth, fontSize, colors, label, val);
+
+    // specific props
+    this.align = "left";
+    this.x = this.padding;
+    this.msg = `${this.label}: ${this.val}`;
+}
+
+Left.prototype = Object.create(HeaderText.prototype);
+
+function Right(cWidth, fontSize, colors, label, val) {
+    "use strict";
+
+    HeaderText.call(this, cWidth, fontSize, colors, label, val);
+
+    // specific props
+    this.align = "right";
+    this.x = cWidth - this.padding;
+    this.msg = `${this.label}: ${this.val}`;
+}
+
+Right.prototype = Object.create(HeaderText.prototype);
+
+function Center(cWidth, fontSize, colors, label, val) {
+    "use strict";
+
+    HeaderText.call(this, cWidth, fontSize * 1.5, colors, label, val);
+
+    this.align = "center";
+    this.x = cWidth / 2;
+    this.msg = `x${this.val}`;
+}
+
+Center.prototype = Object.create(HeaderText.prototype);
+
+exports.Left = Left;
+exports.Right = Right;
+exports.Center = Center;
+
+},{}],6:[function(require,module,exports){
 var Background  = require("./background");
 var Cursor      = require("./cursor");
 
@@ -224,7 +289,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"./background":1,"./cursor":4}],6:[function(require,module,exports){
+},{"./background":1,"./cursor":4}],7:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -252,7 +317,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
@@ -345,11 +410,12 @@ Player.prototype.update = function(keysDown, entities) {
 
 module.exports = Player;
 
-},{"../collision":13,"../input.js":14}],8:[function(require,module,exports){
+},{"../collision":14,"../input.js":15}],9:[function(require,module,exports){
 var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
+var Headers     = require("./headers");
 
 function Scene() {
     "use strict";
@@ -362,6 +428,7 @@ function Scene() {
     // defined in this.init(canvas)
     this.background = null;
     this.player = null;
+    this.messages = null;
 
     // defined in this.planReader()
     this.actors = [];
@@ -369,6 +436,8 @@ function Scene() {
 }
 
 Scene.prototype.draw = function(ctx) {
+
+    var msg;
 
     this.background.draw(ctx);
     this.player.draw(ctx);
@@ -381,6 +450,10 @@ Scene.prototype.draw = function(ctx) {
 
         actor.draw(ctx);
     });
+
+    for (msg in this.messages) {
+        this.messages[msg].draw(ctx);
+    }
 };
 
 Scene.prototype.planReader = function() {
@@ -430,11 +503,20 @@ Scene.prototype.init = function(canvas) {
         this.player.x = this.playerLocation.x;
         this.player.y = this.playerLocation.y;
     }
+
+    this.messages = {
+        headerLeft: new Headers.Left(canvas.width, 24, this.colors.txt,
+                "Time", 30),
+        headerRight: new Headers.Right(canvas.width, 24, this.colors.txt,
+                "Score", 0),
+        headerCenter: new Headers.Center(canvas.width, 24, this.colors.txt,
+                "Multiplier", 1.0)
+    };
 };
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./pellet":6,"./player":7}],9:[function(require,module,exports){
+},{"./background":1,"./block":2,"./headers":5,"./pellet":7,"./player":8}],10:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level1 = new Scene();
@@ -466,14 +548,18 @@ level1.colors = {
     background: "red",
     wall: "black",
     pellet: "gold",
-    player: "white"
+    player: "white",
+
+    txt: {
+        normal: "white"
+    }
 };
 
 level1.planReader();
 
 module.exports = level1;
 
-},{"../Constructors/scene":8}],10:[function(require,module,exports){
+},{"../Constructors/scene":9}],11:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level2 = new Scene();
@@ -505,14 +591,18 @@ level2.colors = {
     background: "coral",
     wall: "aqua",
     pellet: "gold",
-    player: "white"
+    player: "white",
+
+    txt: {
+        normal: "white"
+    }
 };
 
 level2.planReader();
 
 module.exports = level2;
 
-},{"../Constructors/scene":8}],11:[function(require,module,exports){
+},{"../Constructors/scene":9}],12:[function(require,module,exports){
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
 var timer       = require("./timer");
@@ -575,26 +665,6 @@ app.render = function(canvas) {
         default:
             // no default
     }
-
-    /*if (this.state === "mainmenu") {
-        mainMenu.draw(canvas.ctx);
-        return;
-    }
-
-    // Background
-    this.scenario.background.draw(canvas.ctx);
-
-    // Player
-    this.scenario.player.draw(canvas.ctx);
-
-    this.scenario.actors.forEach((actor) => {
-
-        if (!actor.statusCode) {
-            return;
-        }
-
-        actor.draw(canvas.ctx);
-    });*/
 };
 
 app.update = function(tStamp) {
@@ -613,18 +683,11 @@ app.update = function(tStamp) {
         default:
             // no default
     }
-    
-    /*if (this.state === "mainmenu") {
-        this.mainMenu.cursor.update(this.keysDown, this.timer.delta);
-        return;
-    }
-    
-    this.scenario.player.update(this.keysDown, this.scenario.actors);*/
 };
 
 module.exports = app;
 
-},{"./Levels/level1":9,"./Levels/level2":10,"./input":14,"./mainMenu":16,"./timer":18}],12:[function(require,module,exports){
+},{"./Levels/level1":10,"./Levels/level2":11,"./input":15,"./mainMenu":17,"./timer":19}],13:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -648,7 +711,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -658,7 +721,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -726,7 +789,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -749,7 +812,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":11,"./canvas":12}],16:[function(require,module,exports){
+},{"./app":12,"./canvas":13}],17:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -773,7 +836,7 @@ mainMenu.cursorData.w = 24;
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":5,"./mainTitle":17}],17:[function(require,module,exports){
+},{"./Constructors/menu":6,"./mainTitle":18}],18:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -816,7 +879,7 @@ module.exports = {
     }
 };
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -834,4 +897,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[15]);
+},{}]},{},[16]);
