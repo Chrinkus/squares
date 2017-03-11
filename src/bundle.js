@@ -240,10 +240,22 @@ function Center(cWidth, fontSize, colors, label, val) {
 
     this.align = "center";
     this.x = cWidth / 2;
-    this.msg = `x${this.val}`;
 }
 
 Center.prototype = Object.create(HeaderText.prototype);
+
+Object.defineProperty(Center.prototype, "msg", {
+
+    get: function() {
+
+        return `x${this.toTenths(this.val)}`;
+    }
+});
+
+Center.prototype.update = function(multiRef) {
+
+    this.val = multiRef;
+};
 
 exports.Left = Left;
 exports.Right = Right;
@@ -430,6 +442,22 @@ function Player(canvas, color, blockSize) {
         this.y -= 2;
         this.w += 4;
     };
+
+    this.multiUpdate = function() {
+
+        if (this.w === 96) {
+            this.multiplier = 2;
+
+        } else if (this.w >= 80) {
+            this.multiplier = 1.5;
+
+        } else if (this.w >= 64) {
+            this.multiplier = 1;
+
+        } else {
+            this.multiplier = 0.5;
+        }
+    };
 }
 
 Player.prototype.draw = function(ctx) {
@@ -465,6 +493,7 @@ Player.prototype.update = function(keysDown, entities) {
 
                 if (this.w < this.maxW) {
                     this.grow();
+                    this.multiUpdate();
                 }
                 return;
             }
@@ -476,6 +505,7 @@ Player.prototype.update = function(keysDown, entities) {
 
                 if (this.w > this.minW) {
                     this.shrink();
+                    this.multiUpdate();
                 }
                 return;
             }
@@ -756,6 +786,8 @@ app.update = function(tStamp) {
             this.scenario.messages.headerLeft.update(this.timer.delta);
             this.scenario.messages.headerRight.update(
                     this.scenario.player.score);
+            this.scenario.messages.headerCenter.update(
+                    this.scenario.player.multiplier);
             break;
 
         default:

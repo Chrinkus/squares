@@ -122,10 +122,22 @@ function Center(cWidth, fontSize, colors, label, val) {
 
     this.align = "center";
     this.x = cWidth / 2;
-    this.msg = `x${this.val}`;
 }
 
 Center.prototype = Object.create(HeaderText.prototype);
+
+Object.defineProperty(Center.prototype, "msg", {
+
+    get: function() {
+
+        return `x${this.toTenths(this.val)}`;
+    }
+});
+
+Center.prototype.update = function(multiRef) {
+
+    this.val = multiRef;
+};
 
 exports.Left = Left;
 exports.Right = Right;

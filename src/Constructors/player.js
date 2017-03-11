@@ -41,6 +41,22 @@ function Player(canvas, color, blockSize) {
         this.y -= 2;
         this.w += 4;
     };
+
+    this.multiUpdate = function() {
+
+        if (this.w === 96) {
+            this.multiplier = 2;
+
+        } else if (this.w >= 80) {
+            this.multiplier = 1.5;
+
+        } else if (this.w >= 64) {
+            this.multiplier = 1;
+
+        } else {
+            this.multiplier = 0.5;
+        }
+    };
 }
 
 Player.prototype.draw = function(ctx) {
@@ -76,6 +92,7 @@ Player.prototype.update = function(keysDown, entities) {
 
                 if (this.w < this.maxW) {
                     this.grow();
+                    this.multiUpdate();
                 }
                 return;
             }
@@ -87,6 +104,7 @@ Player.prototype.update = function(keysDown, entities) {
 
                 if (this.w > this.minW) {
                     this.shrink();
+                    this.multiUpdate();
                 }
                 return;
             }

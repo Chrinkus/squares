@@ -76,6 +76,8 @@ app.update = function(tStamp) {
             this.scenario.messages.headerLeft.update(this.timer.delta);
             this.scenario.messages.headerRight.update(
                     this.scenario.player.score);
+            this.scenario.messages.headerCenter.update(
+                    this.scenario.player.multiplier);
             break;
 
         default:
