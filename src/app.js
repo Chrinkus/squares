@@ -74,6 +74,8 @@ app.update = function(tStamp) {
         case "game":
             this.scenario.player.update(this.keysDown, this.scenario.actors);
             this.scenario.messages.headerLeft.update(this.timer.delta);
+            this.scenario.messages.headerRight.update(
+                    this.scenario.player.score);
             break;
 
         default:

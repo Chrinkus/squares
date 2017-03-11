@@ -17,6 +17,10 @@ function Player(canvas, color, blockSize) {
     this.dx = 4;
     this.dy = 4;
 
+    // Scoring
+    this.score = 0;
+    this.multiplier = 1;
+
     this.path = function(x, y) {
         
         var path = new Path2D(),
@@ -67,6 +71,8 @@ Player.prototype.update = function(keysDown, entities) {
             if (entity.collision === "soft") {
 
                 entity.statusCode = 0;
+
+                this.score += 100 * this.multiplier;
 
                 if (this.w < this.maxW) {
                     this.grow();

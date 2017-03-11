@@ -15,6 +15,27 @@ function HeaderText(cWidth, fontSize, colors, label, val) {
         var inTenths = Math.round(val * 10) / 10;
         return inTenths % 1 !== 0 ? inTenths : inTenths + ".0";
     };
+
+    this.spaceFill = function(val, digits) {
+        var l = val.toString().length,
+            spaces = "",
+            i;
+
+        if (l < digits) {
+            for (i = 0; i < digits - l; i++) {
+                spaces += " ";
+            }
+            return spaces + val;
+
+        } else {
+            return val;
+        }
+    };
+
+    this.output = function(str, label, val) {
+
+        return label + str[1] + this.spaceFill(val, this.digits);
+    };
 }
 
 HeaderText.prototype.draw = function(ctx) {
@@ -33,6 +54,7 @@ function Left(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "left";
     this.x = this.padding;
+    this.digits = 4;
 }
 
 Left.prototype = Object.create(HeaderText.prototype);
@@ -55,10 +77,7 @@ Object.defineProperties(Left.prototype, {
 
         get: function() {
 
-            function output(str, label, valTenths) {
-                return label + str[1] + valTenths;
-            }
-            return output`${this.label}: ${this.valTenths}`;
+            return this.output`${this.label}: ${this.valTenths}`;
         }
     }
 });
@@ -77,10 +96,24 @@ function Right(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "right";
     this.x = cWidth - this.padding;
-    this.msg = `${this.label}: ${this.val}`;
+    this.digits = 6;
 }
 
 Right.prototype = Object.create(HeaderText.prototype);
+
+Object.defineProperty(Right.prototype, "msg", {
+
+    get: function() {
+
+        return this.output`${this.label}: ${this.val}`;
+    }
+});
+
+Right.prototype.update = function(scoreRef) {
+
+    // Specific to score display
+    this.val = scoreRef;
+};
 
 function Center(cWidth, fontSize, colors, label, val) {
     "use strict";

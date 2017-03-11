@@ -133,6 +133,27 @@ function HeaderText(cWidth, fontSize, colors, label, val) {
         var inTenths = Math.round(val * 10) / 10;
         return inTenths % 1 !== 0 ? inTenths : inTenths + ".0";
     };
+
+    this.spaceFill = function(val, digits) {
+        var l = val.toString().length,
+            spaces = "",
+            i;
+
+        if (l < digits) {
+            for (i = 0; i < digits - l; i++) {
+                spaces += " ";
+            }
+            return spaces + val;
+
+        } else {
+            return val;
+        }
+    };
+
+    this.output = function(str, label, val) {
+
+        return label + str[1] + this.spaceFill(val, this.digits);
+    };
 }
 
 HeaderText.prototype.draw = function(ctx) {
@@ -151,6 +172,7 @@ function Left(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "left";
     this.x = this.padding;
+    this.digits = 4;
 }
 
 Left.prototype = Object.create(HeaderText.prototype);
@@ -173,10 +195,7 @@ Object.defineProperties(Left.prototype, {
 
         get: function() {
 
-            function output(str, label, valTenths) {
-                return label + str[1] + valTenths;
-            }
-            return output`${this.label}: ${this.valTenths}`;
+            return this.output`${this.label}: ${this.valTenths}`;
         }
     }
 });
@@ -195,10 +214,24 @@ function Right(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "right";
     this.x = cWidth - this.padding;
-    this.msg = `${this.label}: ${this.val}`;
+    this.digits = 6;
 }
 
 Right.prototype = Object.create(HeaderText.prototype);
+
+Object.defineProperty(Right.prototype, "msg", {
+
+    get: function() {
+
+        return this.output`${this.label}: ${this.val}`;
+    }
+});
+
+Right.prototype.update = function(scoreRef) {
+
+    // Specific to score display
+    this.val = scoreRef;
+};
 
 function Center(cWidth, fontSize, colors, label, val) {
     "use strict";
@@ -373,6 +406,10 @@ function Player(canvas, color, blockSize) {
     this.dx = 4;
     this.dy = 4;
 
+    // Scoring
+    this.score = 0;
+    this.multiplier = 1;
+
     this.path = function(x, y) {
         
         var path = new Path2D(),
@@ -423,6 +460,8 @@ Player.prototype.update = function(keysDown, entities) {
             if (entity.collision === "soft") {
 
                 entity.statusCode = 0;
+
+                this.score += 100 * this.multiplier;
 
                 if (this.w < this.maxW) {
                     this.grow();
@@ -715,6 +754,8 @@ app.update = function(tStamp) {
         case "game":
             this.scenario.player.update(this.keysDown, this.scenario.actors);
             this.scenario.messages.headerLeft.update(this.timer.delta);
+            this.scenario.messages.headerRight.update(
+                    this.scenario.player.score);
             break;
 
         default:
