@@ -43,6 +43,15 @@ Scene.prototype.draw = function(ctx) {
     }
 };
 
+Scene.prototype.update = function(keysDown, delta) {
+
+    this.player.update(keysDown, this.actors);
+
+    this.messages.headerLeft.update(delta);
+    this.messages.headerRight.update(this.player.score);
+    this.messages.headerCenter.update(this.player.multiplier);
+};
+
 Scene.prototype.planReader = function() {
 
     this.plan.forEach((row, i) => {

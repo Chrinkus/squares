@@ -1,3 +1,5 @@
+var numstring   = require("../numstring");
+
 function HeaderText(cWidth, fontSize, colors, label, val) {
     "use strict";
 
@@ -11,30 +13,9 @@ function HeaderText(cWidth, fontSize, colors, label, val) {
     this.padding = fontSize / 2;
     this.y = this.fontSize;
 
-    this.toTenths = function(val) {
-        var inTenths = Math.round(val * 10) / 10;
-        return inTenths % 1 !== 0 ? inTenths : inTenths + ".0";
-    };
-
-    this.spaceFill = function(val, digits) {
-        var l = val.toString().length,
-            spaces = "",
-            i;
-
-        if (l < digits) {
-            for (i = 0; i < digits - l; i++) {
-                spaces += " ";
-            }
-            return spaces + val;
-
-        } else {
-            return val;
-        }
-    };
-
     this.output = function(str, label, val) {
 
-        return label + str[1] + this.spaceFill(val, this.digits);
+        return label + str[1] + numstring.spaceFill(val, this.digits);
     };
 }
 
@@ -68,7 +49,7 @@ Object.defineProperties(Left.prototype, {
             if (this.val < 0) {
                 return "0.0";
             } else {
-                return this.toTenths(this.val);
+                return numstring.toTenths(this.val);
             }
         }
     },
@@ -96,7 +77,7 @@ function Right(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "right";
     this.x = cWidth - this.padding;
-    this.digits = 6;
+    this.digits = 5;
 }
 
 Right.prototype = Object.create(HeaderText.prototype);
@@ -130,7 +111,7 @@ Object.defineProperty(Center.prototype, "msg", {
 
     get: function() {
 
-        return `x${this.toTenths(this.val)}`;
+        return `x${numstring.toTenths(this.val)}`;
     }
 });
 

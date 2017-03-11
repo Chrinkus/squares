@@ -116,6 +116,8 @@ Cursor.prototype.update = function(keysDown, delta) {
 module.exports = Cursor;
 
 },{"../input":15,"./cooldown":3}],5:[function(require,module,exports){
+var numstring   = require("../numstring");
+
 function HeaderText(cWidth, fontSize, colors, label, val) {
     "use strict";
 
@@ -129,30 +131,9 @@ function HeaderText(cWidth, fontSize, colors, label, val) {
     this.padding = fontSize / 2;
     this.y = this.fontSize;
 
-    this.toTenths = function(val) {
-        var inTenths = Math.round(val * 10) / 10;
-        return inTenths % 1 !== 0 ? inTenths : inTenths + ".0";
-    };
-
-    this.spaceFill = function(val, digits) {
-        var l = val.toString().length,
-            spaces = "",
-            i;
-
-        if (l < digits) {
-            for (i = 0; i < digits - l; i++) {
-                spaces += " ";
-            }
-            return spaces + val;
-
-        } else {
-            return val;
-        }
-    };
-
     this.output = function(str, label, val) {
 
-        return label + str[1] + this.spaceFill(val, this.digits);
+        return label + str[1] + numstring.spaceFill(val, this.digits);
     };
 }
 
@@ -186,7 +167,7 @@ Object.defineProperties(Left.prototype, {
             if (this.val < 0) {
                 return "0.0";
             } else {
-                return this.toTenths(this.val);
+                return numstring.toTenths(this.val);
             }
         }
     },
@@ -214,7 +195,7 @@ function Right(cWidth, fontSize, colors, label, val) {
     // specific props
     this.align = "right";
     this.x = cWidth - this.padding;
-    this.digits = 6;
+    this.digits = 5;
 }
 
 Right.prototype = Object.create(HeaderText.prototype);
@@ -248,7 +229,7 @@ Object.defineProperty(Center.prototype, "msg", {
 
     get: function() {
 
-        return `x${this.toTenths(this.val)}`;
+        return `x${numstring.toTenths(this.val)}`;
     }
 });
 
@@ -261,7 +242,7 @@ exports.Left = Left;
 exports.Right = Right;
 exports.Center = Center;
 
-},{}],6:[function(require,module,exports){
+},{"../numstring":19}],6:[function(require,module,exports){
 var Background  = require("./background");
 var Cursor      = require("./cursor");
 
@@ -561,6 +542,15 @@ Scene.prototype.draw = function(ctx) {
     }
 };
 
+Scene.prototype.update = function(keysDown, delta) {
+
+    this.player.update(keysDown, this.actors);
+
+    this.messages.headerLeft.update(delta);
+    this.messages.headerRight.update(this.player.score);
+    this.messages.headerCenter.update(this.player.multiplier);
+};
+
 Scene.prototype.planReader = function() {
 
     this.plan.forEach((row, i) => {
@@ -729,13 +719,9 @@ var app = {
 app.sceneLoader = function(canvas, i) {
     "use strict";
 
-    if (i) {
-        this.scenario = this.scenes[i];
-    } else {
-        this.scenario = this.scenes[0];
-    }
-
+    this.scenario = this.scenes[i];
     this.scenario.init(canvas);
+
     this.state = "game";
 };
 
@@ -782,12 +768,7 @@ app.update = function(tStamp) {
             break;
 
         case "game":
-            this.scenario.player.update(this.keysDown, this.scenario.actors);
-            this.scenario.messages.headerLeft.update(this.timer.delta);
-            this.scenario.messages.headerRight.update(
-                    this.scenario.player.score);
-            this.scenario.messages.headerCenter.update(
-                    this.scenario.player.multiplier);
+            this.scenario.update(this.keysDown, this.timer.delta);
             break;
 
         default:
@@ -797,7 +778,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Levels/level1":10,"./Levels/level2":11,"./input":15,"./mainMenu":17,"./timer":19}],13:[function(require,module,exports){
+},{"./Levels/level1":10,"./Levels/level2":11,"./input":15,"./mainMenu":17,"./timer":20}],13:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -990,6 +971,51 @@ module.exports = {
 };
 
 },{}],19:[function(require,module,exports){
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// toTenths
+//
+// @param {Number} val
+// @return {String}
+//
+// Takes a value and converts it to a single decimal place string
+// - may be refactored to take a second arg indicating # of decimal places
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+exports.toTenths = (val) => {
+    "use strict";
+    var inTenths = Math.round(val * 10) / 10;
+    
+    return inTenths % 1 !== 0 ? inTenths.toString() : inTenths + ".0";
+};
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// spaceFill
+//
+// @param {Number} val
+// @param {Number} digits
+// @return {String}
+//
+// Takes a numerical value and padds it with spaces to # of digits
+// - may be refactored to take a third arg indicating what to pad with ex 0's
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+exports.spaceFill = (val, digits) => {
+    "use strict";
+    var l = val.toString().length,
+        spaces = "",
+        i, diff;
+
+    if (l < digits) {
+
+        for (i = 0, diff = digits - l; i < diff; i++) {
+            spaces += " ";
+        }
+
+        return spaces + val;
+    } else {
+        return val.toString();
+    }
+};
+
+},{}],20:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,

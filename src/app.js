@@ -19,13 +19,9 @@ var app = {
 app.sceneLoader = function(canvas, i) {
     "use strict";
 
-    if (i) {
-        this.scenario = this.scenes[i];
-    } else {
-        this.scenario = this.scenes[0];
-    }
-
+    this.scenario = this.scenes[i];
     this.scenario.init(canvas);
+
     this.state = "game";
 };
 
@@ -72,12 +68,7 @@ app.update = function(tStamp) {
             break;
 
         case "game":
-            this.scenario.player.update(this.keysDown, this.scenario.actors);
-            this.scenario.messages.headerLeft.update(this.timer.delta);
-            this.scenario.messages.headerRight.update(
-                    this.scenario.player.score);
-            this.scenario.messages.headerCenter.update(
-                    this.scenario.player.multiplier);
+            this.scenario.update(this.keysDown, this.timer.delta);
             break;
 
         default:
