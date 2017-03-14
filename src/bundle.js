@@ -538,7 +538,10 @@ Scene.prototype.draw = function(ctx) {
     });
 
     for (msg in this.messages) {
-        this.messages[msg].draw(ctx);
+        if (this.messages.hasOwnProperty(msg)) {
+
+            this.messages[msg].draw(ctx);
+        }
     }
 };
 
