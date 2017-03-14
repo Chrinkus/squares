@@ -1,3 +1,4 @@
+var canvas      = require("./canvas");
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
 var timer       = require("./timer");
@@ -16,7 +17,7 @@ var app = {
     ]
 };
 
-app.sceneLoader = function(canvas, i) {
+app.sceneLoader = function(i) {
     "use strict";
 
     this.scenario = this.scenes[i];
@@ -25,17 +26,17 @@ app.sceneLoader = function(canvas, i) {
     this.state = "game";
 };
 
-app.init = function(canvas) {
+app.init = function() {
     "use strict";
 
     this.keysDown = keysDown();
     this.mainMenu.init(canvas, (i) => {
-        this.sceneLoader(canvas, i);
+        this.sceneLoader(i);
     });
     this.state = "mainmenu";
 };
 
-app.render = function(canvas) {
+app.render = function() {
     "use strict";
 
     // Wipe canvas

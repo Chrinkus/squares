@@ -701,6 +701,7 @@ level2.planReader();
 module.exports = level2;
 
 },{"../Constructors/scene":9}],12:[function(require,module,exports){
+var canvas      = require("./canvas");
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
 var timer       = require("./timer");
@@ -719,7 +720,7 @@ var app = {
     ]
 };
 
-app.sceneLoader = function(canvas, i) {
+app.sceneLoader = function(i) {
     "use strict";
 
     this.scenario = this.scenes[i];
@@ -728,17 +729,17 @@ app.sceneLoader = function(canvas, i) {
     this.state = "game";
 };
 
-app.init = function(canvas) {
+app.init = function() {
     "use strict";
 
     this.keysDown = keysDown();
     this.mainMenu.init(canvas, (i) => {
-        this.sceneLoader(canvas, i);
+        this.sceneLoader(i);
     });
     this.state = "mainmenu";
 };
 
-app.render = function(canvas) {
+app.render = function() {
     "use strict";
 
     // Wipe canvas
@@ -778,7 +779,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Levels/level1":10,"./Levels/level2":11,"./input":15,"./mainMenu":17,"./timer":20}],13:[function(require,module,exports){
+},{"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./timer":20}],13:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -886,15 +887,13 @@ var app = require("./app");
 (function() {
     "use strict";
 
-    var canvas = require("./canvas");
-
-    app.init(canvas);
+    app.init();
 
     function main(tStamp) {
 
         app.stopMain = window.requestAnimationFrame(main);
 
-        app.render(canvas);
+        app.render();
 
         app.update(tStamp);
     }
@@ -903,7 +902,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":12,"./canvas":13}],17:[function(require,module,exports){
+},{"./app":12}],17:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
