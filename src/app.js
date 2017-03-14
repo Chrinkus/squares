@@ -27,14 +27,11 @@ app.sceneLoader = function(canvas, i) {
 
 app.init = function(canvas) {
     "use strict";
-    var that = this;
-
-    function play(i) {
-        that.sceneLoader(canvas, i);
-    }
 
     this.keysDown = keysDown();
-    this.mainMenu.init(canvas, play);
+    this.mainMenu.init(canvas, (i) => {
+        this.sceneLoader(canvas, i);
+    });
     this.state = "mainmenu";
 };
 
