@@ -1,33 +1,51 @@
-var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
 var HeaderText  = require("./headertext");
 
-function Scene() {
+function Scene(blockSize) {
     "use strict";
 
     // explicitly defined in level files
-    this.blockSize = 0;
+    this.blockSize = blockSize;
     this.plan = [];
     this.colors = null;
 
     // defined in this.init(canvas)
     this.background = null;
-    this.player = null;
     this.messages = null;
 
     // defined in this.planReader()
     this.actors = [];
-    this.playerLocation = null;
+    this.playerData = {
+        x: 0,
+        y: 0,
+        w: this.blockSize * 2,
+    };
 }
+
+Object.defineProperties(Scene.prototype, {
+
+    "mapW": {
+        get: () => {
+            delete this.mapW;
+            this.mapW = this.plan[0].length * this.blockSize;
+        }
+    },
+
+    "mapH": {
+        get: () => {
+            delete this.mapH;
+            this.mapH = this.plan.length * this.blockSize;
+        }
+    }
+});
 
 Scene.prototype.draw = function(ctx) {
 
     var msg;
 
     this.background.draw(ctx);
-    this.player.draw(ctx);
 
     this.actors.forEach((actor) => {
         
@@ -46,13 +64,11 @@ Scene.prototype.draw = function(ctx) {
     }
 };
 
-Scene.prototype.update = function(keysDown, delta) {
+Scene.prototype.update = function(delta) {
 
-    this.player.update(keysDown, this.actors);
-
-    this.messages.headerLeft.update(delta);
-    this.messages.headerRight.update(this.player.score);
-    this.messages.headerCenter.update(this.player.multiplier);
+    //this.messages.headerLeft.update(delta);
+    //this.messages.headerRight.update(this.player.score);
+    //this.messages.headerCenter.update(this.player.multiplier);
 };
 
 Scene.prototype.planReader = function() {
@@ -76,13 +92,8 @@ Scene.prototype.planReader = function() {
                     break;
 
                 case "@":
-                    if (!this.playerLocation) {
-
-                        this.playerLocation = {
-                            x: x,
-                            y: y
-                        };
-                    }
+                    this.playerData.x = x;
+                    this.playerData.y = y;
                     break;
 
                 default:
@@ -95,13 +106,6 @@ Scene.prototype.planReader = function() {
 Scene.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
-
-    this.player = new Player(canvas, this.colors.player, this.blockSize);
-
-    if (this.playerLocation) {
-        this.player.x = this.playerLocation.x;
-        this.player.y = this.playerLocation.y;
-    }
 
     this.messages = {
         headerLeft: new HeaderText.Left(canvas.width, 24, this.colors.txt,

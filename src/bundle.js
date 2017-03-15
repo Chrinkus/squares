@@ -383,25 +383,22 @@ module.exports = Pellet;
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
-function Player(canvas, color, blockSize) {
+function Player(playerData, scoreFunc) {
     "use strict";
 
-    this.w = blockSize * 2;
-    this.minW = blockSize / 2;
-    this.maxW = blockSize * 3;
+    this.x = playerData.x;
+    this.y = playerData.y;
+    this.w = playerData.w;
 
-    // Initial settings
-    this.x = canvas.width / 2 - blockSize;
-    this.y = canvas.height / 2 - blockSize;
-    this.color = color;
+    this.color = playerData.color;
+    this.score = scoreFunc;
+
+    this.minW = this.w / 2;
+    this.maxW = this.w * 3;
 
     // Movement speed
     this.dx = 4;
     this.dy = 4;
-
-    // Scoring
-    this.score = 0;
-    this.multiplier = 1;
 
     this.path = function(x, y) {
         
@@ -411,40 +408,26 @@ function Player(canvas, color, blockSize) {
         path.rect(x, y, this.w, this.w);
         return path;
     };
-
-    this.shrink = function() {
-        this.x += 4;
-        this.y += 4;
-        this.w -= 8;
-    };
-
-    this.grow = function() {
-        this.x -= 2;
-        this.y -= 2;
-        this.w += 4;
-    };
-
-    this.multiUpdate = function() {
-
-        if (this.w === 96) {
-            this.multiplier = 2;
-
-        } else if (this.w >= 80) {
-            this.multiplier = 1.5;
-
-        } else if (this.w >= 64) {
-            this.multiplier = 1;
-
-        } else {
-            this.multiplier = 0.5;
-        }
-    };
 }
 
 Player.prototype.draw = function(ctx) {
 
     ctx.fillStyle = this.color;
     ctx.fill(this.path(this.x, this.y));
+};
+
+Player.prototype.shrink = function() {
+
+    this.x += 4;
+    this.y += 4;
+    this.w -= 8;
+};
+
+Player.prototype.grow = function() {
+
+    this.x -= 2;
+    this.y -= 2;
+    this.w += 4;
 };
 
 Player.prototype.update = function(keysDown, entities) {
@@ -470,11 +453,10 @@ Player.prototype.update = function(keysDown, entities) {
 
                 entity.statusCode = 0;
 
-                this.score += 100 * this.multiplier;
+                this.score(100);
 
                 if (this.w < this.maxW) {
                     this.grow();
-                    this.multiUpdate();
                 }
                 return;
             }
@@ -486,7 +468,6 @@ Player.prototype.update = function(keysDown, entities) {
 
                 if (this.w > this.minW) {
                     this.shrink();
-                    this.multiUpdate();
                 }
                 return;
             }
@@ -497,36 +478,54 @@ Player.prototype.update = function(keysDown, entities) {
 module.exports = Player;
 
 },{"../collision":14,"../input.js":15}],9:[function(require,module,exports){
-var Player      = require("./player");
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
 var HeaderText  = require("./headertext");
 
-function Scene() {
+function Scene(blockSize) {
     "use strict";
 
     // explicitly defined in level files
-    this.blockSize = 0;
+    this.blockSize = blockSize;
     this.plan = [];
     this.colors = null;
 
     // defined in this.init(canvas)
     this.background = null;
-    this.player = null;
     this.messages = null;
 
     // defined in this.planReader()
     this.actors = [];
-    this.playerLocation = null;
+    this.playerData = {
+        x: 0,
+        y: 0,
+        w: this.blockSize * 2,
+    };
 }
+
+Object.defineProperties(Scene.prototype, {
+
+    "mapW": {
+        get: () => {
+            delete this.mapW;
+            this.mapW = this.plan[0].length * this.blockSize;
+        }
+    },
+
+    "mapH": {
+        get: () => {
+            delete this.mapH;
+            this.mapH = this.plan.length * this.blockSize;
+        }
+    }
+});
 
 Scene.prototype.draw = function(ctx) {
 
     var msg;
 
     this.background.draw(ctx);
-    this.player.draw(ctx);
 
     this.actors.forEach((actor) => {
         
@@ -545,13 +544,11 @@ Scene.prototype.draw = function(ctx) {
     }
 };
 
-Scene.prototype.update = function(keysDown, delta) {
+Scene.prototype.update = function(delta) {
 
-    this.player.update(keysDown, this.actors);
-
-    this.messages.headerLeft.update(delta);
-    this.messages.headerRight.update(this.player.score);
-    this.messages.headerCenter.update(this.player.multiplier);
+    //this.messages.headerLeft.update(delta);
+    //this.messages.headerRight.update(this.player.score);
+    //this.messages.headerCenter.update(this.player.multiplier);
 };
 
 Scene.prototype.planReader = function() {
@@ -575,13 +572,8 @@ Scene.prototype.planReader = function() {
                     break;
 
                 case "@":
-                    if (!this.playerLocation) {
-
-                        this.playerLocation = {
-                            x: x,
-                            y: y
-                        };
-                    }
+                    this.playerData.x = x;
+                    this.playerData.y = y;
                     break;
 
                 default:
@@ -595,13 +587,6 @@ Scene.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
 
-    this.player = new Player(canvas, this.colors.player, this.blockSize);
-
-    if (this.playerLocation) {
-        this.player.x = this.playerLocation.x;
-        this.player.y = this.playerLocation.y;
-    }
-
     this.messages = {
         headerLeft: new HeaderText.Left(canvas.width, 24, this.colors.txt,
                 "Time", 15),
@@ -614,12 +599,10 @@ Scene.prototype.init = function(canvas) {
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./headertext":5,"./pellet":7,"./player":8}],10:[function(require,module,exports){
+},{"./background":1,"./block":2,"./headertext":5,"./pellet":7}],10:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
-var level1 = new Scene();
-
-level1.blockSize = 32;
+var level1 = new Scene(32);
 
 level1.plan = [
     "################################",
@@ -642,11 +625,12 @@ level1.plan = [
     "################################"
 ];
 
+level1.playerData.color = "white";
+
 level1.colors = {
     background: "red",
     wall: "black",
     pellet: "gold",
-    player: "white",
 
     txt: {
         normal: "white"
@@ -704,6 +688,7 @@ module.exports = level2;
 var canvas      = require("./canvas");
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
+var Player      = require("./Constructors/player");
 var timer       = require("./timer");
 var level1      = require("./Levels/level1");
 var level2      = require("./Levels/level2");
@@ -711,8 +696,11 @@ var level2      = require("./Levels/level2");
 var app = {
     mainMenu: mainMenu,
     timer: timer,
+    score: 0,
+    multiplier: 1,
     state: "",          // game, mainmenu, pause
 
+    player: null,
     scenario: null,
     scenes: [
         level1,
@@ -725,6 +713,15 @@ app.sceneLoader = function(i) {
 
     this.scenario = this.scenes[i];
     this.scenario.init(canvas);
+
+    this.player = new Player(this.scenario.playerData, (n) => {
+        this.score += n * this.multiplier;
+    });
+
+    if (this.player.x === 0) {
+        this.player.x = canvas.width / 2 - this.player.w / 2;
+        this.player.y = canvas.height / 2 - this.player.w / 2;
+    }
 
     this.state = "game";
 };
@@ -752,6 +749,7 @@ app.render = function() {
 
         case "game":
             this.scenario.draw(canvas.ctx);
+            this.player.draw(canvas.ctx);
             break;
 
         default:
@@ -769,6 +767,7 @@ app.update = function(tStamp) {
             break;
 
         case "game":
+            this.player.update(this.keysDown, this.scenario.actors);
             this.scenario.update(this.keysDown, this.timer.delta);
             break;
 
@@ -779,7 +778,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./timer":20}],13:[function(require,module,exports){
+},{"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./timer":20}],13:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");

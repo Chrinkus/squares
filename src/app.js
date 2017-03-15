@@ -1,6 +1,7 @@
 var canvas      = require("./canvas");
 var keysDown    = require("./input").keysDown;
 var mainMenu    = require("./mainMenu");
+var Player      = require("./Constructors/player");
 var timer       = require("./timer");
 var level1      = require("./Levels/level1");
 var level2      = require("./Levels/level2");
@@ -8,8 +9,11 @@ var level2      = require("./Levels/level2");
 var app = {
     mainMenu: mainMenu,
     timer: timer,
+    score: 0,
+    multiplier: 1,
     state: "",          // game, mainmenu, pause
 
+    player: null,
     scenario: null,
     scenes: [
         level1,
@@ -22,6 +26,15 @@ app.sceneLoader = function(i) {
 
     this.scenario = this.scenes[i];
     this.scenario.init(canvas);
+
+    this.player = new Player(this.scenario.playerData, (n) => {
+        this.score += n * this.multiplier;
+    });
+
+    if (this.player.x === 0) {
+        this.player.x = canvas.width / 2 - this.player.w / 2;
+        this.player.y = canvas.height / 2 - this.player.w / 2;
+    }
 
     this.state = "game";
 };
@@ -49,6 +62,7 @@ app.render = function() {
 
         case "game":
             this.scenario.draw(canvas.ctx);
+            this.player.draw(canvas.ctx);
             break;
 
         default:
@@ -66,6 +80,7 @@ app.update = function(tStamp) {
             break;
 
         case "game":
+            this.player.update(this.keysDown, this.scenario.actors);
             this.scenario.update(this.keysDown, this.timer.delta);
             break;
 
