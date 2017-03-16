@@ -9,7 +9,6 @@ var level2          = require("./Levels/level2");
 
 var app = {
     state: "",
-    scoreTracker: scoreTracker,
 
     player: null,
     scenario: null,
