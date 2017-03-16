@@ -1,17 +1,15 @@
-var canvas      = require("./canvas");
-var keysDown    = require("./input").keysDown;
-var mainMenu    = require("./mainMenu");
-var Player      = require("./Constructors/player");
-var timer       = require("./timer");
-var level1      = require("./Levels/level1");
-var level2      = require("./Levels/level2");
+var canvas          = require("./canvas");
+var keysDown        = require("./input").keysDown;
+var mainMenu        = require("./mainMenu");
+var Player          = require("./Constructors/player");
+var scoreTracker    = require("./scoretracker");
+var timer           = require("./timer");
+var level1          = require("./Levels/level1");
+var level2          = require("./Levels/level2");
 
 var app = {
-    mainMenu: mainMenu,
-    timer: timer,
-    score: 0,
-    multiplier: 1,
-    state: "",          // game, mainmenu, pause
+    state: "",
+    scoreTracker: scoreTracker,
 
     player: null,
     scenario: null,
@@ -27,9 +25,7 @@ app.sceneLoader = function(i) {
     this.scenario = this.scenes[i];
     this.scenario.init(canvas);
 
-    this.player = new Player(this.scenario.playerData, (n) => {
-        this.score += n * this.multiplier;
-    });
+    this.player = new Player(this.scenario.playerData);
 
     if (this.player.x === 0) {
         this.player.x = canvas.width / 2 - this.player.w / 2;
@@ -43,7 +39,7 @@ app.init = function() {
     "use strict";
 
     this.keysDown = keysDown();
-    this.mainMenu.init(canvas, (i) => {
+    mainMenu.init(canvas, (i) => {
         this.sceneLoader(i);
     });
     this.state = "mainmenu";
@@ -57,7 +53,7 @@ app.render = function() {
 
     switch (this.state) {
         case "mainmenu":
-            this.mainMenu.draw(canvas.ctx);
+            mainMenu.draw(canvas.ctx);
             break;
 
         case "game":
@@ -72,16 +68,17 @@ app.render = function() {
 
 app.update = function(tStamp) {
     "use strict";
-    this.timer.progress(tStamp);
+    timer.progress(tStamp);
 
     switch (this.state) {
         case "mainmenu":
-            this.mainMenu.cursor.update(this.keysDown, this.timer.delta);
+            mainMenu.cursor.update(this.keysDown, timer.delta);
             break;
 
         case "game":
-            this.player.update(this.keysDown, this.scenario.actors);
-            this.scenario.update(this.keysDown, this.timer.delta);
+            this.player.update(this.keysDown, this.scenario.actors,
+                    scoreTracker);
+            this.scenario.update(timer.delta);
             break;
 
         default:

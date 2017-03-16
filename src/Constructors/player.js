@@ -1,7 +1,7 @@
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
-function Player(playerData, scoreFunc) {
+function Player(playerData) {
     "use strict";
 
     this.x = playerData.x;
@@ -9,19 +9,16 @@ function Player(playerData, scoreFunc) {
     this.w = playerData.w;
 
     this.color = playerData.color;
-    this.score = scoreFunc;
 
-    this.minW = this.w / 2;
-    this.maxW = this.w * 3;
+    this.minW = playerData.b / 2;
+    this.maxW = playerData.b * 3;
 
     // Movement speed
     this.dx = 4;
     this.dy = 4;
 
     this.path = function(x, y) {
-        
-        var path = new Path2D(),
-            halfW = this.w / 2;
+        var path = new Path2D();
 
         path.rect(x, y, this.w, this.w);
         return path;
@@ -48,7 +45,7 @@ Player.prototype.grow = function() {
     this.w += 4;
 };
 
-Player.prototype.update = function(keysDown, entities) {
+Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
     // Process move
     var snapshot = {
@@ -59,33 +56,35 @@ Player.prototype.update = function(keysDown, entities) {
     move8(this, keysDown);
 
     //Check collision
-    entities.forEach((entity) => {
+    actors.forEach((actor) => {
         
-        if (entity.statusCode === 0) {
+        if (actor.statusCode === 0) {
             return;
         }
 
-        if (collision(this, entity)) {
+        if (collision(this, actor)) {
 
-            if (entity.collision === "soft") {
+            if (actor.collision === "soft") {
 
-                entity.statusCode = 0;
+                actor.statusCode = 0;
 
-                this.score(100);
+                scoreTracker.scoreInc(100);
 
                 if (this.w < this.maxW) {
                     this.grow();
+                    scoreTracker.multiUpdate(this.w);
                 }
                 return;
             }
 
-            if (entity.collision === "hard") {
+            if (actor.collision === "hard") {
 
                 this.x = snapshot.x;
                 this.y = snapshot.y;
 
                 if (this.w > this.minW) {
                     this.shrink();
+                    scoreTracker.multiUpdate(this.w);
                 }
                 return;
             }

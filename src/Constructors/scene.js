@@ -18,9 +18,10 @@ function Scene(blockSize) {
     // defined in this.planReader()
     this.actors = [];
     this.playerData = {
+        b: this.blockSize,
         x: 0,
         y: 0,
-        w: this.blockSize * 2,
+        w: this.blockSize * 2
     };
 }
 

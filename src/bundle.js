@@ -383,7 +383,7 @@ module.exports = Pellet;
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
-function Player(playerData, scoreFunc) {
+function Player(playerData) {
     "use strict";
 
     this.x = playerData.x;
@@ -391,19 +391,16 @@ function Player(playerData, scoreFunc) {
     this.w = playerData.w;
 
     this.color = playerData.color;
-    this.score = scoreFunc;
 
-    this.minW = this.w / 2;
-    this.maxW = this.w * 3;
+    this.minW = playerData.b / 2;
+    this.maxW = playerData.b * 3;
 
     // Movement speed
     this.dx = 4;
     this.dy = 4;
 
     this.path = function(x, y) {
-        
-        var path = new Path2D(),
-            halfW = this.w / 2;
+        var path = new Path2D();
 
         path.rect(x, y, this.w, this.w);
         return path;
@@ -430,7 +427,7 @@ Player.prototype.grow = function() {
     this.w += 4;
 };
 
-Player.prototype.update = function(keysDown, entities) {
+Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
     // Process move
     var snapshot = {
@@ -441,33 +438,35 @@ Player.prototype.update = function(keysDown, entities) {
     move8(this, keysDown);
 
     //Check collision
-    entities.forEach((entity) => {
+    actors.forEach((actor) => {
         
-        if (entity.statusCode === 0) {
+        if (actor.statusCode === 0) {
             return;
         }
 
-        if (collision(this, entity)) {
+        if (collision(this, actor)) {
 
-            if (entity.collision === "soft") {
+            if (actor.collision === "soft") {
 
-                entity.statusCode = 0;
+                actor.statusCode = 0;
 
-                this.score(100);
+                scoreTracker.scoreInc(100);
 
                 if (this.w < this.maxW) {
                     this.grow();
+                    scoreTracker.multiUpdate(this.w);
                 }
                 return;
             }
 
-            if (entity.collision === "hard") {
+            if (actor.collision === "hard") {
 
                 this.x = snapshot.x;
                 this.y = snapshot.y;
 
                 if (this.w > this.minW) {
                     this.shrink();
+                    scoreTracker.multiUpdate(this.w);
                 }
                 return;
             }
@@ -498,9 +497,10 @@ function Scene(blockSize) {
     // defined in this.planReader()
     this.actors = [];
     this.playerData = {
+        b: this.blockSize,
         x: 0,
         y: 0,
-        w: this.blockSize * 2,
+        w: this.blockSize * 2
     };
 }
 
@@ -685,20 +685,18 @@ level2.planReader();
 module.exports = level2;
 
 },{"../Constructors/scene":9}],12:[function(require,module,exports){
-var canvas      = require("./canvas");
-var keysDown    = require("./input").keysDown;
-var mainMenu    = require("./mainMenu");
-var Player      = require("./Constructors/player");
-var timer       = require("./timer");
-var level1      = require("./Levels/level1");
-var level2      = require("./Levels/level2");
+var canvas          = require("./canvas");
+var keysDown        = require("./input").keysDown;
+var mainMenu        = require("./mainMenu");
+var Player          = require("./Constructors/player");
+var scoreTracker    = require("./scoretracker");
+var timer           = require("./timer");
+var level1          = require("./Levels/level1");
+var level2          = require("./Levels/level2");
 
 var app = {
-    mainMenu: mainMenu,
-    timer: timer,
-    score: 0,
-    multiplier: 1,
-    state: "",          // game, mainmenu, pause
+    state: "",
+    scoreTracker: scoreTracker,
 
     player: null,
     scenario: null,
@@ -714,9 +712,7 @@ app.sceneLoader = function(i) {
     this.scenario = this.scenes[i];
     this.scenario.init(canvas);
 
-    this.player = new Player(this.scenario.playerData, (n) => {
-        this.score += n * this.multiplier;
-    });
+    this.player = new Player(this.scenario.playerData);
 
     if (this.player.x === 0) {
         this.player.x = canvas.width / 2 - this.player.w / 2;
@@ -730,7 +726,7 @@ app.init = function() {
     "use strict";
 
     this.keysDown = keysDown();
-    this.mainMenu.init(canvas, (i) => {
+    mainMenu.init(canvas, (i) => {
         this.sceneLoader(i);
     });
     this.state = "mainmenu";
@@ -744,7 +740,7 @@ app.render = function() {
 
     switch (this.state) {
         case "mainmenu":
-            this.mainMenu.draw(canvas.ctx);
+            mainMenu.draw(canvas.ctx);
             break;
 
         case "game":
@@ -759,16 +755,17 @@ app.render = function() {
 
 app.update = function(tStamp) {
     "use strict";
-    this.timer.progress(tStamp);
+    timer.progress(tStamp);
 
     switch (this.state) {
         case "mainmenu":
-            this.mainMenu.cursor.update(this.keysDown, this.timer.delta);
+            mainMenu.cursor.update(this.keysDown, timer.delta);
             break;
 
         case "game":
-            this.player.update(this.keysDown, this.scenario.actors);
-            this.scenario.update(this.keysDown, this.timer.delta);
+            this.player.update(this.keysDown, this.scenario.actors,
+                    scoreTracker);
+            this.scenario.update(timer.delta);
             break;
 
         default:
@@ -778,7 +775,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./timer":20}],13:[function(require,module,exports){
+},{"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./scoretracker":20,"./timer":21}],13:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -1014,6 +1011,59 @@ exports.spaceFill = (val, digits) => {
 };
 
 },{}],20:[function(require,module,exports){
+var scoreTracker = {
+
+    score: 0,
+    multiplier: 1,
+    timeRemaining: 0,
+    timeBonus: 0,
+    total: 0,
+    grandTotal: 0
+};
+
+scoreTracker.scoreInc = function(n) {
+    "use strict";
+
+    this.score += n * this.multiplier;
+};
+
+scoreTracker.multiUpdate = function(n) {
+    "use strict";
+
+    // Every method is universal except this one.
+    if (n >= 96) {
+        this.multiplier = 2;
+    } else if (n >= 72) {
+        this.multiplier = 1.5;
+    } else if (n >= 48) {
+        this.multiplier = 1;
+    } else {
+        this.multiplier = 0.5;
+    }
+};
+
+scoreTracker.reset = function() {
+    "use strict";
+
+    this.score = 0;
+    this.multiplier = 1;
+    this.timeRemaining = 0;
+    this.timeBonus = 0;
+    this.total = 0;
+};
+
+scoreTracker.tabulate = function(time) {
+    "use strict";
+
+    this.timeRemaining = time;
+    this.timeBonus = time * 10 * 25 * this.multiplier;
+    this.total = this.score + this.timeBonus;
+    this.grandTotal += this.total;
+};
+
+module.exports = scoreTracker;
+
+},{}],21:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
