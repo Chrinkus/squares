@@ -268,7 +268,7 @@ Menu.prototype.init = function(canvas, sceneLoaderHook) {
     this.menuY = canvas.height / 2 + this.lineHeight;
 
     this.cursorData.x = this.menuX;
-    this.cursorData.y = this.menuY - this.cursorData.w + 2;
+    this.cursorData.y = this.menuY - this.cursorData.w;
 
     this.background = new Background(canvas, this.colors.background);
 
@@ -613,12 +613,12 @@ level2.plan = [
     "######                    ######",
     "##        *          *        ##",
     "#                              #",
-    "#     *    #   **   #    *     #",
+    "#     *        **   #    *     #",
     "#          #        #          #",
     "#         ##   **   ##         #",
-    "###   ######        ######   ###",
+    "###   ######        #####    ###",
     "#         ##   **   ##         #",
-    "#          ##      ##          #",
+    "#          ###    ###          #",
     "#                              #",
     "#     *                  *     #",
     "#                              #",
@@ -635,8 +635,8 @@ level2.hiScore = 2000;      // temp solution
 level2.playerData.color = "white";
 
 level2.colors = {
-    background: "coral",
-    wall: "aqua",
+    background: "cornflowerblue",
+    wall: "indigo",
     pellet: "gold"
 };
 

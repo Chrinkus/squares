@@ -7,12 +7,12 @@ level2.plan = [
     "######                    ######",
     "##        *          *        ##",
     "#                              #",
-    "#     *    #   **   #    *     #",
+    "#     *        **   #    *     #",
     "#          #        #          #",
     "#         ##   **   ##         #",
-    "###   ######        ######   ###",
+    "###   ######        #####    ###",
     "#         ##   **   ##         #",
-    "#          ##      ##          #",
+    "#          ###    ###          #",
     "#                              #",
     "#     *                  *     #",
     "#                              #",
@@ -29,8 +29,8 @@ level2.hiScore = 2000;      // temp solution
 level2.playerData.color = "white";
 
 level2.colors = {
-    background: "coral",
-    wall: "aqua",
+    background: "cornflowerblue",
+    wall: "indigo",
     pellet: "gold"
 };
 

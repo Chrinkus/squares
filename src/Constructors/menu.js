@@ -42,7 +42,7 @@ Menu.prototype.init = function(canvas, sceneLoaderHook) {
     this.menuY = canvas.height / 2 + this.lineHeight;
 
     this.cursorData.x = this.menuX;
-    this.cursorData.y = this.menuY - this.cursorData.w + 2;
+    this.cursorData.y = this.menuY - this.cursorData.w;
 
     this.background = new Background(canvas, this.colors.background);
 
