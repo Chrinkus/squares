@@ -7,10 +7,11 @@ function Player(playerData) {
     this.x = playerData.x;
     this.y = playerData.y;
     this.w = playerData.w;
+    this.b = playerData.b;
     this.minW = playerData.b / 2;
     this.maxW = playerData.b * 3;
-    this.dx = 4;
-    this.dy = 4;
+    this.dx = playerData.b / 8;
+    this.dy = playerData.b / 8;
     this.color = playerData.color;
 
     this.pellets = 0;
@@ -71,7 +72,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
                 if (this.w < this.maxW) {
                     this.grow();
-                    scoreTracker.multiUpdate(this.w);
+                    scoreTracker.multiUpdate(this.w, this.b);
                 }
                 return;
             }
@@ -83,7 +84,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
                 if (this.w > this.minW) {
                     this.shrink();
-                    scoreTracker.multiUpdate(this.w);
+                    scoreTracker.multiUpdate(this.w, this.b);
                 }
                 return;
             }

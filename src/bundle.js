@@ -375,10 +375,11 @@ function Player(playerData) {
     this.x = playerData.x;
     this.y = playerData.y;
     this.w = playerData.w;
+    this.b = playerData.b;
     this.minW = playerData.b / 2;
     this.maxW = playerData.b * 3;
-    this.dx = 4;
-    this.dy = 4;
+    this.dx = playerData.b / 8;
+    this.dy = playerData.b / 8;
     this.color = playerData.color;
 
     this.pellets = 0;
@@ -439,7 +440,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
                 if (this.w < this.maxW) {
                     this.grow();
-                    scoreTracker.multiUpdate(this.w);
+                    scoreTracker.multiUpdate(this.w, this.b);
                 }
                 return;
             }
@@ -451,7 +452,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
                 if (this.w > this.minW) {
                     this.shrink();
-                    scoreTracker.multiUpdate(this.w);
+                    scoreTracker.multiUpdate(this.w, this.b);
                 }
                 return;
             }
@@ -664,7 +665,7 @@ level3.plan = [
     "#    #    #    #                                          #    #",
     "#    # @  #    #                                          #    #",
     "#    #    #    #                                          #    #",
-    "#    ##  ##    #                                          #    #",
+    "#    #    #    #                                          #    #",
     "#              #                                          #    #",
     "#              #                                          #    #",
     "#              #                                          #    #",
@@ -1094,15 +1095,15 @@ scoreTracker.scoreInc = function(n) {
     this.score += n * this.multiplier;
 };
 
-scoreTracker.multiUpdate = function(n) {
+scoreTracker.multiUpdate = function(w, b) {
     "use strict";
 
     // Every method is universal except this one.
-    if (n >= 96) {
+    if (w >= b * 3) {
         this.multiplier = 2;
-    } else if (n >= 72) {
+    } else if (w >= b * 2) {
         this.multiplier = 1.5;
-    } else if (n >= 48) {
+    } else if (w >= b) {
         this.multiplier = 1;
     } else {
         this.multiplier = 0.5;
