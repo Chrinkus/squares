@@ -1,7 +1,6 @@
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
-var HeaderText  = require("./headertext");
 
 function Scene(blockSize) {
     "use strict";
@@ -10,18 +9,18 @@ function Scene(blockSize) {
     this.blockSize = blockSize;
     this.plan = [];
     this.colors = null;
+    this.timer = 0;
 
     // defined in this.init(canvas)
     this.background = null;
-    this.messages = null;
 
     // defined in this.planReader()
     this.actors = [];
     this.playerData = {
-        b: this.blockSize,
         x: 0,
         y: 0,
-        w: this.blockSize * 2
+        b: blockSize,
+        w: blockSize * 2
     };
 }
 
@@ -56,20 +55,11 @@ Scene.prototype.draw = function(ctx) {
 
         actor.draw(ctx);
     });
-
-    for (msg in this.messages) {
-        if (this.messages.hasOwnProperty(msg)) {
-
-            this.messages[msg].draw(ctx);
-        }
-    }
 };
 
 Scene.prototype.update = function(delta) {
 
-    //this.messages.headerLeft.update(delta);
-    //this.messages.headerRight.update(this.player.score);
-    //this.messages.headerCenter.update(this.player.multiplier);
+    // Does nothing so far...
 };
 
 Scene.prototype.planReader = function() {
@@ -107,15 +97,6 @@ Scene.prototype.planReader = function() {
 Scene.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
-
-    this.messages = {
-        headerLeft: new HeaderText.Left(canvas.width, 24, this.colors.txt,
-                "Time", 15),
-        headerRight: new HeaderText.Right(canvas.width, 24, this.colors.txt,
-                "Score", 0),
-        headerCenter: new HeaderText.Center(canvas.width, 24, this.colors.txt,
-                "Multiplier", 1)
-    };
 };
 
 module.exports = Scene;

@@ -116,133 +116,76 @@ Cursor.prototype.update = function(keysDown, delta) {
 module.exports = Cursor;
 
 },{"../input":15,"./cooldown":3}],5:[function(require,module,exports){
-var numstring   = require("../numstring");
+var canvas      = require("../canvas");
 
-function HeaderText(cWidth, fontSize, colors, label, val) {
+var posUnit = Math.floor(canvas.width / 16),
+    padding = 8,
+    fontSize = 24;
+
+function TopLeft(label, color) {
     "use strict";
 
-    this.cWidth = cWidth;
     this.fontSize = fontSize;
-    this.colors = colors;
+    this.y = padding + this.fontSize;
+    this.xL = posUnit * 2;
+    this.xR = posUnit * 5;
+
     this.label = label;
-    this.val = val || 0;
-
+    this.color = color;
     this.font = `${this.fontSize}px monospace`;
-    this.padding = fontSize / 2;
-    this.y = this.fontSize;
-
-    this.output = function(str, label, val) {
-
-        return label + str[1] + numstring.spaceFill(val, this.digits);
-    };
 }
 
-HeaderText.prototype.draw = function(ctx) {
+TopLeft.prototype.draw = function(ctx, val) {
 
+    ctx.fillStyle = this.color;
     ctx.font = this.font;
-    ctx.textAlign = this.align || "start";
-    ctx.fillStyle = this.colors.normal;
-    ctx.fillText(this.msg, this.x, this.y);
+    ctx.textAlign = "left";
+    ctx.fillText(this.label, this.xL, this.y);
+    ctx.textAlign = "right";
+    ctx.fillText(val, this.xR, this.y);
 };
 
-function Left(cWidth, fontSize, colors, label, val) {
+function TopRight(label, color) {
     "use strict";
 
-    HeaderText.call(this, cWidth, fontSize, colors, label, val);
+    TopLeft.call(this, label, color);
 
-    // specific props
-    this.align = "left";
-    this.x = this.padding;
-    this.digits = 4;
+    this.xL = canvas.width - posUnit * 5;
+    this.xR = canvas.width - posUnit * 2;
 }
 
-Left.prototype = Object.create(HeaderText.prototype);
+TopRight.prototype = Object.create(TopLeft.prototype);
 
-Object.defineProperties(Left.prototype, {
-
-    "valTenths": {
-
-        get: function() {
-
-            if (this.val < 0) {
-                return "0.0";
-            } else {
-                return numstring.toTenths(this.val);
-            }
-        }
-    },
-
-    "msg": {
-
-        get: function() {
-
-            return this.output`${this.label}: ${this.valTenths}`;
-        }
-    }
-});
-
-Left.prototype.update = function(delta) {
-
-    // Specific to use as a timer
-    this.val -= delta / 1000;
-};
-
-function Right(cWidth, fontSize, colors, label, val) {
+function TopMid(label, color) {
     "use strict";
 
-    HeaderText.call(this, cWidth, fontSize, colors, label, val);
+    this.fontSizeLarge = fontSize * 2;
+    this.fontSizeSmall = fontSize / 2;
+    this.yLarge = padding + this.fontSizeLarge;
+    this.ySmall = padding + this.fontSizeSmall;
+    this.x = canvas.width / 2;
 
-    // specific props
-    this.align = "right";
-    this.x = cWidth - this.padding;
-    this.digits = 5;
+    this.label = label;
+    this.color = color;
+    this.fontLarge = `${this.fontSizeLarge}px monospace`;
+    this.fontSmall = `${this.fontSizeSmall}px monospace`;
 }
 
-Right.prototype = Object.create(HeaderText.prototype);
+TopMid.prototype.draw = function(ctx, val) {
 
-Object.defineProperty(Right.prototype, "msg", {
-
-    get: function() {
-
-        return this.output`${this.label}: ${this.val}`;
-    }
-});
-
-Right.prototype.update = function(scoreRef) {
-
-    // Specific to score display
-    this.val = scoreRef;
+    ctx.fillStyle = this.color;
+    ctx.textAlign = "center";
+    //ctx.font = this.fontSmall;
+    //ctx.fillText(this.label, this.x, this.ySmall);
+    ctx.font = this.fontLarge;
+    ctx.fillText(val, this.x, this.yLarge);
 };
 
-function Center(cWidth, fontSize, colors, label, val) {
-    "use strict";
+exports.TopLeft = TopLeft;
+exports.TopRight = TopRight;
+exports.TopMid = TopMid;
 
-    HeaderText.call(this, cWidth, fontSize * 1.5, colors, label, val);
-
-    this.align = "center";
-    this.x = cWidth / 2;
-}
-
-Center.prototype = Object.create(HeaderText.prototype);
-
-Object.defineProperty(Center.prototype, "msg", {
-
-    get: function() {
-
-        return `x${numstring.toTenths(this.val)}`;
-    }
-});
-
-Center.prototype.update = function(multiRef) {
-
-    this.val = multiRef;
-};
-
-exports.Left = Left;
-exports.Right = Right;
-exports.Center = Center;
-
-},{"../numstring":19}],6:[function(require,module,exports){
+},{"../canvas":13}],6:[function(require,module,exports){
 var Background  = require("./background");
 var Cursor      = require("./cursor");
 
@@ -480,7 +423,6 @@ module.exports = Player;
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
-var HeaderText  = require("./headertext");
 
 function Scene(blockSize) {
     "use strict";
@@ -489,18 +431,18 @@ function Scene(blockSize) {
     this.blockSize = blockSize;
     this.plan = [];
     this.colors = null;
+    this.timer = 0;
 
     // defined in this.init(canvas)
     this.background = null;
-    this.messages = null;
 
     // defined in this.planReader()
     this.actors = [];
     this.playerData = {
-        b: this.blockSize,
         x: 0,
         y: 0,
-        w: this.blockSize * 2
+        b: blockSize,
+        w: blockSize * 2
     };
 }
 
@@ -535,20 +477,11 @@ Scene.prototype.draw = function(ctx) {
 
         actor.draw(ctx);
     });
-
-    for (msg in this.messages) {
-        if (this.messages.hasOwnProperty(msg)) {
-
-            this.messages[msg].draw(ctx);
-        }
-    }
 };
 
 Scene.prototype.update = function(delta) {
 
-    //this.messages.headerLeft.update(delta);
-    //this.messages.headerRight.update(this.player.score);
-    //this.messages.headerCenter.update(this.player.multiplier);
+    // Does nothing so far...
 };
 
 Scene.prototype.planReader = function() {
@@ -586,20 +519,11 @@ Scene.prototype.planReader = function() {
 Scene.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
-
-    this.messages = {
-        headerLeft: new HeaderText.Left(canvas.width, 24, this.colors.txt,
-                "Time", 15),
-        headerRight: new HeaderText.Right(canvas.width, 24, this.colors.txt,
-                "Score", 0),
-        headerCenter: new HeaderText.Center(canvas.width, 24, this.colors.txt,
-                "Multiplier", 1)
-    };
 };
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./headertext":5,"./pellet":7}],10:[function(require,module,exports){
+},{"./background":1,"./block":2,"./pellet":7}],10:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level1 = new Scene(32);
@@ -624,6 +548,9 @@ level1.plan = [
     "###           ####           ###",
     "################################"
 ];
+
+level1.timer = 20;
+level1.hiScore = 2000;
 
 level1.playerData.color = "white";
 
@@ -669,11 +596,14 @@ level2.plan = [
     "################################"
 ];
 
+level2.timer = 20;
+
+level2.playerData.color = "white";
+
 level2.colors = {
     background: "coral",
     wall: "aqua",
     pellet: "gold",
-    player: "white",
 
     txt: {
         normal: "white"
@@ -689,21 +619,28 @@ var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
+var Hud             = require("./Constructors/hud");
 var scoreTracker    = require("./scoretracker");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
 
 var app = {
-    state: "",
-    scoreTracker: scoreTracker,
+
+    hud : {
+        score: new Hud.TopLeft("Score", "white"),
+        timer: new Hud.TopMid("Time", "white"),
+        total: new Hud.TopRight("Hi Score", "white")
+    },
 
     player: null,
     scenario: null,
     scenes: [
         level1,
         level2
-    ]
+    ],
+
+    state: ""
 };
 
 app.sceneLoader = function(i) {
@@ -711,6 +648,8 @@ app.sceneLoader = function(i) {
 
     this.scenario = this.scenes[i];
     this.scenario.init(canvas);
+
+    scoreTracker.timeRemaining = this.scenario.timer;
 
     this.player = new Player(this.scenario.playerData);
 
@@ -746,6 +685,10 @@ app.render = function() {
         case "game":
             this.scenario.draw(canvas.ctx);
             this.player.draw(canvas.ctx);
+
+            this.hud.score.draw(canvas.ctx, scoreTracker.score);
+            this.hud.timer.draw(canvas.ctx, scoreTracker.displayTime());
+            this.hud.total.draw(canvas.ctx, this.scenario.hiScore);
             break;
 
         default:
@@ -765,7 +708,7 @@ app.update = function(tStamp) {
         case "game":
             this.player.update(this.keysDown, this.scenario.actors,
                     scoreTracker);
-            this.scenario.update(timer.delta);
+            scoreTracker.timeUpdate(timer.delta);
             break;
 
         default:
@@ -775,7 +718,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./scoretracker":20,"./timer":21}],13:[function(require,module,exports){
+},{"./Constructors/hud":5,"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./scoretracker":20,"./timer":21}],13:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -1011,6 +954,8 @@ exports.spaceFill = (val, digits) => {
 };
 
 },{}],20:[function(require,module,exports){
+var toTenths        = require("./numstring").toTenths;
+
 var scoreTracker = {
 
     score: 0,
@@ -1019,6 +964,22 @@ var scoreTracker = {
     timeBonus: 0,
     total: 0,
     grandTotal: 0
+};
+
+scoreTracker.timeUpdate = function(delta) {
+    "use strict";
+
+    this.timeRemaining -= delta / 1000;
+};
+
+scoreTracker.displayTime = function() {
+    "use strict";
+
+    if (this.timeRemaining <= 0) {
+        return "0.0";
+    } else {
+        return toTenths(this.timeRemaining);
+    }
 };
 
 scoreTracker.scoreInc = function(n) {
@@ -1063,7 +1024,7 @@ scoreTracker.tabulate = function(time) {
 
 module.exports = scoreTracker;
 
-},{}],21:[function(require,module,exports){
+},{"./numstring":19}],21:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,

@@ -23,6 +23,9 @@ level1.plan = [
     "################################"
 ];
 
+level1.timer = 20;
+level1.hiScore = 2000;      // temp solution
+
 level1.playerData.color = "white";
 
 level1.colors = {

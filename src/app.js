@@ -2,20 +2,28 @@ var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
+var Hud             = require("./Constructors/hud");
 var scoreTracker    = require("./scoretracker");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
 
 var app = {
-    state: "",
+
+    hud : {
+        score: new Hud.TopLeft("Score", "white"),
+        timer: new Hud.TopMid("Time", "white"),
+        total: new Hud.TopRight("Hi Score", "white")
+    },
 
     player: null,
     scenario: null,
     scenes: [
         level1,
         level2
-    ]
+    ],
+
+    state: ""
 };
 
 app.sceneLoader = function(i) {
@@ -23,6 +31,8 @@ app.sceneLoader = function(i) {
 
     this.scenario = this.scenes[i];
     this.scenario.init(canvas);
+
+    scoreTracker.timeRemaining = this.scenario.timer;
 
     this.player = new Player(this.scenario.playerData);
 
@@ -58,6 +68,10 @@ app.render = function() {
         case "game":
             this.scenario.draw(canvas.ctx);
             this.player.draw(canvas.ctx);
+
+            this.hud.score.draw(canvas.ctx, scoreTracker.score);
+            this.hud.timer.draw(canvas.ctx, scoreTracker.displayTime());
+            this.hud.total.draw(canvas.ctx, this.scenario.hiScore);
             break;
 
         default:
@@ -77,7 +91,7 @@ app.update = function(tStamp) {
         case "game":
             this.player.update(this.keysDown, this.scenario.actors,
                     scoreTracker);
-            this.scenario.update(timer.delta);
+            scoreTracker.timeUpdate(timer.delta);
             break;
 
         default:

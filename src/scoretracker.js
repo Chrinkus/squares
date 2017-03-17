@@ -1,3 +1,5 @@
+var toTenths        = require("./numstring").toTenths;
+
 var scoreTracker = {
 
     score: 0,
@@ -6,6 +8,22 @@ var scoreTracker = {
     timeBonus: 0,
     total: 0,
     grandTotal: 0
+};
+
+scoreTracker.timeUpdate = function(delta) {
+    "use strict";
+
+    this.timeRemaining -= delta / 1000;
+};
+
+scoreTracker.displayTime = function() {
+    "use strict";
+
+    if (this.timeRemaining <= 0) {
+        return "0.0";
+    } else {
+        return toTenths(this.timeRemaining);
+    }
 };
 
 scoreTracker.scoreInc = function(n) {

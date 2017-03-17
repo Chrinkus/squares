@@ -25,11 +25,15 @@ level2.plan = [
     "################################"
 ];
 
+level2.timer = 20;
+level2.hiScore = 2000;      // temp solution
+
+level2.playerData.color = "white";
+
 level2.colors = {
     background: "coral",
     wall: "aqua",
     pellet: "gold",
-    player: "white",
 
     txt: {
         normal: "white"
