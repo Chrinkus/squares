@@ -7,6 +7,7 @@ var scoreTracker    = require("./scoretracker");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
+var level3          = require("./Levels/level3");
 
 var app = {
 
@@ -21,7 +22,8 @@ var app = {
     scenario: null,
     scenes: [
         level1,
-        level2
+        level2,
+        level3
     ],
 
     state: ""

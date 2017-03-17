@@ -85,7 +85,12 @@ Menu.prototype.select = function(i) {
             break;
 
         case "level 2":
-            // Display local leaderboards
+            // Later level access for testing
+            this.sceneLoaderHook(i);
+            break;
+
+        case "level 3":
+            // Later level access for testing
             this.sceneLoaderHook(i);
             break;
 

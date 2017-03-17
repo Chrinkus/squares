@@ -115,7 +115,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":15,"./cooldown":3}],5:[function(require,module,exports){
+},{"../input":16,"./cooldown":3}],5:[function(require,module,exports){
 var canvas      = require("../canvas");
 
 var posUnit = Math.floor(canvas.width / 16),
@@ -223,7 +223,7 @@ exports.TopRight = TopRight;
 exports.TopMid = TopMid;
 exports.BRCorner = BRCorner;
 
-},{"../canvas":13}],6:[function(require,module,exports){
+},{"../canvas":14}],6:[function(require,module,exports){
 var Background  = require("./background");
 var Cursor      = require("./cursor");
 
@@ -311,7 +311,12 @@ Menu.prototype.select = function(i) {
             break;
 
         case "level 2":
-            // Display local leaderboards
+            // Later level access for testing
+            this.sceneLoaderHook(i);
+            break;
+
+        case "level 3":
+            // Later level access for testing
             this.sceneLoaderHook(i);
             break;
 
@@ -456,7 +461,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":14,"../input.js":15}],9:[function(require,module,exports){
+},{"../collision":15,"../input.js":16}],9:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -645,6 +650,65 @@ level2.planReader();
 module.exports = level2;
 
 },{"../Constructors/scene":9}],12:[function(require,module,exports){
+var Scene = require("../Constructors/scene");
+
+var level3 = new Scene(16);
+
+level3.plan = [
+    "################################################################",
+    "#                                                              #",
+    "#                                                              #",
+    "#                                                              #",
+    "#                                                              #",
+    "#    ######    ############################################    #",
+    "#    #    #    #                                          #    #",
+    "#    # @  #    #                                          #    #",
+    "#    #    #    #                                          #    #",
+    "#    ##  ##    #                                          #    #",
+    "#              #                                          #    #",
+    "#              #                                          #    #",
+    "#              #                                          #    #",
+    "#              #              #                           #    #",
+    "#    #    ######             #           #                #    #",
+    "#    #                      #     *     #                 #    #",
+    "#    #                     #           #                  #    #",
+    "#    #                    #     *     #                   #    #",
+    "#    #                   #           #                    #    #",
+    "#    #                  #     *     #                     #    #",
+    "#    #                 #           #                      #    #",
+    "#    #                #     *     #             ######    #    #",
+    "#    #                           #              #              #",
+    "#    #                                          #              #",
+    "#    #                                          #              #",
+    "#    #                                          #              #",
+    "#    #                                          #    #    #    #",
+    "#    #                                          #    #    #    #",
+    "#    #                                          #    #    #    #",
+    "#    #                                          #    #    #    #",
+    "#    ############################################    ######    #",
+    "#                                                              #",
+    "#                                                              #",
+    "#                                                              #",
+    "#                                                              #",
+    "################################################################"
+];
+
+level3.timer = 60;
+level3.hiScore = 5000;      // temp solution
+
+level3.playerData.color = "white";
+
+level3.colors = {
+    background: "grey",
+    wall: "green",
+    pellet: "gold"
+};
+
+level3.planReader();
+
+module.exports = level3;
+
+},{"../Constructors/scene":9}],13:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
@@ -654,6 +718,7 @@ var scoreTracker    = require("./scoretracker");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
+var level3          = require("./Levels/level3");
 
 var app = {
 
@@ -668,7 +733,8 @@ var app = {
     scenario: null,
     scenes: [
         level1,
-        level2
+        level2,
+        level3
     ],
 
     state: ""
@@ -751,7 +817,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/hud":5,"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./canvas":13,"./input":15,"./mainMenu":17,"./scoretracker":20,"./timer":21}],13:[function(require,module,exports){
+},{"./Constructors/hud":5,"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./Levels/level3":12,"./canvas":14,"./input":16,"./mainMenu":18,"./scoretracker":21,"./timer":22}],14:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -775,7 +841,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -785,7 +851,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -853,7 +919,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -874,7 +940,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":12}],17:[function(require,module,exports){
+},{"./app":13}],18:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -889,6 +955,7 @@ mainMenu.colors = {
 mainMenu.selections = [
     "level 1",
     "level 2",
+    "level 3",
     "controls"
 ];
 
@@ -898,7 +965,7 @@ mainMenu.cursorData.w = 24;
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":6,"./mainTitle":18}],18:[function(require,module,exports){
+},{"./Constructors/menu":6,"./mainTitle":19}],19:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -941,7 +1008,7 @@ module.exports = {
     }
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -986,7 +1053,7 @@ exports.spaceFill = (val, digits) => {
     }
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var toTenths        = require("./numstring").toTenths;
 
 var scoreTracker = {
@@ -1063,7 +1130,7 @@ scoreTracker.tabulate = function(time) {
 
 module.exports = scoreTracker;
 
-},{"./numstring":19}],21:[function(require,module,exports){
+},{"./numstring":20}],22:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1081,4 +1148,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[16]);
+},{}]},{},[17]);
