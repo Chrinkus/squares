@@ -63,6 +63,44 @@ TopMid.prototype.draw = function(ctx, val) {
     ctx.fillText(val, this.x, this.yLarge);
 };
 
+function BRCorner() {
+    "use strict";
+
+    this.color = "white";
+
+    // Pellets
+    this.fontSizeP = fontSize;
+    this.fontP = `${this.fontSizeP}px monospace`;
+    this.xP = canvas.width - fontSize - fontSize;
+    this.yP = canvas.height - fontSize;
+
+    // Pellet
+    this.pColor = "gold";
+    this.x = this.xP + 4;
+    this.y = this.yP - 16;
+    this.w = 16;
+
+    // Multiplier
+    this.fontSizeM = fontSize * 2;
+    this.fontM = `${this.fontSizeM}px monospace`;
+    this.xM = canvas.width - fontSize;
+    this.yM = canvas.height - fontSize - this.fontSizeP;
+}
+
+BRCorner.prototype.draw = function(ctx, multiplier, playerP, sceneP) {
+    
+    ctx.fillStyle = this.color;
+    ctx.textAlign = "right";
+    ctx.font = this.fontM;
+    ctx.fillText("x" + multiplier, this.xM, this.yM);
+    ctx.font = this.fontP;
+    ctx.fillText(playerP + " / " + sceneP, this.xP, this.yP);
+
+    ctx.fillStyle = this.pColor;
+    ctx.fillRect(this.x, this.y, this.w, this.w);
+};
+
 exports.TopLeft = TopLeft;
 exports.TopRight = TopRight;
 exports.TopMid = TopMid;
+exports.BRCorner = BRCorner;

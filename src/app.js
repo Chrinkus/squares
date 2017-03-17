@@ -13,7 +13,8 @@ var app = {
     hud : {
         score: new Hud.TopLeft("Score", "white"),
         timer: new Hud.TopMid("Time", "white"),
-        total: new Hud.TopRight("Hi Score", "white")
+        total: new Hud.TopRight("Hi Score", "white"),
+        corner: new Hud.BRCorner()
     },
 
     player: null,
@@ -72,6 +73,8 @@ app.render = function() {
             this.hud.score.draw(canvas.ctx, scoreTracker.score);
             this.hud.timer.draw(canvas.ctx, scoreTracker.displayTime());
             this.hud.total.draw(canvas.ctx, this.scenario.hiScore);
+            this.hud.corner.draw(canvas.ctx, scoreTracker.displayMulti(),
+                    this.player.pellets, this.scenario.pellets);
             break;
 
         default:

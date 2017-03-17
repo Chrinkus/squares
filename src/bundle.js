@@ -181,9 +181,47 @@ TopMid.prototype.draw = function(ctx, val) {
     ctx.fillText(val, this.x, this.yLarge);
 };
 
+function BRCorner() {
+    "use strict";
+
+    this.color = "white";
+
+    // Pellets
+    this.fontSizeP = fontSize;
+    this.fontP = `${this.fontSizeP}px monospace`;
+    this.xP = canvas.width - fontSize - fontSize;
+    this.yP = canvas.height - fontSize;
+
+    // Pellet
+    this.pColor = "gold";
+    this.x = this.xP + 4;
+    this.y = this.yP - 16;
+    this.w = 16;
+
+    // Multiplier
+    this.fontSizeM = fontSize * 2;
+    this.fontM = `${this.fontSizeM}px monospace`;
+    this.xM = canvas.width - fontSize;
+    this.yM = canvas.height - fontSize - this.fontSizeP;
+}
+
+BRCorner.prototype.draw = function(ctx, multiplier, playerP, sceneP) {
+    
+    ctx.fillStyle = this.color;
+    ctx.textAlign = "right";
+    ctx.font = this.fontM;
+    ctx.fillText("x" + multiplier, this.xM, this.yM);
+    ctx.font = this.fontP;
+    ctx.fillText(playerP + " / " + sceneP, this.xP, this.yP);
+
+    ctx.fillStyle = this.pColor;
+    ctx.fillRect(this.x, this.y, this.w, this.w);
+};
+
 exports.TopLeft = TopLeft;
 exports.TopRight = TopRight;
 exports.TopMid = TopMid;
+exports.BRCorner = BRCorner;
 
 },{"../canvas":13}],6:[function(require,module,exports){
 var Background  = require("./background");
@@ -332,15 +370,13 @@ function Player(playerData) {
     this.x = playerData.x;
     this.y = playerData.y;
     this.w = playerData.w;
-
-    this.color = playerData.color;
-
     this.minW = playerData.b / 2;
     this.maxW = playerData.b * 3;
-
-    // Movement speed
     this.dx = 4;
     this.dy = 4;
+    this.color = playerData.color;
+
+    this.pellets = 0;
 
     this.path = function(x, y) {
         var path = new Path2D();
@@ -394,6 +430,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
                 actor.statusCode = 0;
 
                 scoreTracker.scoreInc(100);
+                this.pellets += 1;
 
                 if (this.w < this.maxW) {
                     this.grow();
@@ -438,6 +475,7 @@ function Scene(blockSize) {
 
     // defined in this.planReader()
     this.actors = [];
+    this.pellets = 0;
     this.playerData = {
         x: 0,
         y: 0,
@@ -502,6 +540,7 @@ Scene.prototype.planReader = function() {
                 case "*":
                     this.actors.push(new Pellet(x, y, this.colors.pellet,
                                 this.blockSize));
+                    this.pellets += 1;
                     break;
 
                 case "@":
@@ -550,18 +589,14 @@ level1.plan = [
 ];
 
 level1.timer = 20;
-level1.hiScore = 2000;
+level1.hiScore = 2000;      // temp solution
 
 level1.playerData.color = "white";
 
 level1.colors = {
     background: "red",
     wall: "black",
-    pellet: "gold",
-
-    txt: {
-        normal: "white"
-    }
+    pellet: "gold"
 };
 
 level1.planReader();
@@ -571,9 +606,7 @@ module.exports = level1;
 },{"../Constructors/scene":9}],11:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
-var level2 = new Scene();
-
-level2.blockSize = 32;
+var level2 = new Scene(32);
 
 level2.plan = [
     "################################",
@@ -597,17 +630,14 @@ level2.plan = [
 ];
 
 level2.timer = 20;
+level2.hiScore = 2000;      // temp solution
 
 level2.playerData.color = "white";
 
 level2.colors = {
     background: "coral",
     wall: "aqua",
-    pellet: "gold",
-
-    txt: {
-        normal: "white"
-    }
+    pellet: "gold"
 };
 
 level2.planReader();
@@ -630,7 +660,8 @@ var app = {
     hud : {
         score: new Hud.TopLeft("Score", "white"),
         timer: new Hud.TopMid("Time", "white"),
-        total: new Hud.TopRight("Hi Score", "white")
+        total: new Hud.TopRight("Hi Score", "white"),
+        corner: new Hud.BRCorner()
     },
 
     player: null,
@@ -689,6 +720,8 @@ app.render = function() {
             this.hud.score.draw(canvas.ctx, scoreTracker.score);
             this.hud.timer.draw(canvas.ctx, scoreTracker.displayTime());
             this.hud.total.draw(canvas.ctx, this.scenario.hiScore);
+            this.hud.corner.draw(canvas.ctx, scoreTracker.displayMulti(),
+                    this.player.pellets, this.scenario.pellets);
             break;
 
         default:
@@ -980,6 +1013,12 @@ scoreTracker.displayTime = function() {
     } else {
         return toTenths(this.timeRemaining);
     }
+};
+
+scoreTracker.displayMulti = function() {
+    "use strict";
+
+    return toTenths(this.multiplier);
 };
 
 scoreTracker.scoreInc = function(n) {

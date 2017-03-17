@@ -16,6 +16,7 @@ function Scene(blockSize) {
 
     // defined in this.planReader()
     this.actors = [];
+    this.pellets = 0;
     this.playerData = {
         x: 0,
         y: 0,
@@ -80,6 +81,7 @@ Scene.prototype.planReader = function() {
                 case "*":
                     this.actors.push(new Pellet(x, y, this.colors.pellet,
                                 this.blockSize));
+                    this.pellets += 1;
                     break;
 
                 case "@":

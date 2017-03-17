@@ -7,15 +7,13 @@ function Player(playerData) {
     this.x = playerData.x;
     this.y = playerData.y;
     this.w = playerData.w;
-
-    this.color = playerData.color;
-
     this.minW = playerData.b / 2;
     this.maxW = playerData.b * 3;
-
-    // Movement speed
     this.dx = 4;
     this.dy = 4;
+    this.color = playerData.color;
+
+    this.pellets = 0;
 
     this.path = function(x, y) {
         var path = new Path2D();
@@ -69,6 +67,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
                 actor.statusCode = 0;
 
                 scoreTracker.scoreInc(100);
+                this.pellets += 1;
 
                 if (this.w < this.maxW) {
                     this.grow();

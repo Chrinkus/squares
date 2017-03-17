@@ -26,6 +26,12 @@ scoreTracker.displayTime = function() {
     }
 };
 
+scoreTracker.displayMulti = function() {
+    "use strict";
+
+    return toTenths(this.multiplier);
+};
+
 scoreTracker.scoreInc = function(n) {
     "use strict";
 
