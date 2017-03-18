@@ -92,19 +92,14 @@ Menu.prototype.update = function(keysDown, delta) {
 Menu.prototype.select = function(i) {
 
     switch (this.selections[i]) {
-        case "level 1":
+        case "new game":
             // Launch new game at level 1
             this.sceneLoaderHook(i);
             break;
 
-        case "level 2":
-            // Later level access for testing
-            this.sceneLoaderHook(i);
-            break;
-
-        case "level 3":
-            // Later level access for testing
-            this.sceneLoaderHook(i);
+        case "leaderboards":
+            // Display Hi Scores for each level
+            console.log("leaderboards selected");
             break;
 
         case "level select":
