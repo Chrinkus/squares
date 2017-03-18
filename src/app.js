@@ -22,8 +22,7 @@ var app = {
     scenario: null,
     scenes: [
         level1,
-        level2,
-        level3
+        level2
     ],
 
     state: ""

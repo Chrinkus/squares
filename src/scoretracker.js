@@ -89,7 +89,7 @@ scoreTracker.tabulate = function() {
         ["Score", this.score],
         ["Time", this.timeRemaining],
         ["Multiplier", toTenths(this.multiplier)],
-        ["Time Bonus", this.timeBonus],
+        ["Time Bonus", toTenths(this.timeBonus)],
         ["Total", this.total],
         ["Grand Total", this.grandTotal]
     ];
