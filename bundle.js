@@ -347,8 +347,8 @@ Menu.prototype.init = function(canvas, sceneLoaderHook) {
     this.cursor = new Cursor(this);
 
     this.confirmation = new Confirmation(() => {
-        this.select(this.cursor.i);
         delete this.confirmation;
+        this.select(this.cursor.i);
     }, " to confirm selection ");
 
 };
@@ -791,6 +791,7 @@ var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
 var Hud             = require("./Constructors/hud");
+var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
@@ -808,9 +809,11 @@ var app = {
 
     player: null,
     scenario: null,
+    currentScene: 0,
     scenes: [
         level1,
-        level2
+        level2,
+        level3
     ],
 
     state: ""
@@ -820,6 +823,7 @@ app.sceneLoader = function(i) {
     "use strict";
 
     this.scenario = this.scenes[i];
+    this.currentScene = i;
     this.scenario.init(canvas);
 
     scoreTracker.timeRemaining = this.scenario.timer;
@@ -869,6 +873,7 @@ app.render = function() {
         case "complete":
             this.scenario.draw(canvas.ctx);
             scoreTracker.draw(this.scenario.colors.wall);
+            this.confirmation.draw();
 
         default:
             // no default
@@ -891,8 +896,17 @@ app.update = function(tStamp) {
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
                 scoreTracker.tabulate();
+
+                this.confirmation = new Confirmation(() => {
+                    delete this.confirmation;
+                    scoreTracker.reset();
+                    this.sceneLoader(this.currentScene + 1);
+                }, " to continue ");
             }
             break;
+
+        case "complete":
+            this.confirmation.update(this.keysDown, timer.delta);
 
         default:
             // no default
@@ -901,7 +915,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/hud":6,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./canvas":15,"./input":17,"./mainMenu":19,"./scoretracker":22,"./timer":23}],15:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./canvas":15,"./input":17,"./mainMenu":19,"./scoretracker":22,"./timer":23}],15:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");

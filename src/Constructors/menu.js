@@ -58,8 +58,8 @@ Menu.prototype.init = function(canvas, sceneLoaderHook) {
     this.cursor = new Cursor(this);
 
     this.confirmation = new Confirmation(() => {
-        this.select(this.cursor.i);
         delete this.confirmation;
+        this.select(this.cursor.i);
     }, " to confirm selection ");
 
 };

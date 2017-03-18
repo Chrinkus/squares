@@ -3,6 +3,7 @@ var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
 var Hud             = require("./Constructors/hud");
+var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
@@ -20,9 +21,11 @@ var app = {
 
     player: null,
     scenario: null,
+    currentScene: 0,
     scenes: [
         level1,
-        level2
+        level2,
+        level3
     ],
 
     state: ""
@@ -32,6 +35,7 @@ app.sceneLoader = function(i) {
     "use strict";
 
     this.scenario = this.scenes[i];
+    this.currentScene = i;
     this.scenario.init(canvas);
 
     scoreTracker.timeRemaining = this.scenario.timer;
@@ -81,6 +85,7 @@ app.render = function() {
         case "complete":
             this.scenario.draw(canvas.ctx);
             scoreTracker.draw(this.scenario.colors.wall);
+            this.confirmation.draw();
 
         default:
             // no default
@@ -103,8 +108,17 @@ app.update = function(tStamp) {
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
                 scoreTracker.tabulate();
+
+                this.confirmation = new Confirmation(() => {
+                    delete this.confirmation;
+                    scoreTracker.reset();
+                    this.sceneLoader(this.currentScene + 1);
+                }, " to continue ");
             }
             break;
+
+        case "complete":
+            this.confirmation.update(this.keysDown, timer.delta);
 
         default:
             // no default
