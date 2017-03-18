@@ -42,9 +42,9 @@ Cursor.prototype.update = function(keysDown, delta) {
     }
     
     // Temporary solution - confirmations usually fire on keyup
-    if (32 in keysDown) {
-        this.menu.select(this.i);
-    }
+    //if (32 in keysDown) {
+    //    this.menu.select(this.i);
+    //}
 };
 
 module.exports = Cursor;

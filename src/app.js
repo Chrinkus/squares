@@ -93,7 +93,7 @@ app.update = function(tStamp) {
 
     switch (this.state) {
         case "mainmenu":
-            mainMenu.cursor.update(this.keysDown, timer.delta);
+            mainMenu.update(this.keysDown, timer.delta);
             break;
 
         case "game":

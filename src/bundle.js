@@ -44,6 +44,69 @@ Block.prototype.draw = function(ctx) {
 module.exports = Block;
 
 },{}],3:[function(require,module,exports){
+var canvas      = require("../canvas");
+
+function Confirmation(f, msg) {
+    "use strict";
+
+    this.f = f;
+    this.msg = msg || " ";
+
+    this.x = canvas.width / 2;
+    this.y = canvas.height - 48;
+    this.font = "24px monospace";
+    this.alpha = 1;
+    this.fadeOut = true;
+    this.counter = 0;
+    this.display = `( Press SPACEBAR${this.msg})`;
+}
+
+Confirmation.prototype.draw = function() {
+
+    var ctx = canvas.ctx;
+
+    ctx.save();
+    ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+    ctx.font = this.font;
+    ctx.textAlign = "center";
+    ctx.fillText(this.display, this.x, this.y);
+    ctx.restore();
+};
+
+Confirmation.prototype.update = function(keysDown, delta) {
+
+    if (32 in keysDown) {
+        delete keysDown[32];
+        return this.f();
+    }
+
+    if (this.counter > 2) {
+        
+        if (this.fadeOut) {
+            this.alpha -= 0.05;
+        } else {
+            this.alpha += 0.05;
+        }
+
+        this.counter = 0;
+
+    } else {
+
+        this.counter += 1;
+    }
+
+    if (this.alpha <= 0) {
+        this.alpha = 0;
+        this.fadeOut = false;
+    } else if (this.alpha >= 1) {
+        this.alpha = 1;
+        this.fadeOut = true;
+    }
+};
+
+module.exports = Confirmation;
+
+},{"../canvas":15}],4:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -63,7 +126,7 @@ Cooldown.prototype.increment = function(delta) {
 
 module.exports = Cooldown;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var moveCursor  = require("../input").moveCursor;
 var Cooldown    = require("./cooldown");
 
@@ -108,14 +171,14 @@ Cursor.prototype.update = function(keysDown, delta) {
     }
     
     // Temporary solution - confirmations usually fire on keyup
-    if (32 in keysDown) {
-        this.menu.select(this.i);
-    }
+    //if (32 in keysDown) {
+    //    this.menu.select(this.i);
+    //}
 };
 
 module.exports = Cursor;
 
-},{"../input":16,"./cooldown":3}],5:[function(require,module,exports){
+},{"../input":17,"./cooldown":4}],6:[function(require,module,exports){
 var canvas      = require("../canvas");
 
 var posUnit = Math.floor(canvas.width / 16),
@@ -223,9 +286,10 @@ exports.TopRight = TopRight;
 exports.TopMid = TopMid;
 exports.BRCorner = BRCorner;
 
-},{"../canvas":14}],6:[function(require,module,exports){
-var Background  = require("./background");
-var Cursor      = require("./cursor");
+},{"../canvas":15}],7:[function(require,module,exports){
+var Background      = require("./background");
+var Cursor          = require("./cursor");
+var Confirmation    = require("./confirmation");
 
 function Menu(fontSize) {
     "use strict";
@@ -282,6 +346,11 @@ Menu.prototype.init = function(canvas, sceneLoaderHook) {
 
     this.cursor = new Cursor(this);
 
+    this.confirmation = new Confirmation(() => {
+        this.select(this.cursor.i);
+        delete this.confirmation;
+    }, " to confirm selection ");
+
 };
 
 Menu.prototype.draw = function(ctx) {
@@ -300,6 +369,13 @@ Menu.prototype.draw = function(ctx) {
     }
 
     this.cursor.draw(ctx);
+    this.confirmation.draw();
+};
+
+Menu.prototype.update = function(keysDown, delta) {
+
+    this.cursor.update(keysDown, delta);
+    this.confirmation.update(keysDown, delta);
 };
 
 Menu.prototype.select = function(i) {
@@ -337,7 +413,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"./background":1,"./cursor":4}],7:[function(require,module,exports){
+},{"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -365,7 +441,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
@@ -462,7 +538,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":15,"../input.js":16}],9:[function(require,module,exports){
+},{"../collision":16,"../input.js":17}],10:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -568,7 +644,7 @@ Scene.prototype.init = function(canvas) {
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./pellet":7}],10:[function(require,module,exports){
+},{"./background":1,"./block":2,"./pellet":8}],11:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level1 = new Scene(32);
@@ -609,7 +685,7 @@ level1.planReader();
 
 module.exports = level1;
 
-},{"../Constructors/scene":9}],11:[function(require,module,exports){
+},{"../Constructors/scene":10}],12:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level2 = new Scene(32);
@@ -650,7 +726,7 @@ level2.planReader();
 
 module.exports = level2;
 
-},{"../Constructors/scene":9}],12:[function(require,module,exports){
+},{"../Constructors/scene":10}],13:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level3 = new Scene(16);
@@ -709,7 +785,7 @@ level3.planReader();
 
 module.exports = level3;
 
-},{"../Constructors/scene":9}],13:[function(require,module,exports){
+},{"../Constructors/scene":10}],14:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
@@ -734,8 +810,7 @@ var app = {
     scenario: null,
     scenes: [
         level1,
-        level2,
-        level3
+        level2
     ],
 
     state: ""
@@ -806,7 +881,7 @@ app.update = function(tStamp) {
 
     switch (this.state) {
         case "mainmenu":
-            mainMenu.cursor.update(this.keysDown, timer.delta);
+            mainMenu.update(this.keysDown, timer.delta);
             break;
 
         case "game":
@@ -826,7 +901,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/hud":5,"./Constructors/player":8,"./Levels/level1":10,"./Levels/level2":11,"./Levels/level3":12,"./canvas":14,"./input":16,"./mainMenu":18,"./scoretracker":21,"./timer":22}],14:[function(require,module,exports){
+},{"./Constructors/hud":6,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./canvas":15,"./input":17,"./mainMenu":19,"./scoretracker":22,"./timer":23}],15:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -850,7 +925,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -860,7 +935,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -928,7 +1003,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -949,7 +1024,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":13}],18:[function(require,module,exports){
+},{"./app":14}],19:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -974,7 +1049,7 @@ mainMenu.cursorData.w = 24;
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":6,"./mainTitle":19}],19:[function(require,module,exports){
+},{"./Constructors/menu":7,"./mainTitle":20}],20:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1017,7 +1092,7 @@ module.exports = {
     }
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1062,7 +1137,7 @@ exports.spaceFill = (val, digits) => {
     }
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var canvas          = require("./canvas");
 var toTenths        = require("./numstring").toTenths;
 
@@ -1154,7 +1229,7 @@ scoreTracker.tabulate = function() {
         ["Score", this.score],
         ["Time", this.timeRemaining],
         ["Multiplier", toTenths(this.multiplier)],
-        ["Time Bonus", this.timeBonus],
+        ["Time Bonus", toTenths(this.timeBonus)],
         ["Total", this.total],
         ["Grand Total", this.grandTotal]
     ];
@@ -1185,7 +1260,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":14,"./numstring":20}],22:[function(require,module,exports){
+},{"./canvas":15,"./numstring":21}],23:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1203,4 +1278,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[17]);
+},{}]},{},[18]);

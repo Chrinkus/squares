@@ -1,5 +1,6 @@
-var Background  = require("./background");
-var Cursor      = require("./cursor");
+var Background      = require("./background");
+var Cursor          = require("./cursor");
+var Confirmation    = require("./confirmation");
 
 function Menu(fontSize) {
     "use strict";
@@ -56,6 +57,11 @@ Menu.prototype.init = function(canvas, sceneLoaderHook) {
 
     this.cursor = new Cursor(this);
 
+    this.confirmation = new Confirmation(() => {
+        this.select(this.cursor.i);
+        delete this.confirmation;
+    }, " to confirm selection ");
+
 };
 
 Menu.prototype.draw = function(ctx) {
@@ -74,6 +80,13 @@ Menu.prototype.draw = function(ctx) {
     }
 
     this.cursor.draw(ctx);
+    this.confirmation.draw();
+};
+
+Menu.prototype.update = function(keysDown, delta) {
+
+    this.cursor.update(keysDown, delta);
+    this.confirmation.update(keysDown, delta);
 };
 
 Menu.prototype.select = function(i) {
