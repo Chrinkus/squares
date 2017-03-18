@@ -791,6 +791,10 @@ app.render = function() {
                     this.player.pellets, this.scenario.pellets);
             break;
 
+        case "complete":
+            this.scenario.draw(canvas.ctx);
+            scoreTracker.draw(this.scenario.colors.wall);
+
         default:
             // no default
     }
@@ -809,6 +813,10 @@ app.update = function(tStamp) {
             this.player.update(this.keysDown, this.scenario.actors,
                     scoreTracker);
             scoreTracker.timeUpdate(timer.delta);
+            if (this.player.pellets === this.scenario.pellets) {
+                this.state = "complete";
+                scoreTracker.tabulate();
+            }
             break;
 
         default:
@@ -1055,6 +1063,7 @@ exports.spaceFill = (val, digits) => {
 };
 
 },{}],21:[function(require,module,exports){
+var canvas          = require("./canvas");
 var toTenths        = require("./numstring").toTenths;
 
 var scoreTracker = {
@@ -1120,18 +1129,63 @@ scoreTracker.reset = function() {
     this.total = 0;
 };
 
-scoreTracker.tabulate = function(time) {
+scoreTracker.tabulate = function() {
     "use strict";
 
-    this.timeRemaining = time;
-    this.timeBonus = time * 10 * 25 * this.multiplier;
+    // Total up scores
+    this.timeRemaining = toTenths(this.timeRemaining);
+    this.timeBonus = this.timeRemaining * 25 * this.multiplier;
     this.total = this.score + this.timeBonus;
     this.grandTotal += this.total;
+
+    // Positioning properties
+    this.xC = canvas.width / 2;
+    this.yC = canvas.height / 2;
+    this.rectW = 336;
+    this.rectH = 252;
+    this.rectX = this.xC - this.rectW / 2;
+    this.rectY = this.yC - this.rectH / 2;
+    this.tXL = this.xC - 144;
+    this.tXR = this.xC + 144;
+    this.tYT = this.yC - 84;
+    this.lineHeight = 36;
+
+    this.fields = [
+        ["Score", this.score],
+        ["Time", this.timeRemaining],
+        ["Multiplier", toTenths(this.multiplier)],
+        ["Time Bonus", this.timeBonus],
+        ["Total", this.total],
+        ["Grand Total", this.grandTotal]
+    ];
+};
+
+scoreTracker.draw = function(color) {
+    "use strict";
+
+    var ctx = canvas.ctx;
+
+    ctx.fillStyle = color;
+    ctx.fillRect(this.rectX, this.rectY, this.rectW, this.rectH);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(this.rectX, this.rectY, this.rectW, this.rectH);
+
+    ctx.font = "24px monospace";
+    ctx.fillStyle = "white";
+
+    this.fields.forEach((field, i) => {
+        ctx.textAlign = "left";
+        ctx.fillText(field[0], this.tXL, this.tYT + i * this.lineHeight);
+        ctx.textAlign = "right";
+        ctx.fillText(field[1], this.tXR, this.tYT + i * this.lineHeight);
+    });
 };
 
 module.exports = scoreTracker;
 
-},{"./numstring":20}],22:[function(require,module,exports){
+},{"./canvas":14,"./numstring":20}],22:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,

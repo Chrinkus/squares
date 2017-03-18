@@ -79,6 +79,10 @@ app.render = function() {
                     this.player.pellets, this.scenario.pellets);
             break;
 
+        case "complete":
+            this.scenario.draw(canvas.ctx);
+            scoreTracker.draw(this.scenario.colors.wall);
+
         default:
             // no default
     }
@@ -97,6 +101,10 @@ app.update = function(tStamp) {
             this.player.update(this.keysDown, this.scenario.actors,
                     scoreTracker);
             scoreTracker.timeUpdate(timer.delta);
+            if (this.player.pellets === this.scenario.pellets) {
+                this.state = "complete";
+                scoreTracker.tabulate();
+            }
             break;
 
         default:
