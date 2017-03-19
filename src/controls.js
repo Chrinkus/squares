@@ -1,5 +1,5 @@
 var canvas          = require("./canvas");
-var Confirmation    = require("./confirmation");
+var Confirmation    = require("./Constructors/confirmation");
 
 var controls = {
 
@@ -24,13 +24,14 @@ var controls = {
 
 controls.draw = function() {
     "use strict";
+    var ctx = canvas.ctx;
 
     ctx.save();
 
     ctx.fillStyle = this.color;
     ctx.font = this.headerFont;
     ctx.textAlign = "center";
-    ctx.fillText("Movement", headX, topY);
+    ctx.fillText("Movement", this.headX, this.topY);
     ctx.font = this.fieldFont;
 
     this.moveFields.forEach((field, i) => {
@@ -42,3 +43,5 @@ controls.draw = function() {
 
     ctx.restore();
 };
+
+module.exports = controls;

@@ -1,22 +1,19 @@
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
-var mainMenu = new Menu(42);
+var font = 42,
+    colors = {
+        background: "black",
+        selections: "white",
+        cursor: "gold"
+    },
+    selections = [
+        "new game",
+        "leaderboards",
+        "controls"
+    ],
+    mainMenu = null;
 
-mainMenu.colors = {
-    background: "black",
-    selections: "white",
-    cursor: "gold"
-};
-
-mainMenu.selections = [
-    "new game",
-    "leaderboards",
-    "controls"
-];
-
-mainMenu.mainTitle = mainTitle;
-
-mainMenu.cursorData.w = 24;
+mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
