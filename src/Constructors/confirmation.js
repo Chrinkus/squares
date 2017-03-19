@@ -27,7 +27,7 @@ Confirmation.prototype.draw = function() {
     ctx.restore();
 };
 
-Confirmation.prototype.update = function(keysDown, delta) {
+Confirmation.prototype.update = function(keysDown) {
 
     if (32 in keysDown) {
         delete keysDown[32];
@@ -43,16 +43,17 @@ Confirmation.prototype.update = function(keysDown, delta) {
         }
 
         this.counter = 0;
-
     } else {
-
         this.counter += 1;
     }
 
     if (this.alpha <= 0) {
+
         this.alpha = 0;
         this.fadeOut = false;
+
     } else if (this.alpha >= 1) {
+
         this.alpha = 1;
         this.fadeOut = true;
     }
