@@ -975,46 +975,65 @@ module.exports = (mov, tar) => {
 
 },{}],17:[function(require,module,exports){
 var canvas          = require("./canvas");
-var Confirmation    = require("./Constructors/confirmation");
 
 var controls = {
 
     color: "white",
-    headerFont: "48px monospace",
-    fieldFont: "32px monospace",
+    headerFontSize: 48,
+    headerLineHeight: Math.floor(48 * 1.2),
+    fieldFontSize: 32,
+    fieldLineHeight: Math.floor(32 * 1.2),
 
-    headY: canvas.height / 2 - 200,
-    headX: canvas.width / 2,
-    moveY: canvas.height / 2 - 150,
-    moveXL: canvas.width / 2 - 200,
-    moveXR: canvas.width / 2 + 200,
-
+    header: "Movement",
     moveFields: [
         ["Arrows", "Hot Keys"],
+        ["======", "========"],
         ["Up", "W"],
         ["Left", "A"],
         ["Down", "S"],
         ["Right", "D"]
-    ]
+    ],
+
+    get textAreaHeight() {
+        delete this.textAreaHeight;
+        this.textAreaHeight = this.headerLineHeight + this.fieldLineHeight *
+                this.moveFields.length;
+    },
+
+    get positionProps() {
+        var xC = canvas.width / 2,
+            yC = canvas.height / 2;
+
+        this.headY = yC - this.textAreaHeight / 2 + this.headerFontSize;
+        this.headX = xC;
+        this.moveY = yC - this.textAreaHeight / 2 + this.headerLineHeight +
+            this.fieldLineHeight;
+        this.moveXL = xC - 150;
+        this.moveXR = xC + 150;
+    }
 };
 
 controls.draw = function() {
     "use strict";
     var ctx = canvas.ctx;
 
+    if (!this.headY) {
+        this.positionProps;
+    }
+
     ctx.save();
 
     ctx.fillStyle = this.color;
-    ctx.font = this.headerFont;
+    ctx.font = this.headerFontSize + "px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("Movement", this.headX, this.topY);
-    ctx.font = this.fieldFont;
+    ctx.fillText("Movement", this.headX, this.headY);
+    ctx.font = this.fieldFontSize + "px monospace";
 
     this.moveFields.forEach((field, i) => {
-        ctx.textAlign = "left";
-        ctx.fillText(field[0], this.moveXL, this.moveY + i * 40);
-        ctx.textAlign = "right";
-        ctx.fillText(field[1], this.moveXR, this.moveY + i * 40);
+        var y = this.moveY + i * 40;
+
+        ctx.fillText(field[0], this.moveXL, y);
+        ctx.fillText(field[1], this.moveXR, y);
     });
 
     ctx.restore();
@@ -1022,7 +1041,7 @@ controls.draw = function() {
 
 module.exports = controls;
 
-},{"./Constructors/confirmation":3,"./canvas":15}],18:[function(require,module,exports){
+},{"./canvas":15}],18:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
