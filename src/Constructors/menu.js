@@ -3,6 +3,7 @@ var Background      = require("./background");
 var Cursor          = require("./cursor");
 var Confirmation    = require("./confirmation");
 var controls        = require("../controls");
+var leaderboards    = require("../leaderboards");
 
 function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";
@@ -83,6 +84,7 @@ Menu.prototype.draw = function(ctx) {
 
         case "leaderboards":
             // leaderboards
+            leaderboards.draw();
             break;
 
         case "credits":
@@ -119,7 +121,14 @@ Menu.prototype.select = function(i) {
 
         case "leaderboards":
             // Display Hi Scores for each level
-            console.log("leaderboards selected");
+            this.menuState = "leaderboards";
+
+            this.confirmation = new Confirmation(() => {
+                delete this.confirmation;
+
+                this.menuState = "mainmenu";
+                this.mainConfirm();
+            }, " to return ");
             break;
 
         case "controls":
