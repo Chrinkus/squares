@@ -34,6 +34,10 @@ var app = {
 app.sceneLoader = function(i) {
     "use strict";
 
+    if (!this.scenes[i]) {
+        return this.init();
+    }
+
     this.scenario = this.scenes[i];
     this.currentScene = i;
     this.scenario.init(canvas);

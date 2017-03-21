@@ -100,6 +100,8 @@ scoreTracker.draw = function(color) {
 
     var ctx = canvas.ctx;
 
+    ctx.save();
+
     ctx.fillStyle = color;
     ctx.fillRect(this.rectX, this.rectY, this.rectW, this.rectH);
 
@@ -116,6 +118,8 @@ scoreTracker.draw = function(color) {
         ctx.textAlign = "right";
         ctx.fillText(field[1], this.tXR, this.tYT + i * this.lineHeight);
     });
+
+    ctx.restore();
 };
 
 module.exports = scoreTracker;

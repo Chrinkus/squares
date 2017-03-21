@@ -25,6 +25,8 @@ module.exports = {
 
     draw: function(ctx) {
 
+        ctx.save();
+
         // Main title
         ctx.fillStyle = this.colors.primary;
         ctx.font = this.font;
@@ -37,5 +39,7 @@ module.exports = {
         ctx.fillStyle = this.colors.secondary;
         ctx.fillRect(this.textX - 68, this.textY - 82, 24, 24);
         ctx.fillRect(this.textX - 128, this.textY - 46, 24, 24);
+
+        ctx.restore();
     }
 };

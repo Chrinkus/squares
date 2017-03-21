@@ -19,12 +19,16 @@ function TopLeft(label, color) {
 
 TopLeft.prototype.draw = function(ctx, val) {
 
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.font = this.font;
     ctx.textAlign = "left";
     ctx.fillText(this.label, this.xL, this.y);
     ctx.textAlign = "right";
     ctx.fillText(val, this.xR, this.y);
+
+    ctx.restore();
 };
 
 function TopRight(label, color) {
@@ -55,12 +59,16 @@ function TopMid(label, color) {
 
 TopMid.prototype.draw = function(ctx, val) {
 
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.textAlign = "center";
     //ctx.font = this.fontSmall;
     //ctx.fillText(this.label, this.x, this.ySmall);
     ctx.font = this.fontLarge;
     ctx.fillText(val, this.x, this.yLarge);
+
+    ctx.restore();
 };
 
 function BRCorner() {
@@ -89,6 +97,8 @@ function BRCorner() {
 
 BRCorner.prototype.draw = function(ctx, multiplier, playerP, sceneP) {
     
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.textAlign = "right";
     ctx.font = this.fontM;
@@ -98,6 +108,8 @@ BRCorner.prototype.draw = function(ctx, multiplier, playerP, sceneP) {
 
     ctx.fillStyle = this.pColor;
     ctx.fillRect(this.x, this.y, this.w, this.w);
+
+    ctx.restore();
 };
 
 exports.TopLeft = TopLeft;

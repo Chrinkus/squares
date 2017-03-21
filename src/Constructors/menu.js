@@ -60,6 +60,8 @@ Menu.prototype.draw = function(ctx) {
 
     this.background.draw(ctx);
 
+    ctx.save();
+
     switch (this.menuState) {
         case "mainmenu":
             ctx.fillStyle = this.colors.selections;
@@ -94,6 +96,8 @@ Menu.prototype.draw = function(ctx) {
         default:
             // no default
     }
+
+    ctx.restore();
 
     if (this.confirmation) {
         this.confirmation.draw();

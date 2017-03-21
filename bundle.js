@@ -156,8 +156,12 @@ function Cursor(menu) {
 
 Cursor.prototype.draw = function(ctx) {
     
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.fill(this.path(this.y + this.i * this.offSet));
+
+    ctx.restore();
 };
 
 Cursor.prototype.update = function(keysDown, delta) {
@@ -201,12 +205,16 @@ function TopLeft(label, color) {
 
 TopLeft.prototype.draw = function(ctx, val) {
 
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.font = this.font;
     ctx.textAlign = "left";
     ctx.fillText(this.label, this.xL, this.y);
     ctx.textAlign = "right";
     ctx.fillText(val, this.xR, this.y);
+
+    ctx.restore();
 };
 
 function TopRight(label, color) {
@@ -237,12 +245,16 @@ function TopMid(label, color) {
 
 TopMid.prototype.draw = function(ctx, val) {
 
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.textAlign = "center";
     //ctx.font = this.fontSmall;
     //ctx.fillText(this.label, this.x, this.ySmall);
     ctx.font = this.fontLarge;
     ctx.fillText(val, this.x, this.yLarge);
+
+    ctx.restore();
 };
 
 function BRCorner() {
@@ -271,6 +283,8 @@ function BRCorner() {
 
 BRCorner.prototype.draw = function(ctx, multiplier, playerP, sceneP) {
     
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.textAlign = "right";
     ctx.font = this.fontM;
@@ -280,6 +294,8 @@ BRCorner.prototype.draw = function(ctx, multiplier, playerP, sceneP) {
 
     ctx.fillStyle = this.pColor;
     ctx.fillRect(this.x, this.y, this.w, this.w);
+
+    ctx.restore();
 };
 
 exports.TopLeft = TopLeft;
@@ -350,6 +366,8 @@ Menu.prototype.draw = function(ctx) {
 
     this.background.draw(ctx);
 
+    ctx.save();
+
     switch (this.menuState) {
         case "mainmenu":
             ctx.fillStyle = this.colors.selections;
@@ -384,6 +402,8 @@ Menu.prototype.draw = function(ctx) {
         default:
             // no default
     }
+
+    ctx.restore();
 
     if (this.confirmation) {
         this.confirmation.draw();
@@ -912,6 +932,10 @@ var app = {
 app.sceneLoader = function(i) {
     "use strict";
 
+    if (!this.scenes[i]) {
+        return this.init();
+    }
+
     this.scenario = this.scenes[i];
     this.currentScene = i;
     this.scenario.init(canvas);
@@ -1212,6 +1236,8 @@ module.exports = {
 
     draw: function(ctx) {
 
+        ctx.save();
+
         // Main title
         ctx.fillStyle = this.colors.primary;
         ctx.font = this.font;
@@ -1224,6 +1250,8 @@ module.exports = {
         ctx.fillStyle = this.colors.secondary;
         ctx.fillRect(this.textX - 68, this.textY - 82, 24, 24);
         ctx.fillRect(this.textX - 128, this.textY - 46, 24, 24);
+
+        ctx.restore();
     }
 };
 
@@ -1375,6 +1403,8 @@ scoreTracker.draw = function(color) {
 
     var ctx = canvas.ctx;
 
+    ctx.save();
+
     ctx.fillStyle = color;
     ctx.fillRect(this.rectX, this.rectY, this.rectW, this.rectH);
 
@@ -1391,6 +1421,8 @@ scoreTracker.draw = function(color) {
         ctx.textAlign = "right";
         ctx.fillText(field[1], this.tXR, this.tYT + i * this.lineHeight);
     });
+
+    ctx.restore();
 };
 
 module.exports = scoreTracker;

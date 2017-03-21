@@ -26,8 +26,12 @@ function Cursor(menu) {
 
 Cursor.prototype.draw = function(ctx) {
     
+    ctx.save();
+
     ctx.fillStyle = this.color;
     ctx.fill(this.path(this.y + this.i * this.offSet));
+
+    ctx.restore();
 };
 
 Cursor.prototype.update = function(keysDown, delta) {
