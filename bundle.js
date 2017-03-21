@@ -179,7 +179,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":17,"./cooldown":4}],6:[function(require,module,exports){
+},{"../input":18,"./cooldown":4}],6:[function(require,module,exports){
 var canvas      = require("../canvas");
 
 var posUnit = Math.floor(canvas.width / 16),
@@ -288,56 +288,40 @@ exports.TopMid = TopMid;
 exports.BRCorner = BRCorner;
 
 },{"../canvas":15}],7:[function(require,module,exports){
+var canvas          = require("../canvas");
 var Background      = require("./background");
 var Cursor          = require("./cursor");
 var Confirmation    = require("./confirmation");
+var controls        = require("../controls");
 
-function Menu(fontSize) {
+function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";
 
-    // arg defined
+    this.menuState = "mainmenu";
+    this.mainTitle = mainTitle || null;
+    this.sceneLoaderHook = null;
+
+    // Styling
     this.fontSize = fontSize;
     this.font = fontSize + "px monospace";
     this.lineHeight = Math.floor(fontSize * 1.2);
+    this.colors = colors;
 
-    // explicitly defined
-    this.colors = null;
-    this.selections = null;
-    this.mainTitle = null;
-
-    // defined in this.init(canvas)
-    this.background = null;
-    this.cursor = null;
-    this.menuX = 0;
-    this.menuY = 0;
-    this.sceneLoaderHook = null;
-
-    // REVIEW need better solution 
-    this.cursorData = {
-        x: 0,
-        y: 0,
-        w: fontSize
-    };
-
-    // display toggle
-    this.active = false;
-}
-
-Menu.prototype.init = function(canvas, sceneLoaderHook) {
-
-    // main app hook
-    this.sceneLoaderHook = sceneLoaderHook;
-
-    // center menu by default
+    // Positioning: Default
     this.menuX = canvas.width / 2;
     this.menuY = canvas.height / 2 + this.lineHeight;
 
-    this.cursorData.x = this.menuX;
-    this.cursorData.y = this.menuY - this.cursorData.w;
-
+    // Content
+    this.selections = selections;
     this.background = new Background(canvas, this.colors.background);
 
-    if (this.mainTitle) {
+    this.cursorData = {
+        x: this.menuX,
+        y: this.menuY - 24,
+        w: 24
+    };
+
+    if (mainTitle) {
         this.mainTitle.init(canvas);
 
         // menu adjusments
@@ -346,37 +330,73 @@ Menu.prototype.init = function(canvas, sceneLoaderHook) {
     }
 
     this.cursor = new Cursor(this);
+}
+
+Menu.prototype.mainConfirm = function() {
 
     this.confirmation = new Confirmation(() => {
         delete this.confirmation;
         this.select(this.cursor.i);
     }, " to confirm selection ");
+};
 
+Menu.prototype.init = function(f) {
+    this.sceneLoaderHook = f;
+    this.mainConfirm();
 };
 
 Menu.prototype.draw = function(ctx) {
 
     this.background.draw(ctx);
 
-    ctx.fillStyle = this.colors.selections;
-    ctx.font = this.font;
-    
-    this.selections.forEach((selection, i) => {
-        ctx.fillText(selection, this.menuX, this.menuY + this.lineHeight * i);
-    });
+    switch (this.menuState) {
+        case "mainmenu":
+            ctx.fillStyle = this.colors.selections;
+            ctx.font = this.font;
+            
+            this.selections.forEach((selection, i) => {
+                ctx.fillText(selection, this.menuX,
+                        this.menuY + this.lineHeight * i);
+            });
 
-    if (this.mainTitle) {
-        this.mainTitle.draw(ctx);
+            if (this.mainTitle) {
+                this.mainTitle.draw(ctx);
+            }
+
+            this.cursor.draw(ctx);
+            break;
+
+        case "controls":
+            // controls
+            controls.draw();
+            break;
+
+        case "leaderboards":
+            // leaderboards
+            break;
+
+        case "credits":
+            // credits
+            break;
+
+        default:
+            // no default
     }
 
-    this.cursor.draw(ctx);
-    this.confirmation.draw();
+    if (this.confirmation) {
+        this.confirmation.draw();
+    }
 };
 
 Menu.prototype.update = function(keysDown, delta) {
 
-    this.cursor.update(keysDown, delta);
-    this.confirmation.update(keysDown, delta);
+    if (this.menuState === "mainmenu") {
+        this.cursor.update(keysDown, delta);
+    }
+
+    if (this.confirmation) {
+        this.confirmation.update(keysDown);
+    }
 };
 
 Menu.prototype.select = function(i) {
@@ -392,14 +412,20 @@ Menu.prototype.select = function(i) {
             console.log("leaderboards selected");
             break;
 
-        case "level select":
-            // Choose a level to start at
-            console.log("level select selected");
+        case "controls":
+            this.menuState = "controls";
+
+            this.confirmation = new Confirmation(() => {
+                delete this.confirmation;
+
+                this.menuState = "mainmenu";
+                this.mainConfirm();
+            }, " to return ");
             break;
 
-        case "controls":
-            // Display a list of the game controls
-            console.log("controls selected");
+        case "credits":
+            // Choose a level to start at
+            console.log("credits selected");
             break;
 
         default:
@@ -409,7 +435,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
+},{"../canvas":15,"../controls":17,"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -534,7 +560,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":16,"../input.js":17}],10:[function(require,module,exports){
+},{"../collision":16,"../input.js":18}],10:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -838,9 +864,11 @@ app.init = function() {
     "use strict";
 
     this.keysDown = keysDown();
-    mainMenu.init(canvas, (i) => {
+
+    mainMenu.init((i) => {
         this.sceneLoader(i);
     });
+
     this.state = "mainmenu";
 };
 
@@ -911,7 +939,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./canvas":15,"./input":17,"./mainMenu":19,"./scoretracker":22,"./timer":23}],15:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./canvas":15,"./input":18,"./mainMenu":20,"./scoretracker":23,"./timer":24}],15:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -946,6 +974,74 @@ module.exports = (mov, tar) => {
 };
 
 },{}],17:[function(require,module,exports){
+var canvas          = require("./canvas");
+
+var controls = {
+
+    color: "white",
+    headerFontSize: 48,
+    headerLineHeight: Math.floor(48 * 1.2),
+    fieldFontSize: 32,
+    fieldLineHeight: Math.floor(32 * 1.2),
+
+    header: "Movement",
+    moveFields: [
+        ["Arrows", "Hot Keys"],
+        ["======", "========"],
+        ["Up", "W"],
+        ["Left", "A"],
+        ["Down", "S"],
+        ["Right", "D"]
+    ],
+
+    get textAreaHeight() {
+        delete this.textAreaHeight;
+        this.textAreaHeight = this.headerLineHeight + this.fieldLineHeight *
+                this.moveFields.length;
+    },
+
+    get positionProps() {
+        var xC = canvas.width / 2,
+            yC = canvas.height / 2;
+
+        this.headY = yC - this.textAreaHeight / 2 + this.headerFontSize;
+        this.headX = xC;
+        this.moveY = yC - this.textAreaHeight / 2 + this.headerLineHeight +
+            this.fieldLineHeight;
+        this.moveXL = xC - 150;
+        this.moveXR = xC + 150;
+    }
+};
+
+controls.draw = function() {
+    "use strict";
+    var ctx = canvas.ctx;
+
+    if (!this.headY) {
+        this.positionProps;
+    }
+
+    ctx.save();
+
+    ctx.fillStyle = this.color;
+    ctx.font = this.headerFontSize + "px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Movement", this.headX, this.headY);
+    ctx.font = this.fieldFontSize + "px monospace";
+
+    this.moveFields.forEach((field, i) => {
+        var y = this.moveY + i * 40;
+
+        ctx.fillText(field[0], this.moveXL, y);
+        ctx.fillText(field[1], this.moveXR, y);
+    });
+
+    ctx.restore();
+};
+
+module.exports = controls;
+
+},{"./canvas":15}],18:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -1013,7 +1109,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1034,31 +1130,28 @@ var app = require("./app");
 
 }());
 
-},{"./app":14}],19:[function(require,module,exports){
+},{"./app":14}],20:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
-var mainMenu = new Menu(42);
+var font = 42,
+    colors = {
+        background: "black",
+        selections: "white",
+        cursor: "gold"
+    },
+    selections = [
+        "new game",
+        "leaderboards",
+        "controls"
+    ],
+    mainMenu = null;
 
-mainMenu.colors = {
-    background: "black",
-    selections: "white",
-    cursor: "gold"
-};
-
-mainMenu.selections = [
-    "new game",
-    "leaderboards",
-    "controls"
-];
-
-mainMenu.mainTitle = mainTitle;
-
-mainMenu.cursorData.w = 24;
+mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":7,"./mainTitle":20}],20:[function(require,module,exports){
+},{"./Constructors/menu":7,"./mainTitle":21}],21:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1101,7 +1194,7 @@ module.exports = {
     }
 };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1146,7 +1239,7 @@ exports.spaceFill = (val, digits) => {
     }
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var canvas          = require("./canvas");
 var toTenths        = require("./numstring").toTenths;
 
@@ -1269,7 +1362,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":15,"./numstring":21}],23:[function(require,module,exports){
+},{"./canvas":15,"./numstring":22}],24:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1287,4 +1380,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[18]);
+},{}]},{},[19]);

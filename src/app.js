@@ -54,9 +54,11 @@ app.init = function() {
     "use strict";
 
     this.keysDown = keysDown();
-    mainMenu.init(canvas, (i) => {
+
+    mainMenu.init((i) => {
         this.sceneLoader(i);
     });
+
     this.state = "mainmenu";
 };
 
