@@ -1,15 +1,16 @@
 # SQUARES
 
-Navigate the maze to collect the golden pellets.
+Navigate the maze to collect the golden pellets. The more you eat, the more you grow, but touch the walls and something something about shrinking that rhymes with grow.
 
-Use WASD or the arrow keys to move. Eat pellets to grow your size and score multiplier but don't touch the walls!
+Use WASD or the arrow keys to move.
 
-March 18th/2017
-- Score summaries are active
-- Game progresses to level 3 then crashes upon completion
+March 21st, 2017
+- Selecting Leaderboards & Controls from the main menu produces appropriate content
+- Completing available levels returns the user to the main menu
+- Level 3 added to game
 
 Next goals:
-- Add one page screens for controls and end of game
-- Upon completion of game, confirmation resets to main menu
-- Complete levels 3 & 4
 - Explore the Web Storage API for saving local leaderboards
+- Design and add level 4 to game
+- Begin necessary work on level 5 tools
+- Review code for abstraction opportunities
