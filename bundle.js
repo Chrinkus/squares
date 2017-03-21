@@ -107,7 +107,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"../canvas":15}],4:[function(require,module,exports){
+},{"../canvas":16}],4:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -179,7 +179,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":18,"./cooldown":4}],6:[function(require,module,exports){
+},{"../input":19,"./cooldown":4}],6:[function(require,module,exports){
 var canvas      = require("../canvas");
 
 var posUnit = Math.floor(canvas.width / 16),
@@ -287,12 +287,13 @@ exports.TopRight = TopRight;
 exports.TopMid = TopMid;
 exports.BRCorner = BRCorner;
 
-},{"../canvas":15}],7:[function(require,module,exports){
+},{"../canvas":16}],7:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("./background");
 var Cursor          = require("./cursor");
 var Confirmation    = require("./confirmation");
 var controls        = require("../controls");
+var leaderboards    = require("../leaderboards");
 
 function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";
@@ -373,6 +374,7 @@ Menu.prototype.draw = function(ctx) {
 
         case "leaderboards":
             // leaderboards
+            leaderboards.draw();
             break;
 
         case "credits":
@@ -409,7 +411,14 @@ Menu.prototype.select = function(i) {
 
         case "leaderboards":
             // Display Hi Scores for each level
-            console.log("leaderboards selected");
+            this.menuState = "leaderboards";
+
+            this.confirmation = new Confirmation(() => {
+                delete this.confirmation;
+
+                this.menuState = "mainmenu";
+                this.mainConfirm();
+            }, " to return ");
             break;
 
         case "controls":
@@ -435,7 +444,66 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../canvas":15,"../controls":17,"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
+},{"../canvas":16,"../controls":18,"../leaderboards":20,"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
+var canvas          = require("../canvas");
+
+function Page(pageTitle, pageFields, columnStyle) {
+    "use strict";
+    var xC = canvas.width / 2,
+        yC = canvas.height / 2;
+
+    this.pageTitle = pageTitle;
+    this.pageFields = pageFields;
+    this.leftColumnAlign = columnStyle === "spread" ? "left" : columnStyle;
+    this.rightColumnAlign = columnStyle === "spread" ? "right" : columnStyle;
+
+    this.textColor = "white";
+    this.headerFontSize = 48;
+    this.headerFont = this.headerFontSize + "px monospace";
+    this.headerLineHeight = Math.floor(this.headerFontSize * 1.2);
+    this.fieldFontSize = 32;
+    this.fieldFont = this.fieldFontSize + "px monospace";
+    this.fieldLineHeight = Math.floor(this.fieldFontSize * 1.2);
+    this.textAreaWidth = columnStyle === "spread" ? 400 : 300;
+    this.textAreaHeight = this.headerLineHeight + this.fieldLineHeight *
+            this.pageFields.length;
+    
+    // Positions text slightly above middle
+    this.headY = yC - this.textAreaHeight / 2;
+    this.headX = xC;
+    this.fieldY = yC - this.textAreaHeight / 2 + this.headerLineHeight; 
+    this.fieldXL = xC - this.textAreaWidth / 2;
+    this.fieldXR = xC + this.textAreaWidth / 2;
+}
+
+Page.prototype.draw = function() {
+
+    var ctx = canvas.ctx;
+
+    ctx.save();
+
+    ctx.fillStyle = this.textColor;
+    ctx.font = this.headerFont;
+    ctx.textAlign = "center";
+    ctx.fillText(this.pageTitle, this.headX, this.headY);
+    ctx.font = this.fieldFont;
+
+    this.pageFields.forEach((field, i) => {
+        var y = this.fieldY + i * this.fieldLineHeight;
+
+        ctx.textAlign = this.leftColumnAlign;
+        ctx.fillText(field[0], this.fieldXL, y);
+
+        ctx.textAlign = this.rightColumnAlign;
+        ctx.fillText(field[1], this.fieldXR, y);
+    });
+
+    ctx.restore();
+};
+
+module.exports = Page;
+
+},{"../canvas":16}],9:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -463,7 +531,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
@@ -560,7 +628,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":16,"../input.js":18}],10:[function(require,module,exports){
+},{"../collision":17,"../input.js":19}],11:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -666,7 +734,7 @@ Scene.prototype.init = function(canvas) {
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./pellet":8}],11:[function(require,module,exports){
+},{"./background":1,"./block":2,"./pellet":9}],12:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level1 = new Scene(32);
@@ -707,7 +775,7 @@ level1.planReader();
 
 module.exports = level1;
 
-},{"../Constructors/scene":10}],12:[function(require,module,exports){
+},{"../Constructors/scene":11}],13:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level2 = new Scene(32);
@@ -748,7 +816,7 @@ level2.planReader();
 
 module.exports = level2;
 
-},{"../Constructors/scene":10}],13:[function(require,module,exports){
+},{"../Constructors/scene":11}],14:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level3 = new Scene(16);
@@ -807,7 +875,7 @@ level3.planReader();
 
 module.exports = level3;
 
-},{"../Constructors/scene":10}],14:[function(require,module,exports){
+},{"../Constructors/scene":11}],15:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
@@ -939,7 +1007,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./canvas":15,"./input":18,"./mainMenu":20,"./scoretracker":23,"./timer":24}],15:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":10,"./Levels/level1":12,"./Levels/level2":13,"./Levels/level3":14,"./canvas":16,"./input":19,"./mainMenu":22,"./scoretracker":25,"./timer":26}],16:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -963,7 +1031,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -973,75 +1041,23 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],17:[function(require,module,exports){
-var canvas          = require("./canvas");
+},{}],18:[function(require,module,exports){
+var Page            = require("./Constructors/page");
 
-var controls = {
-
-    color: "white",
-    headerFontSize: 48,
-    headerLineHeight: Math.floor(48 * 1.2),
-    fieldFontSize: 32,
-    fieldLineHeight: Math.floor(32 * 1.2),
-
-    header: "Movement",
-    moveFields: [
-        ["Arrows", "Hot Keys"],
-        ["======", "========"],
+var pageTitle = "Movement",
+    pageFields = [
+        ["Direction", "Hot Keys"],
+        ["=========", "========"],
         ["Up", "W"],
         ["Left", "A"],
         ["Down", "S"],
         ["Right", "D"]
     ],
+    columnStyle = "center";
 
-    get textAreaHeight() {
-        delete this.textAreaHeight;
-        this.textAreaHeight = this.headerLineHeight + this.fieldLineHeight *
-                this.moveFields.length;
-    },
+module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-    get positionProps() {
-        var xC = canvas.width / 2,
-            yC = canvas.height / 2;
-
-        this.headY = yC - this.textAreaHeight / 2 + this.headerFontSize;
-        this.headX = xC;
-        this.moveY = yC - this.textAreaHeight / 2 + this.headerLineHeight +
-            this.fieldLineHeight;
-        this.moveXL = xC - 150;
-        this.moveXR = xC + 150;
-    }
-};
-
-controls.draw = function() {
-    "use strict";
-    var ctx = canvas.ctx;
-
-    if (!this.headY) {
-        this.positionProps;
-    }
-
-    ctx.save();
-
-    ctx.fillStyle = this.color;
-    ctx.font = this.headerFontSize + "px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText("Movement", this.headX, this.headY);
-    ctx.font = this.fieldFontSize + "px monospace";
-
-    this.moveFields.forEach((field, i) => {
-        var y = this.moveY + i * 40;
-
-        ctx.fillText(field[0], this.moveXL, y);
-        ctx.fillText(field[1], this.moveXR, y);
-    });
-
-    ctx.restore();
-};
-
-module.exports = controls;
-
-},{"./canvas":15}],18:[function(require,module,exports){
+},{"./Constructors/page":8}],19:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -1109,7 +1125,24 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
+var Page            = require("./Constructors/page");
+
+var pageTitle = "High Scores",
+    pageFields = [
+        ["Level", "Score"],
+        ["=====", "====="],
+        ["Goggles", "2000"],
+        ["Hogan", "2000"],
+        ["Maise", "4000"],
+        ["Trash", "TBD"],
+        ["Village", "TBD"]
+    ],
+    columnStyle = "spread";
+
+module.exports = new Page(pageTitle, pageFields, columnStyle);
+
+},{"./Constructors/page":8}],21:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1130,7 +1163,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":14}],20:[function(require,module,exports){
+},{"./app":15}],22:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1151,7 +1184,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":7,"./mainTitle":21}],21:[function(require,module,exports){
+},{"./Constructors/menu":7,"./mainTitle":23}],23:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1194,7 +1227,7 @@ module.exports = {
     }
 };
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1239,7 +1272,7 @@ exports.spaceFill = (val, digits) => {
     }
 };
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var canvas          = require("./canvas");
 var toTenths        = require("./numstring").toTenths;
 
@@ -1362,7 +1395,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":15,"./numstring":22}],24:[function(require,module,exports){
+},{"./canvas":16,"./numstring":24}],26:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1380,4 +1413,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[19]);
+},{}]},{},[21]);
