@@ -29,8 +29,8 @@ level2.hiScore = 2000;      // temp solution
 level2.playerData.color = "white";
 
 level2.colors = {
-    background: "cornflowerblue",
-    wall: "indigo",
+    background: "indigo",
+    wall: "magenta",
     pellet: "gold"
 };
 

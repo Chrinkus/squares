@@ -107,7 +107,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"../canvas":16}],4:[function(require,module,exports){
+},{"../canvas":17}],4:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -183,7 +183,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":19,"./cooldown":4}],6:[function(require,module,exports){
+},{"../input":20,"./cooldown":4}],6:[function(require,module,exports){
 var canvas      = require("../canvas");
 
 var posUnit = Math.floor(canvas.width / 16),
@@ -303,7 +303,7 @@ exports.TopRight = TopRight;
 exports.TopMid = TopMid;
 exports.BRCorner = BRCorner;
 
-},{"../canvas":16}],7:[function(require,module,exports){
+},{"../canvas":17}],7:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("./background");
 var Cursor          = require("./cursor");
@@ -464,7 +464,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../canvas":16,"../controls":18,"../leaderboards":20,"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
+},{"../canvas":17,"../controls":19,"../leaderboards":21,"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle) {
@@ -523,7 +523,7 @@ Page.prototype.draw = function() {
 
 module.exports = Page;
 
-},{"../canvas":16}],9:[function(require,module,exports){
+},{"../canvas":17}],9:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -648,7 +648,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":17,"../input.js":19}],11:[function(require,module,exports){
+},{"../collision":18,"../input.js":20}],11:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -766,12 +766,12 @@ level1.plan = [
     "#                              #",
     "#  *                        *  #",
     "#      ###            ###      #",
-    "#     ####            ####     #",
-    "#  *  ####            ####  *  #",
-    "#     ####            ####     #",
-    "#     ####            ####     #",
-    "#  *  ####            ####  *  #",
-    "#     ####            ####     #",
+    "#     #####          #####     #",
+    "#  *  #####          #####  *  #",
+    "#     #####          #####     #",
+    "#     #####          #####     #",
+    "#  *  #####          #####  *  #",
+    "#     #####          #####     #",
     "#      ###            ###      #",
     "#  *                        *  #",
     "#                              #",
@@ -787,7 +787,7 @@ level1.playerData.color = "white";
 
 level1.colors = {
     background: "red",
-    wall: "black",
+    wall: "midnightblue",
     pellet: "gold"
 };
 
@@ -827,8 +827,8 @@ level2.hiScore = 2000;      // temp solution
 level2.playerData.color = "white";
 
 level2.colors = {
-    background: "cornflowerblue",
-    wall: "indigo",
+    background: "indigo",
+    wall: "magenta",
     pellet: "gold"
 };
 
@@ -844,26 +844,26 @@ var level3 = new Scene(16);
 level3.plan = [
     "################################################################",
     "#              #           #                                   #",
-    "#              #           #      *                     *      #",
+    "#              #           #                                   #",
     "#    *    *    #           #                                   #",
     "#              #           #                                   #",
-    "# *  ######  * #           #     #       #########       #     #",
-    "#    #    #    #     #     #     ##       #     #       ##     #",
-    "#    # @  #    #  *  #     #     # #       #   #       # #     #",
-    "#    #    #    #     #     #     #  #       # #       #  #     #",
-    "# *  #    #  * #######     #     #   #       #       #   #     #",
+    "# *  ######  * #           #     #    *   #######   *    #     #",
+    "#    #    #    #     #     #     ##        #   #        ##     #",
+    "#    # @  #    #  *  #     #     # #        # #        # #     #",
+    "#    #    #    #     #     #     #  #        #        #  #     #",
+    "# *  #    #  * #######     #     #   #               #   #     #",
     "#              #     #     #     #    #             #    #     #",
-    "#    *    *    #     #     #     #     #           #     #     #",
-    "#              #           #     #     #           #     #     #",
+    "#    *    *    #     #     #     #     #     *     #     #     #",
+    "#              #           #     #     #     *     #     #     #",
     "#              #           #     #    #             #    #     #",
-    "#######        #           #     #   #       #       #   #     #",
-    "#              #           #     #  #       # #       #  #     #",
-    "#         *    #     #     #     # #       #   #       # #     #",
-    "#              #     #     #     ##       #     #       ##     #",
-    "#              #     #######     #       #########       #     #",
+    "#######        #           #     #   #               #   #     #",
+    "#              #           #     #  #        #        #  #     #",
+    "#         *    #     #     #     # #        # #        # #     #",
+    "#              #     #     #     ##        #   #        ##     #",
+    "#              #     #######     #    *   #######   *    #     #",
     "#        #######                                               #",
     "#              #                                               #",
-    "#    *         #                  *                     *      #",
+    "#    *         #                                               #",
     "#              #                                               #",
     "#              ###########################################  *  #",
     "#######        #  #  #  #  #  #  #  #  #  #  #           #     #",
@@ -872,7 +872,7 @@ level3.plan = [
     "#              #           #                             #     #",
     "#              #                                   #     #     #",
     "#        #######                             #     #     #     #",
-    "#                                      #     #     #     #  *  #",
+    "#                                      #     #     #     #     #",
     "#                                #     #     #     #           #",
     "#    *                     #     #     #     #                 #",
     "#                    #  *  #     #  *           *              #",
@@ -880,13 +880,13 @@ level3.plan = [
     "################################################################"
 ];
 
-level3.timer = 60;
-level3.hiScore = 5000;      // temp solution
+level3.timer = 50;
+level3.hiScore = 4000;      // temp solution
 
 level3.playerData.color = "white";
 
 level3.colors = {
-    background: "grey",
+    background: "black",
     wall: "green",
     pellet: "gold"
 };
@@ -896,6 +896,47 @@ level3.planReader();
 module.exports = level3;
 
 },{"../Constructors/scene":11}],15:[function(require,module,exports){
+var Scene = require("../Constructors/scene");
+
+var level4 = new Scene(32);
+
+level4.plan = [
+    "################################",
+    "#       # @  #                 #",
+    "#       #    #      *   *      #",
+    "#   ### #### #        #        #",
+    "#   #*#    # #       ###       #",
+    "#   # #    # #        #        #",
+    "#   # ###  # #      *   *      #",
+    "#   #   #  #  #                #",
+    "#   ### #  #   #          ###  #",
+    "#     # #  #    #  ##   ##   * #",
+    "#     # #  #        # ##   ##  #",
+    "#   ### ####     *  ##   ##    #",
+    "#   #         *         #      #",
+    "#   # ######      * ##   #     #",
+    "#   # #    #    *   # ## #     #",
+    "# ### #    #********#  # *     #",
+    "# #*  #    #********#  #       #",
+    "################################"
+];
+
+level4.timer = 40;
+level4.hiScore = 3000;      // temp solution
+
+level4.playerData.color = "white";
+
+level4.colors = {
+    background: "gray",
+    wall: "sienna",
+    pellet: "gold"
+};
+
+level4.planReader();
+
+module.exports = level4;
+
+},{"../Constructors/scene":11}],16:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
@@ -907,6 +948,7 @@ var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
 var level3          = require("./Levels/level3");
+var level4          = require("./Levels/level4");
 
 var app = {
 
@@ -923,7 +965,8 @@ var app = {
     scenes: [
         level1,
         level2,
-        level3
+        level3,
+        level4
     ],
 
     state: ""
@@ -1031,7 +1074,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":10,"./Levels/level1":12,"./Levels/level2":13,"./Levels/level3":14,"./canvas":16,"./input":19,"./mainMenu":22,"./scoretracker":25,"./timer":26}],16:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":10,"./Levels/level1":12,"./Levels/level2":13,"./Levels/level3":14,"./Levels/level4":15,"./canvas":17,"./input":20,"./mainMenu":23,"./scoretracker":26,"./timer":27}],17:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -1055,7 +1098,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -1065,7 +1108,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var pageTitle = "Movement",
@@ -1081,7 +1124,7 @@ var pageTitle = "Movement",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./Constructors/page":8}],19:[function(require,module,exports){
+},{"./Constructors/page":8}],20:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -1149,7 +1192,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var pageTitle = "High Scores",
@@ -1166,7 +1209,7 @@ var pageTitle = "High Scores",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./Constructors/page":8}],21:[function(require,module,exports){
+},{"./Constructors/page":8}],22:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1187,7 +1230,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":15}],22:[function(require,module,exports){
+},{"./app":16}],23:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1208,7 +1251,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":7,"./mainTitle":23}],23:[function(require,module,exports){
+},{"./Constructors/menu":7,"./mainTitle":24}],24:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1255,7 +1298,7 @@ module.exports = {
     }
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1300,7 +1343,7 @@ exports.spaceFill = (val, digits) => {
     }
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var canvas          = require("./canvas");
 var toTenths        = require("./numstring").toTenths;
 
@@ -1427,7 +1470,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":16,"./numstring":24}],26:[function(require,module,exports){
+},{"./canvas":17,"./numstring":25}],27:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1445,4 +1488,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[21]);
+},{}]},{},[22]);

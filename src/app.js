@@ -9,6 +9,7 @@ var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
 var level3          = require("./Levels/level3");
+var level4          = require("./Levels/level4");
 
 var app = {
 
@@ -25,7 +26,8 @@ var app = {
     scenes: [
         level1,
         level2,
-        level3
+        level3,
+        level4
     ],
 
     state: ""
