@@ -26,18 +26,10 @@ exports.toTenths = (val) => {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 exports.spaceFill = (val, digits) => {
     "use strict";
-    var l = val.toString().length,
-        spaces = "",
-        i, diff;
+    var valString = val.toString();
 
-    if (l < digits) {
-
-        for (i = 0, diff = digits - l; i < diff; i++) {
-            spaces += " ";
-        }
-
-        return spaces + val;
-    } else {
-        return val.toString();
+    while (valString.length < digits) {
+        valString = " " + valString;
     }
+    return valStr;
 };
