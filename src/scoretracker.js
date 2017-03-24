@@ -8,7 +8,8 @@ var scoreTracker = {
     timeRemaining: 0,
     timeBonus: 0,
     total: 0,
-    grandTotal: 0
+    grandTotal: 0,
+    hiScore: 0
 };
 
 scoreTracker.timeUpdate = function(delta) {

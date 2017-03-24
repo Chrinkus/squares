@@ -107,7 +107,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"../canvas":17}],4:[function(require,module,exports){
+},{"../canvas":16}],4:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -183,127 +183,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":20,"./cooldown":4}],6:[function(require,module,exports){
-var canvas      = require("../canvas");
-
-var posUnit = Math.floor(canvas.width / 16),
-    padding = 8,
-    fontSize = 24;
-
-function TopLeft(label, color) {
-    "use strict";
-
-    this.fontSize = fontSize;
-    this.y = padding + this.fontSize;
-    this.xL = posUnit * 2;
-    this.xR = posUnit * 5;
-
-    this.label = label;
-    this.color = color;
-    this.font = `${this.fontSize}px monospace`;
-}
-
-TopLeft.prototype.draw = function(ctx, val) {
-
-    ctx.save();
-
-    ctx.fillStyle = this.color;
-    ctx.font = this.font;
-    ctx.textAlign = "left";
-    ctx.fillText(this.label, this.xL, this.y);
-    ctx.textAlign = "right";
-    ctx.fillText(val, this.xR, this.y);
-
-    ctx.restore();
-};
-
-function TopRight(label, color) {
-    "use strict";
-
-    TopLeft.call(this, label, color);
-
-    this.xL = canvas.width - posUnit * 5;
-    this.xR = canvas.width - posUnit * 2;
-}
-
-TopRight.prototype = Object.create(TopLeft.prototype);
-
-function TopMid(label, color) {
-    "use strict";
-
-    this.fontSizeLarge = fontSize * 2;
-    this.fontSizeSmall = fontSize / 2;
-    this.yLarge = padding + this.fontSizeLarge;
-    this.ySmall = padding + this.fontSizeSmall;
-    this.x = canvas.width / 2;
-
-    this.label = label;
-    this.color = color;
-    this.fontLarge = `${this.fontSizeLarge}px monospace`;
-    this.fontSmall = `${this.fontSizeSmall}px monospace`;
-}
-
-TopMid.prototype.draw = function(ctx, val) {
-
-    ctx.save();
-
-    ctx.fillStyle = this.color;
-    ctx.textAlign = "center";
-    //ctx.font = this.fontSmall;
-    //ctx.fillText(this.label, this.x, this.ySmall);
-    ctx.font = this.fontLarge;
-    ctx.fillText(val, this.x, this.yLarge);
-
-    ctx.restore();
-};
-
-function BRCorner() {
-    "use strict";
-
-    this.color = "white";
-
-    // Pellets
-    this.fontSizeP = fontSize;
-    this.fontP = `${this.fontSizeP}px monospace`;
-    this.xP = canvas.width - fontSize - fontSize;
-    this.yP = canvas.height - fontSize;
-
-    // Pellet
-    this.pColor = "gold";
-    this.x = this.xP + 4;
-    this.y = this.yP - 16;
-    this.w = 16;
-
-    // Multiplier
-    this.fontSizeM = fontSize * 2;
-    this.fontM = `${this.fontSizeM}px monospace`;
-    this.xM = canvas.width - fontSize;
-    this.yM = canvas.height - fontSize - this.fontSizeP;
-}
-
-BRCorner.prototype.draw = function(ctx, multiplier, playerP, sceneP) {
-    
-    ctx.save();
-
-    ctx.fillStyle = this.color;
-    ctx.textAlign = "right";
-    ctx.font = this.fontM;
-    ctx.fillText("x" + multiplier, this.xM, this.yM);
-    ctx.font = this.fontP;
-    ctx.fillText(playerP + " / " + sceneP, this.xP, this.yP);
-
-    ctx.fillStyle = this.pColor;
-    ctx.fillRect(this.x, this.y, this.w, this.w);
-
-    ctx.restore();
-};
-
-exports.TopLeft = TopLeft;
-exports.TopRight = TopRight;
-exports.TopMid = TopMid;
-exports.BRCorner = BRCorner;
-
-},{"../canvas":17}],7:[function(require,module,exports){
+},{"../input":19,"./cooldown":4}],6:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("./background");
 var Cursor          = require("./cursor");
@@ -464,7 +344,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../canvas":17,"../controls":19,"../leaderboards":21,"./background":1,"./confirmation":3,"./cursor":5}],8:[function(require,module,exports){
+},{"../canvas":16,"../controls":18,"../leaderboards":20,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle) {
@@ -523,7 +403,7 @@ Page.prototype.draw = function() {
 
 module.exports = Page;
 
-},{"../canvas":17}],9:[function(require,module,exports){
+},{"../canvas":16}],8:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -551,7 +431,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var collision = require("../collision");
 var move8 = require("../input.js").move8;
 
@@ -648,7 +528,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":18,"../input.js":20}],11:[function(require,module,exports){
+},{"../collision":17,"../input.js":19}],10:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -754,10 +634,15 @@ Scene.prototype.init = function(canvas) {
 
 module.exports = Scene;
 
-},{"./background":1,"./block":2,"./pellet":9}],12:[function(require,module,exports){
+},{"./background":1,"./block":2,"./pellet":8}],11:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level1 = new Scene(32);
+
+level1.name = "Level 1";
+level1.defaultScore = 1000;
+
+level1.timer = 20;
 
 level1.plan = [
     "################################",
@@ -780,9 +665,6 @@ level1.plan = [
     "################################"
 ];
 
-level1.timer = 20;
-level1.hiScore = 2000;      // temp solution
-
 level1.playerData.color = "white";
 
 level1.colors = {
@@ -795,10 +677,15 @@ level1.planReader();
 
 module.exports = level1;
 
-},{"../Constructors/scene":11}],13:[function(require,module,exports){
+},{"../Constructors/scene":10}],12:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level2 = new Scene(32);
+
+level2.name = "Level 2";
+level2.defaultScore = 1000;
+
+level2.timer = 20;
 
 level2.plan = [
     "################################",
@@ -821,9 +708,6 @@ level2.plan = [
     "################################"
 ];
 
-level2.timer = 20;
-level2.hiScore = 2000;      // temp solution
-
 level2.playerData.color = "white";
 
 level2.colors = {
@@ -836,10 +720,15 @@ level2.planReader();
 
 module.exports = level2;
 
-},{"../Constructors/scene":11}],14:[function(require,module,exports){
+},{"../Constructors/scene":10}],13:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level3 = new Scene(16);
+
+level3.name = "Level 3";
+level3.defaultScore = 2000;
+
+level3.timer = 50;
 
 level3.plan = [
     "################################################################",
@@ -880,9 +769,6 @@ level3.plan = [
     "################################################################"
 ];
 
-level3.timer = 50;
-level3.hiScore = 4000;      // temp solution
-
 level3.playerData.color = "white";
 
 level3.colors = {
@@ -895,34 +781,36 @@ level3.planReader();
 
 module.exports = level3;
 
-},{"../Constructors/scene":11}],15:[function(require,module,exports){
+},{"../Constructors/scene":10}],14:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
 var level4 = new Scene(32);
 
-level4.plan = [
-    "################################",
-    "#       # @  #                 #",
-    "#       #    #      *   *      #",
-    "#   ### #### #        #        #",
-    "#   #*#    # #       ###       #",
-    "#   # #    # #        #        #",
-    "#   # ###  # #      *   *      #",
-    "#   #   #  #  #                #",
-    "#   ### #  #   #          ###  #",
-    "#     # #  #    #  ##   ##   * #",
-    "#     # #  #        # ##   ##  #",
-    "#   ### ####     *  ##   ##    #",
-    "#   #         *         #      #",
-    "#   # ######      * ##   #     #",
-    "#   # #    #    *   # ## #     #",
-    "# ### #    #********#  # *     #",
-    "# #*  #    #********#  #       #",
-    "################################"
-];
+level4.name = "Level 4";
+level4.defaultScore = 1000;
 
 level4.timer = 40;
-level4.hiScore = 3000;      // temp solution
+
+level4.plan = [
+    "################################",
+    "######### @  #                 #",
+    "#########    #      *   *      #",
+    "############ #        #        #",
+    "#####*###### #       ###       #",
+    "##### ##   # #        #        #",
+    "## ## ###### #      *   *      #",
+    "## ##   ####  #                #",
+    "####### ####   #          ###  #",
+    "####### ####    #  ##   ##   * #",
+    "####### ####        # ##   ##  #",
+    "## #### ####     *  ##   ##    #",
+    "## ##         *         #      #",
+    "## ## ######      * ##   #     #",
+    "##### ##  ##    *   # ## #     #",
+    "##### ##  ##********#  # *     #",
+    "###*  ######********#  #       #",
+    "################################"
+];
 
 level4.playerData.color = "white";
 
@@ -936,14 +824,14 @@ level4.planReader();
 
 module.exports = level4;
 
-},{"../Constructors/scene":11}],16:[function(require,module,exports){
+},{"../Constructors/scene":10}],15:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
-var Hud             = require("./Constructors/hud");
 var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
+var overlay         = require("./overlay");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
@@ -951,13 +839,6 @@ var level3          = require("./Levels/level3");
 var level4          = require("./Levels/level4");
 
 var app = {
-
-    hud : {
-        score: new Hud.TopLeft("Score", "white"),
-        timer: new Hud.TopMid("Time", "white"),
-        total: new Hud.TopRight("Hi Score", "white"),
-        corner: new Hud.BRCorner()
-    },
 
     player: null,
     scenario: null,
@@ -1022,11 +903,8 @@ app.render = function() {
             this.scenario.draw(canvas.ctx);
             this.player.draw(canvas.ctx);
 
-            this.hud.score.draw(canvas.ctx, scoreTracker.score);
-            this.hud.timer.draw(canvas.ctx, scoreTracker.displayTime());
-            this.hud.total.draw(canvas.ctx, this.scenario.hiScore);
-            this.hud.corner.draw(canvas.ctx, scoreTracker.displayMulti(),
-                    this.player.pellets, this.scenario.pellets);
+            overlay.draw(scoreTracker, this.player.pellets,
+                    this.scenario.pellets);
             break;
 
         case "complete":
@@ -1074,7 +952,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/hud":6,"./Constructors/player":10,"./Levels/level1":12,"./Levels/level2":13,"./Levels/level3":14,"./Levels/level4":15,"./canvas":17,"./input":20,"./mainMenu":23,"./scoretracker":26,"./timer":27}],17:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":19,"./mainMenu":22,"./overlay":25,"./scoretracker":26,"./timer":27}],16:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -1098,7 +976,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -1108,7 +986,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var pageTitle = "Movement",
@@ -1124,7 +1002,7 @@ var pageTitle = "Movement",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./Constructors/page":8}],20:[function(require,module,exports){
+},{"./Constructors/page":7}],19:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -1192,7 +1070,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var pageTitle = "High Scores",
@@ -1209,7 +1087,7 @@ var pageTitle = "High Scores",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./Constructors/page":8}],22:[function(require,module,exports){
+},{"./Constructors/page":7}],21:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1230,7 +1108,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":16}],23:[function(require,module,exports){
+},{"./app":15}],22:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1251,7 +1129,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":7,"./mainTitle":24}],24:[function(require,module,exports){
+},{"./Constructors/menu":6,"./mainTitle":23}],23:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1298,7 +1176,7 @@ module.exports = {
     }
 };
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1327,23 +1205,141 @@ exports.toTenths = (val) => {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 exports.spaceFill = (val, digits) => {
     "use strict";
-    var l = val.toString().length,
-        spaces = "",
-        i, diff;
+    var valString = val.toString();
 
-    if (l < digits) {
-
-        for (i = 0, diff = digits - l; i < diff; i++) {
-            spaces += " ";
-        }
-
-        return spaces + val;
-    } else {
-        return val.toString();
+    while (valString.length < digits) {
+        valString = " " + valString;
     }
+    return valStr;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
+var canvas          = require("./canvas");
+var toTenths        = require("./numstring").toTenths;
+
+var overlay = {
+
+    positionUnits: Math.floor(canvas.width / 16),
+    smallFontSize: 24,
+    largeFontSize: 48,
+    padding: 8,
+    textColor: "white",
+    fontFamily: "monospace"
+};
+
+overlay.drawScore = (function() {
+    "use strict";
+    var xL = this.positionUnits * 2,
+        xR = this.positionUnits * 5,
+        y = this.padding + this.smallFontSize,
+        font = `${this.smallFontSize}px ${this.fontFamily}`,
+        label = "Score";
+
+    return function(val) {
+        var ctx = canvas.ctx;
+
+        ctx.save();
+        ctx.font = font;
+        ctx.textAlign = "left";
+        ctx.fillText(label, xL, y);
+        ctx.textAlign = "right";
+        ctx.fillText(val, xR, y);
+        ctx.restore();
+    };
+}.bind(overlay)());
+
+overlay.drawHiScore = (function() {
+    "use strict";
+    var xL = canvas.width - this.positionUnits * 5,
+        xR = canvas.width - this.positionUnits * 2,
+        y = this.padding + this.smallFontSize,
+        font = `${this.smallFontSize}px ${this.fontFamily}`,
+        label = "HiScore";
+
+    return function(val) {
+        var ctx = canvas.ctx;
+
+        ctx.save();
+        ctx.font = font;
+        ctx.textAlign = "left";
+        ctx.fillText(label, xL, y);
+        ctx.textAlign = "right";
+        ctx.fillText(val, xR, y);
+        ctx.restore();
+    };
+}.bind(overlay)());
+
+overlay.drawTime = (function() {
+    "use strict";
+    var x = canvas.width / 2,
+        y = this.padding + this.largeFontSize,
+        font = `${this.largeFontSize}px ${this.fontFamily}`;
+
+    return function(val) {
+        var ctx = canvas.ctx;
+
+        ctx.save();
+        ctx.font = font;
+        ctx.textAlign = "center";
+        ctx.fillText(val, x, y);
+        ctx.restore();
+    };
+}.bind(overlay)());
+
+overlay.drawMultiplier = (function() {
+    "use strict";
+    var x = canvas.width - this.smallFontSize,
+        y = canvas.height - this.smallFontSize * 2,
+        font = `${this.largeFontSize}px ${this.fontFamily}`;
+
+    return function(val) {
+        var ctx = canvas.ctx;
+
+        ctx.save();
+        ctx.font = font;
+        ctx.textAlign = "right";
+        ctx.fillText(`x${val}`, x, y);
+        ctx.restore();
+    };
+}.bind(overlay)());
+
+overlay.drawPellets = (function() {
+    "use strict";
+    var x = canvas.width - this.smallFontSize - this.smallFontSize,
+        y = canvas.height - this.smallFontSize,
+        font = `${this.smallFontSize}px ${this.fontFamily}`,
+        pelletColor = "gold",
+        xP = canvas.width - this.smallFontSize - this.smallFontSize + 4,
+        yP = canvas.height - this.smallFontSize - 16,
+        wP = 16;
+
+    return function(playerPellets, scenePellets) {
+        var ctx = canvas.ctx;
+
+        ctx.save();
+        ctx.font = font;
+        ctx.textAlign = "right";
+        ctx.fillText(`${playerPellets} / ${scenePellets}`, x, y);
+        ctx.fillStyle = pelletColor;
+        ctx.fillRect(xP, yP, wP, wP);
+        ctx.restore();
+    };
+}.bind(overlay)());
+
+overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
+    "use strict";
+    canvas.ctx.fillStyle = this.textColor;
+
+    this.drawScore(scoreTracker.score);
+    //this.drawHiScore(scoreTracker.getHiScore);
+    this.drawTime(toTenths(scoreTracker.timeRemaining));
+    this.drawMultiplier(toTenths(scoreTracker.multiplier));
+    this.drawPellets(playerPellets, scenePellets);
+};
+
+module.exports = overlay;
+
+},{"./canvas":16,"./numstring":24}],26:[function(require,module,exports){
 var canvas          = require("./canvas");
 var toTenths        = require("./numstring").toTenths;
 
@@ -1354,7 +1350,8 @@ var scoreTracker = {
     timeRemaining: 0,
     timeBonus: 0,
     total: 0,
-    grandTotal: 0
+    grandTotal: 0,
+    hiScore: 0
 };
 
 scoreTracker.timeUpdate = function(delta) {
@@ -1470,7 +1467,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":17,"./numstring":25}],27:[function(require,module,exports){
+},{"./canvas":16,"./numstring":24}],27:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1488,4 +1485,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[22]);
+},{}]},{},[21]);

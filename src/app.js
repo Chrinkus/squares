@@ -2,9 +2,9 @@ var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
-var Hud             = require("./Constructors/hud");
 var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
+var overlay         = require("./overlay");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
@@ -12,13 +12,6 @@ var level3          = require("./Levels/level3");
 var level4          = require("./Levels/level4");
 
 var app = {
-
-    hud : {
-        score: new Hud.TopLeft("Score", "white"),
-        timer: new Hud.TopMid("Time", "white"),
-        total: new Hud.TopRight("Hi Score", "white"),
-        corner: new Hud.BRCorner()
-    },
 
     player: null,
     scenario: null,
@@ -83,11 +76,8 @@ app.render = function() {
             this.scenario.draw(canvas.ctx);
             this.player.draw(canvas.ctx);
 
-            this.hud.score.draw(canvas.ctx, scoreTracker.score);
-            this.hud.timer.draw(canvas.ctx, scoreTracker.displayTime());
-            this.hud.total.draw(canvas.ctx, this.scenario.hiScore);
-            this.hud.corner.draw(canvas.ctx, scoreTracker.displayMulti(),
-                    this.player.pellets, this.scenario.pellets);
+            overlay.draw(scoreTracker, this.player.pellets,
+                    this.scenario.pellets);
             break;
 
         case "complete":

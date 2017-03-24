@@ -1,6 +1,7 @@
 var canvas          = require("./canvas");
+var toTenths        = require("./numstring").toTenths;
 
-var hud = {
+var overlay = {
 
     positionUnits: Math.floor(canvas.width / 16),
     smallFontSize: 24,
@@ -10,7 +11,7 @@ var hud = {
     fontFamily: "monospace"
 };
 
-hud.drawScore = (function() {
+overlay.drawScore = (function() {
     "use strict";
     var xL = this.positionUnits * 2,
         xR = this.positionUnits * 5,
@@ -29,9 +30,9 @@ hud.drawScore = (function() {
         ctx.fillText(val, xR, y);
         ctx.restore();
     };
-}());
+}.bind(overlay)());
 
-hud.drawHiScore = (function() {
+overlay.drawHiScore = (function() {
     "use strict";
     var xL = canvas.width - this.positionUnits * 5,
         xR = canvas.width - this.positionUnits * 2,
@@ -50,9 +51,9 @@ hud.drawHiScore = (function() {
         ctx.fillText(val, xR, y);
         ctx.restore();
     };
-}());
+}.bind(overlay)());
 
-hud.drawTime = (function() {
+overlay.drawTime = (function() {
     "use strict";
     var x = canvas.width / 2,
         y = this.padding + this.largeFontSize,
@@ -67,12 +68,12 @@ hud.drawTime = (function() {
         ctx.fillText(val, x, y);
         ctx.restore();
     };
-}());
+}.bind(overlay)());
 
-hud.drawMultiplier = (function() {
+overlay.drawMultiplier = (function() {
     "use strict";
     var x = canvas.width - this.smallFontSize,
-        y = canvas.height - this.largeFontSize - this.smallFontSize,
+        y = canvas.height - this.smallFontSize * 2,
         font = `${this.largeFontSize}px ${this.fontFamily}`;
 
     return function(val) {
@@ -84,9 +85,9 @@ hud.drawMultiplier = (function() {
         ctx.fillText(`x${val}`, x, y);
         ctx.restore();
     };
-}());
+}.bind(overlay)());
 
-hud.drawPellets = (function() {
+overlay.drawPellets = (function() {
     "use strict";
     var x = canvas.width - this.smallFontSize - this.smallFontSize,
         y = canvas.height - this.smallFontSize,
@@ -107,17 +108,17 @@ hud.drawPellets = (function() {
         ctx.fillRect(xP, yP, wP, wP);
         ctx.restore();
     };
-}());
+}.bind(overlay)());
 
-hud.draw = function(scoreTracker, playerPellets, scenePellets) {
+overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
     "use strict";
     canvas.ctx.fillStyle = this.textColor;
 
     this.drawScore(scoreTracker.score);
     //this.drawHiScore(scoreTracker.getHiScore);
-    this.drawTime(scoreTracker.timeRemaining);
-    this.drawMultiplier(scoreTracker.multiplier);
+    this.drawTime(toTenths(scoreTracker.timeRemaining));
+    this.drawMultiplier(toTenths(scoreTracker.multiplier));
     this.drawPellets(playerPellets, scenePellets);
 };
 
-module.exports = hud;
+module.exports = overlay;
