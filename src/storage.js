@@ -2,7 +2,8 @@
 //
 // Could probably abstract this a bunch later
 
-var hiScores, defaultHiScores, storage;
+var defaultHiScores = [], 
+    hiScores, storage;
 
 function storageAvailable(type) {
     try {
@@ -18,10 +19,12 @@ function storageAvailable(type) {
 }
 
 function setDefaultHiScores(scenes) {
-    var defaultHiScores = {};
+    var defaultHiScores = [];
 
     scenes.forEach(scene => {
-        defaultHiScores[scene.name] = scene.hiScore;
+        defaultHiScores.push({
+            scene.name: scene.hiScore
+        });
     });
 
     return defaultHiScores;

@@ -2,6 +2,11 @@ var Scene = require("../Constructors/scene");
 
 var level2 = new Scene(32);
 
+level2.name = "Level 2";
+level2.defaultScore = 1000;
+
+level2.timer = 20;
+
 level2.plan = [
     "################################",
     "######                    ######",
@@ -22,9 +27,6 @@ level2.plan = [
     "###         #      #         ###",
     "################################"
 ];
-
-level2.timer = 20;
-level2.hiScore = 2000;      // temp solution
 
 level2.playerData.color = "white";
 
