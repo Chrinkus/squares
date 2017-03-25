@@ -885,6 +885,8 @@ app.init = function() {
         this.sceneLoader(i);
     });
 
+    scoreTracker.getDefaultScores(this.scenes);
+
     this.state = "mainmenu";
 };
 
@@ -1351,7 +1353,18 @@ var scoreTracker = {
     timeBonus: 0,
     total: 0,
     grandTotal: 0,
+    defaultScores: [],
     hiScore: 0
+};
+
+scoreTracker.getDefaultScores = function(scenes) {
+    "use strict";
+
+    this.defaultScores = scenes.map(scene => {
+        return {
+            [scene.name]: scene.defaultScore
+        };
+    });
 };
 
 scoreTracker.timeUpdate = function(delta) {

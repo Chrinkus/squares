@@ -1,11 +1,6 @@
-// Storage tests
-//
-// Could probably abstract this a bunch later
-
-var defaultHiScores = [], 
-    hiScores, storage;
-
 function storageAvailable(type) {
+    "use strict";
+
     try {
         var storage = window[type],
             x = "__storage_test__";
@@ -18,36 +13,15 @@ function storageAvailable(type) {
     }
 }
 
-function setDefaultHiScores(scenes) {
-    var defaultHiScores = [];
+exports.getStorage = function() {
+    "use strict";
+    var storage;
 
-    scenes.forEach(scene => {
-        defaultHiScores.push({
-            scene.name: scene.hiScore
-        });
-    });
+    if (storageAvailable(localStorage)) {
+        storage = localStorage;
 
-    return defaultHiScores;
-}
-
-if (storageAvailable(localStorage)) {
-    
-    storage = localStorage;
-
-} else if (storageAvailable(sessionStorage)) {
-
-    storage = sessionStorage;
-}
-
-if (storage) {
-
-    if (!storage.getItem("hiScores")) {
-        storage.setItem("hiScores", JSON.stringify(defaultHiScores));
-    } else {
-        hiScores = JSON.parse(storage.getItem("hiScores"));
+    } else if (storageAvailable(sessionStorage)) {
+        storage = sessionStorage;
     }
-
-} else {
-
-    hiScores = defaultHiScores;     // not yet available
-}
+    return storage;
+};

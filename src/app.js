@@ -54,6 +54,8 @@ app.init = function() {
 
     this.keysDown = keysDown();
 
+    scoreTracker.getDefaultScores(this.scenes);
+
     mainMenu.init((i) => {
         this.sceneLoader(i);
     });

@@ -1,5 +1,4 @@
 var canvas          = require("./canvas");
-var toTenths        = require("./numstring").toTenths;
 
 var overlay = {
 
@@ -116,8 +115,8 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
 
     this.drawScore(scoreTracker.score);
     //this.drawHiScore(scoreTracker.getHiScore);
-    this.drawTime(toTenths(scoreTracker.timeRemaining));
-    this.drawMultiplier(toTenths(scoreTracker.multiplier));
+    this.drawTime(scoreTracker.displayTime());
+    this.drawMultiplier(scoreTracker.displayMulti());
     this.drawPellets(playerPellets, scenePellets);
 };
 

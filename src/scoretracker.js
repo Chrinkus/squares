@@ -1,5 +1,6 @@
 var canvas          = require("./canvas");
 var toTenths        = require("./numstring").toTenths;
+var getStorage      = require("./storage").getStorage;
 
 var scoreTracker = {
 
@@ -9,13 +10,44 @@ var scoreTracker = {
     timeBonus: 0,
     total: 0,
     grandTotal: 0,
-    hiScore: 0
+    defaultScores: null,
+    hiScores: null
+};
+
+scoreTracker.getDefaultScores = function(scenes) {
+    "use strict";
+
+    if (!this.defaultScores) {
+        this.defaultScores = scenes.map(scene => {
+            return {
+                [scene.name]: scene.defaultScore
+            };
+        });
+    }
+};
+
+scoreTracker.getScores = function() {
+    "use strict";
+    var hiScores = this.defaultScores,
+        storage = getStorage();
+
+    if (storage) {
+
+        if (!storage.getItem("hiScores")) {
+            storage.setItem("hiScores", JSON.stringify(hiScores));
+        } else {
+            hiScores = JSON.parse(storage.getItem("hiScores"));
+        }
+    } 
+    return hiScores;
 };
 
 scoreTracker.timeUpdate = function(delta) {
     "use strict";
 
-    this.timeRemaining -= delta / 1000;
+    if (this.timeRemaining > 0) {
+        this.timeRemaining -= delta / 1000;
+    }
 };
 
 scoreTracker.displayTime = function() {
