@@ -597,6 +597,8 @@ Scene.prototype.update = function(delta) {
 
 Scene.prototype.planReader = function() {
 
+    this.pellets = 0;
+
     this.plan.forEach((row, i) => {
 
         row.split("").forEach((character, j) => {
@@ -631,6 +633,7 @@ Scene.prototype.planReader = function() {
 Scene.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
+    this.planReader();
 };
 
 module.exports = Scene;
@@ -674,7 +677,7 @@ level1.colors = {
     pellet: "gold"
 };
 
-level1.planReader();
+//level1.planReader();
 
 module.exports = level1;
 
@@ -717,7 +720,7 @@ level2.colors = {
     pellet: "gold"
 };
 
-level2.planReader();
+//level2.planReader();
 
 module.exports = level2;
 
@@ -778,7 +781,7 @@ level3.colors = {
     pellet: "gold"
 };
 
-level3.planReader();
+//level3.planReader();
 
 module.exports = level3;
 
@@ -821,7 +824,7 @@ level4.colors = {
     pellet: "gold"
 };
 
-level4.planReader();
+//level4.planReader();
 
 module.exports = level4;
 

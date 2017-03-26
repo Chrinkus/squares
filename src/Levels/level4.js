@@ -36,6 +36,6 @@ level4.colors = {
     pellet: "gold"
 };
 
-level4.planReader();
+//level4.planReader();
 
 module.exports = level4;

@@ -65,6 +65,8 @@ Scene.prototype.update = function(delta) {
 
 Scene.prototype.planReader = function() {
 
+    this.pellets = 0;
+
     this.plan.forEach((row, i) => {
 
         row.split("").forEach((character, j) => {
@@ -99,6 +101,7 @@ Scene.prototype.planReader = function() {
 Scene.prototype.init = function(canvas) {
 
     this.background = new Background(canvas, this.colors.background);
+    this.planReader();
 };
 
 module.exports = Scene;
