@@ -2,7 +2,7 @@ var Scene = require("../Constructors/scene");
 
 var level4 = new Scene(32);
 
-level4.name = "Level 4";
+level4.name = "Trash";
 level4.defaultScore = 1000;
 
 level4.timer = 40;

@@ -61,7 +61,7 @@ app.init = function() {
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
-    });
+    }, scoreTracker.hiScores);
 
     this.state = "mainmenu";
 };

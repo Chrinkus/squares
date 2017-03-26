@@ -17,9 +17,7 @@ scoreTracker.getHiScores = function(scenes, storage) {
     "use strict";
 
     var hiScores = scenes.map(scene => {
-        return {
-            [scene.name]: scene.defaultScore
-        };
+        return [scene.name, scene.defaultScore];
     });
 
     if (storage) {
@@ -36,8 +34,8 @@ scoreTracker.getHiScores = function(scenes, storage) {
 scoreTracker.setHiScore = function(sceneName) {
     "use strict";
     this.hiScore = this.hiScores.find(entry => {
-        return entry.hasOwnProperty(sceneName);
-    })[sceneName];
+        return entry[0] === sceneName;
+    })[1];
 };
 
 scoreTracker.timeUpdate = function(delta) {

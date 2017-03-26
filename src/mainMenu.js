@@ -9,7 +9,7 @@ var font = 42,
     },
     selections = [
         "new game",
-        "leaderboards",
+        "leaderboard",
         "controls"
     ],
     mainMenu = null;

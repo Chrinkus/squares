@@ -2,7 +2,7 @@ var Scene = require("../Constructors/scene");
 
 var level1 = new Scene(32);
 
-level1.name = "Level 1";
+level1.name = "Goggles";
 level1.defaultScore = 1000;
 
 level1.timer = 20;

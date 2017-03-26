@@ -189,7 +189,7 @@ var Background      = require("./background");
 var Cursor          = require("./cursor");
 var Confirmation    = require("./confirmation");
 var controls        = require("../controls");
-var leaderboard    = require("../leaderboard");
+var leaderboard     = require("../leaderboard");
 
 function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";
@@ -237,8 +237,9 @@ Menu.prototype.mainConfirm = function() {
     }, " to confirm selection ");
 };
 
-Menu.prototype.init = function(f) {
-    this.sceneLoaderHook = f;
+Menu.prototype.init = function(sceneLoaderHook, hiScores) {
+    this.sceneLoaderHook = sceneLoaderHook;
+    leaderboard.populate(hiScores);
     this.mainConfirm();
 };
 
@@ -311,7 +312,6 @@ Menu.prototype.select = function(i) {
 
         case "leaderboard":
             // Need to populate leaderboard when & every time selected
-            leaderboard.populate();
             this.menuState = "leaderboard";
 
             this.confirmation = new Confirmation(() => {
@@ -640,7 +640,7 @@ var Scene = require("../Constructors/scene");
 
 var level1 = new Scene(32);
 
-level1.name = "Level 1";
+level1.name = "Goggles";
 level1.defaultScore = 1000;
 
 level1.timer = 20;
@@ -683,7 +683,7 @@ var Scene = require("../Constructors/scene");
 
 var level2 = new Scene(32);
 
-level2.name = "Level 2";
+level2.name = "Hogan";
 level2.defaultScore = 1000;
 
 level2.timer = 20;
@@ -726,7 +726,7 @@ var Scene = require("../Constructors/scene");
 
 var level3 = new Scene(16);
 
-level3.name = "Level 3";
+level3.name = "Maise";
 level3.defaultScore = 2000;
 
 level3.timer = 50;
@@ -787,7 +787,7 @@ var Scene = require("../Constructors/scene");
 
 var level4 = new Scene(32);
 
-level4.name = "Level 4";
+level4.name = "Trash";
 level4.defaultScore = 1000;
 
 level4.timer = 40;
@@ -889,7 +889,7 @@ app.init = function() {
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
-    });
+    }, scoreTracker.hiScores);
 
     this.state = "mainmenu";
 };
@@ -958,7 +958,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":19,"./mainMenu":22,"./overlay":25,"./scoretracker":27,"./storage":28,"./timer":29}],16:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":19,"./mainMenu":22,"./overlay":25,"./scoretracker":26,"./storage":27,"./timer":28}],16:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -1078,7 +1078,6 @@ exports.moveCursor = (cursor, keysDown) => {
 
 },{}],20:[function(require,module,exports){
 var Page            = require("./Constructors/page");
-var scoreTracker    = require("./scoreTracker");
 
 var leaderboard = {
     pageTitle: "High Scores",
@@ -1087,18 +1086,19 @@ var leaderboard = {
         ["=====", "====="]
     ],
     pageFields: [],
-    columnStyle: "spread"
+    columnStyle: "spread",
+    board: null
 };
 
-leaderboard.populate = function() {
+leaderboard.populate = function(hiScores) {
     "use strict";
-    this.pageFields = columnHeaders.concat(scoreTracker.getScores());
+    this.pageFields = this.columnHeaders.concat(hiScores);
     this.board = new Page(this.pageTitle, this.pageFields, this.columnStyle);
 };
 
 module.exports = leaderboard;
 
-},{"./Constructors/page":7,"./scoreTracker":26}],21:[function(require,module,exports){
+},{"./Constructors/page":7}],21:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1131,7 +1131,7 @@ var font = 42,
     },
     selections = [
         "new game",
-        "leaderboards",
+        "leaderboard",
         "controls"
     ],
     mainMenu = null;
@@ -1369,9 +1369,7 @@ scoreTracker.getHiScores = function(scenes, storage) {
     "use strict";
 
     var hiScores = scenes.map(scene => {
-        return {
-            [scene.name]: scene.defaultScore
-        };
+        return [scene.name, scene.defaultScore];
     });
 
     if (storage) {
@@ -1388,8 +1386,8 @@ scoreTracker.getHiScores = function(scenes, storage) {
 scoreTracker.setHiScore = function(sceneName) {
     "use strict";
     this.hiScore = this.hiScores.find(entry => {
-        return entry.hasOwnProperty(sceneName);
-    })[sceneName];
+        return entry[0] === sceneName;
+    })[1];
 };
 
 scoreTracker.timeUpdate = function(delta) {
@@ -1508,8 +1506,6 @@ scoreTracker.draw = function(color) {
 module.exports = scoreTracker;
 
 },{"./canvas":16,"./numstring":24}],27:[function(require,module,exports){
-arguments[4][26][0].apply(exports,arguments)
-},{"./canvas":16,"./numstring":24,"dup":26}],28:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
@@ -1538,7 +1534,7 @@ exports.getStorage = function() {
     return storage;
 };
 
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,

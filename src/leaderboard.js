@@ -1,5 +1,4 @@
 var Page            = require("./Constructors/page");
-var scoreTracker    = require("./scoreTracker");
 
 var leaderboard = {
     pageTitle: "High Scores",
@@ -8,12 +7,13 @@ var leaderboard = {
         ["=====", "====="]
     ],
     pageFields: [],
-    columnStyle: "spread"
+    columnStyle: "spread",
+    board: null
 };
 
-leaderboard.populate = function() {
+leaderboard.populate = function(hiScores) {
     "use strict";
-    this.pageFields = columnHeaders.concat(scoreTracker.getScores());
+    this.pageFields = this.columnHeaders.concat(hiScores);
     this.board = new Page(this.pageTitle, this.pageFields, this.columnStyle);
 };
 

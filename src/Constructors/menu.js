@@ -3,7 +3,7 @@ var Background      = require("./background");
 var Cursor          = require("./cursor");
 var Confirmation    = require("./confirmation");
 var controls        = require("../controls");
-var leaderboard    = require("../leaderboard");
+var leaderboard     = require("../leaderboard");
 
 function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";
@@ -51,8 +51,9 @@ Menu.prototype.mainConfirm = function() {
     }, " to confirm selection ");
 };
 
-Menu.prototype.init = function(f) {
-    this.sceneLoaderHook = f;
+Menu.prototype.init = function(sceneLoaderHook, hiScores) {
+    this.sceneLoaderHook = sceneLoaderHook;
+    leaderboard.populate(hiScores);
     this.mainConfirm();
 };
 
@@ -125,7 +126,6 @@ Menu.prototype.select = function(i) {
 
         case "leaderboard":
             // Need to populate leaderboard when & every time selected
-            leaderboard.populate();
             this.menuState = "leaderboard";
 
             this.confirmation = new Confirmation(() => {
