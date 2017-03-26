@@ -1,8 +1,8 @@
-function storageAvailable(type) {
+function storageAvailable(storageType) {
     "use strict";
 
     try {
-        var storage = window[type],
+        var storage = storageType,
             x = "__storage_test__";
         storage.setItem(x, x);
         storage.removeItem(x);

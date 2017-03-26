@@ -14,9 +14,7 @@ var leaderboard = {
 leaderboard.populate = function() {
     "use strict";
     this.pageFields = columnHeaders.concat(scoreTracker.getScores());
+    this.board = new Page(this.pageTitle, this.pageFields, this.columnStyle);
 };
-
-leaderboard.board = new Page(this.pageTitle, this.pageFields,
-        this.columnStyle);
 
 module.exports = leaderboard;

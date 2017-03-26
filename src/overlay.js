@@ -114,7 +114,7 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
     canvas.ctx.fillStyle = this.textColor;
 
     this.drawScore(scoreTracker.score);
-    //this.drawHiScore(scoreTracker.getHiScore);
+    this.drawHiScore(scoreTracker.hiScore);
     this.drawTime(scoreTracker.displayTime());
     this.drawMultiplier(scoreTracker.displayMulti());
     this.drawPellets(playerPellets, scenePellets);
