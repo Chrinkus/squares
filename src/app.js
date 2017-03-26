@@ -4,7 +4,6 @@ var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
 var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
-var getStorage      = require("./storage").getStorage;
 var overlay         = require("./overlay");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
@@ -24,7 +23,6 @@ var app = {
         level4
     ],
 
-    storage: getStorage(),
     state: ""
 };
 
@@ -57,7 +55,7 @@ app.init = function() {
 
     this.keysDown = keysDown();
 
-    scoreTracker.getHiScores(this.scenes, this.storage);
+    scoreTracker.getHiScores(this.scenes);
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
@@ -110,7 +108,7 @@ app.update = function(tStamp) {
             scoreTracker.timeUpdate(timer.delta);
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
-                scoreTracker.tabulate();
+                scoreTracker.tabulate(this.scenario.name);
 
                 this.confirmation = new Confirmation(() => {
                     delete this.confirmation;

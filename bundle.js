@@ -832,7 +832,6 @@ var mainMenu        = require("./mainMenu");
 var Player          = require("./Constructors/player");
 var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
-var getStorage      = require("./storage").getStorage;
 var overlay         = require("./overlay");
 var timer           = require("./timer");
 var level1          = require("./Levels/level1");
@@ -852,7 +851,6 @@ var app = {
         level4
     ],
 
-    storage: getStorage(),
     state: ""
 };
 
@@ -885,7 +883,7 @@ app.init = function() {
 
     this.keysDown = keysDown();
 
-    scoreTracker.getHiScores(this.scenes, this.storage);
+    scoreTracker.getHiScores(this.scenes);
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
@@ -938,7 +936,7 @@ app.update = function(tStamp) {
             scoreTracker.timeUpdate(timer.delta);
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
-                scoreTracker.tabulate();
+                scoreTracker.tabulate(this.scenario.name);
 
                 this.confirmation = new Confirmation(() => {
                     delete this.confirmation;
@@ -958,7 +956,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":19,"./mainMenu":22,"./overlay":25,"./scoretracker":26,"./storage":27,"./timer":28}],16:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":19,"./mainMenu":22,"./overlay":25,"./scoretracker":26,"./timer":28}],16:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -1351,6 +1349,7 @@ module.exports = overlay;
 
 },{"./canvas":16}],26:[function(require,module,exports){
 var canvas          = require("./canvas");
+var getStorage      = require("./storage").getStorage;
 var toTenths        = require("./numstring").toTenths;
 
 var scoreTracker = {
@@ -1362,22 +1361,24 @@ var scoreTracker = {
     total: 0,
     grandTotal: 0,
     hiScore: 0,
+
+    storage: getStorage(),
     hiScores: null
 };
 
-scoreTracker.getHiScores = function(scenes, storage) {
+scoreTracker.getHiScores = function(scenes) {
     "use strict";
 
     var hiScores = scenes.map(scene => {
         return [scene.name, scene.defaultScore];
     });
 
-    if (storage) {
+    if (this.storage) {
 
-        if (!storage.getItem("hiScores")) {
-            storage.setItem("hiScores", JSON.stringify(hiScores));
+        if (!this.storage.getItem("hiScores")) {
+            this.storage.setItem("hiScores", JSON.stringify(hiScores));
         } else {
-            hiScores = JSON.parse(storage.getItem("hiScores"));
+            hiScores = JSON.parse(this.storage.getItem("hiScores"));
         }
     } 
     this.hiScores = hiScores;
@@ -1445,7 +1446,28 @@ scoreTracker.reset = function() {
     this.total = 0;
 };
 
-scoreTracker.tabulate = function() {
+scoreTracker.setNewHiScore = function(sceneName) {
+    "use strict";
+    var sceneRef;
+
+    sceneRef = this.hiScores.find(scene => {
+        return scene[0] === sceneName;
+    });
+    sceneRef[1] = this.total;
+
+    if (this.storage) {
+        this.updateStorage();
+    }
+};
+
+scoreTracker.updateStorage = function() {
+    "use strict";
+
+    this.storage.removeItem("hiScores");
+    this.storage.setItem("hiScores", JSON.stringify(this.hiScores));
+};
+
+scoreTracker.tabulate = function(sceneName) {
     "use strict";
 
     // Total up scores
@@ -1453,6 +1475,10 @@ scoreTracker.tabulate = function() {
     this.timeBonus = this.timeRemaining * 25 * this.multiplier;
     this.total = this.score + this.timeBonus;
     this.grandTotal += this.total;
+
+    if (this.total > this.hiScore) {
+        this.setNewHiScore(sceneName);
+    }
 
     // Positioning properties
     this.xC = canvas.width / 2;
@@ -1505,7 +1531,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":16,"./numstring":24}],27:[function(require,module,exports){
+},{"./canvas":16,"./numstring":24,"./storage":27}],27:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
