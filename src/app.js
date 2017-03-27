@@ -13,6 +13,7 @@ var level4          = require("./Levels/level4");
 
 var app = {
 
+    keysDown: keysDown(),
     player: null,
     scenario: null,
     currentScene: 0,
@@ -53,8 +54,6 @@ app.sceneLoader = function(i) {
 app.init = function() {
     "use strict";
 
-    this.keysDown = keysDown();
-
     scoreTracker.getHiScores(this.scenes);
 
     mainMenu.init((i) => {
@@ -67,7 +66,6 @@ app.init = function() {
 app.render = function() {
     "use strict";
 
-    // Wipe canvas
     canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     switch (this.state) {
@@ -85,6 +83,8 @@ app.render = function() {
 
         case "complete":
             this.scenario.draw(canvas.ctx);
+            overlay.draw(scoreTracker, this.player.pellets,
+                    this.scenario.pellets);
             scoreTracker.draw(this.scenario.colors.wall);
             this.confirmation.draw();
 

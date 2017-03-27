@@ -45,6 +45,7 @@ module.exports = Block;
 
 },{}],3:[function(require,module,exports){
 var canvas      = require("../canvas");
+var fadeInOut   = require("../fadeinout");
 
 function Confirmation(f, msg) {
     "use strict";
@@ -56,8 +57,6 @@ function Confirmation(f, msg) {
     this.y = canvas.height - 48;
     this.font = "24px monospace";
     this.alpha = 1;
-    this.fadeOut = true;
-    this.counter = 0;
     this.display = `( Press SPACEBAR${this.msg})`;
 }
 
@@ -80,34 +79,12 @@ Confirmation.prototype.update = function(keysDown) {
         return this.f();
     }
 
-    if (this.counter > 2) {
-        
-        if (this.fadeOut) {
-            this.alpha -= 0.05;
-        } else {
-            this.alpha += 0.05;
-        }
-
-        this.counter = 0;
-    } else {
-        this.counter += 1;
-    }
-
-    if (this.alpha <= 0) {
-
-        this.alpha = 0;
-        this.fadeOut = false;
-
-    } else if (this.alpha >= 1) {
-
-        this.alpha = 1;
-        this.fadeOut = true;
-    }
+    this.alpha = fadeInOut(this.alpha);
 };
 
 module.exports = Confirmation;
 
-},{"../canvas":16}],4:[function(require,module,exports){
+},{"../canvas":16,"../fadeinout":19}],4:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -174,16 +151,11 @@ Cursor.prototype.update = function(keysDown, delta) {
             delete this.cooldown;
         });
     }
-    
-    // Temporary solution - confirmations usually fire on keyup
-    //if (32 in keysDown) {
-    //    this.menu.select(this.i);
-    //}
 };
 
 module.exports = Cursor;
 
-},{"../input":19,"./cooldown":4}],6:[function(require,module,exports){
+},{"../input":20,"./cooldown":4}],6:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("./background");
 var Cursor          = require("./cursor");
@@ -345,7 +317,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../canvas":16,"../controls":18,"../leaderboard":20,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
+},{"../canvas":16,"../controls":18,"../leaderboard":21,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle) {
@@ -445,8 +417,8 @@ function Player(playerData) {
     this.b = playerData.b;
     this.minW = playerData.b / 2;
     this.maxW = playerData.b * 3;
-    this.dx = playerData.b / 8;
-    this.dy = playerData.b / 8;
+    this.dx = 4;
+    this.dy = 4;
     this.color = playerData.color;
 
     this.pellets = 0;
@@ -529,7 +501,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":17,"../input.js":19}],10:[function(require,module,exports){
+},{"../collision":17,"../input.js":20}],10:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -844,6 +816,7 @@ var level4          = require("./Levels/level4");
 
 var app = {
 
+    keysDown: keysDown(),
     player: null,
     scenario: null,
     currentScene: 0,
@@ -884,8 +857,6 @@ app.sceneLoader = function(i) {
 app.init = function() {
     "use strict";
 
-    this.keysDown = keysDown();
-
     scoreTracker.getHiScores(this.scenes);
 
     mainMenu.init((i) => {
@@ -898,7 +869,6 @@ app.init = function() {
 app.render = function() {
     "use strict";
 
-    // Wipe canvas
     canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     switch (this.state) {
@@ -916,6 +886,8 @@ app.render = function() {
 
         case "complete":
             this.scenario.draw(canvas.ctx);
+            overlay.draw(scoreTracker, this.player.pellets,
+                    this.scenario.pellets);
             scoreTracker.draw(this.scenario.colors.wall);
             this.confirmation.draw();
 
@@ -959,7 +931,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":19,"./mainMenu":22,"./overlay":25,"./scoretracker":26,"./timer":28}],16:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":20,"./mainMenu":23,"./overlay":26,"./scoretracker":27,"./timer":29}],16:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -1010,6 +982,40 @@ var pageTitle = "Movement",
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
 },{"./Constructors/page":7}],19:[function(require,module,exports){
+module.exports = (function() {
+    "use strict";
+    var counter = 0,
+        fadeOut = true,
+        inc = 0.05;
+
+    return function(alpha) {
+        
+        if (counter > 2) {
+
+            if (fadeOut) {
+                alpha -= inc;
+            } else {
+                alpha += inc;
+            }
+            counter = 0;
+
+        } else {
+            counter += 1;
+        }
+
+        if (alpha <= 0) {
+            alpha = 0;
+            fadeOut = false;
+
+        } else if (alpha >= 1) {
+            alpha = 1;
+            fadeOut = true;
+        }
+        return alpha;
+    };
+}());
+
+},{}],20:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -1077,7 +1083,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var leaderboard = {
@@ -1099,7 +1105,7 @@ leaderboard.populate = function(hiScores) {
 
 module.exports = leaderboard;
 
-},{"./Constructors/page":7}],21:[function(require,module,exports){
+},{"./Constructors/page":7}],22:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1120,7 +1126,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":15}],22:[function(require,module,exports){
+},{"./app":15}],23:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1141,7 +1147,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":6,"./mainTitle":23}],23:[function(require,module,exports){
+},{"./Constructors/menu":6,"./mainTitle":24}],24:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1188,7 +1194,7 @@ module.exports = {
     }
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1225,7 +1231,7 @@ exports.spaceFill = (val, digits) => {
     return valStr;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 var overlay = {
@@ -1350,7 +1356,7 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
 
 module.exports = overlay;
 
-},{"./canvas":16}],26:[function(require,module,exports){
+},{"./canvas":16}],27:[function(require,module,exports){
 var canvas          = require("./canvas");
 var getStorage      = require("./storage").getStorage;
 var toTenths        = require("./numstring").toTenths;
@@ -1534,7 +1540,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":16,"./numstring":24,"./storage":27}],27:[function(require,module,exports){
+},{"./canvas":16,"./numstring":25,"./storage":28}],28:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
@@ -1563,7 +1569,7 @@ exports.getStorage = function() {
     return storage;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1581,4 +1587,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[21]);
+},{}]},{},[22]);

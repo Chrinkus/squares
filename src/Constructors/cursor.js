@@ -44,11 +44,6 @@ Cursor.prototype.update = function(keysDown, delta) {
             delete this.cooldown;
         });
     }
-    
-    // Temporary solution - confirmations usually fire on keyup
-    //if (32 in keysDown) {
-    //    this.menu.select(this.i);
-    //}
 };
 
 module.exports = Cursor;
