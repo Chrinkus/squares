@@ -4,13 +4,12 @@ Navigate the maze to collect the golden pellets. The more you eat, the more you 
 
 Use WASD or the arrow keys to move.
 
-March 21st, 2017
-- Selecting Leaderboards & Controls from the main menu produces appropriate content
-- Completing available levels returns the user to the main menu
-- Level 3 added to game
+March 26th, 2017
+- Utilizes browser storage if available to save local hi Scores
+- Level 4 added to the game
+- Several abstractions made to clean up code
 
 Next goals:
-- Explore the Web Storage API for saving local leaderboards
-- Design and add level 4 to game
 - Begin necessary work on level 5 tools
-- Review code for abstraction opportunities
+- Consider what is needed for more engaging feedback to the player
+- Decide on extent of required commenting/documentation for future reference
