@@ -1,13 +1,10 @@
 var Scene = require("../Constructors/scene");
 
-var level4 = new Scene(32);
+var blockSize = 32,
+    name = "Trash",
+    plan, colors, level4;
 
-level4.name = "Trash";
-level4.defaultScore = 1000;
-
-level4.timer = 40;
-
-level4.plan = [
+plan = [
     "################################",
     "######### @  #                 #",
     "#########    #      *   *      #",
@@ -28,14 +25,16 @@ level4.plan = [
     "################################"
 ];
 
-level4.playerData.color = "white";
-
-level4.colors = {
+colors = {
     background: "gray",
     wall: "sienna",
     pellet: "gold"
 };
 
-//level4.planReader();
+level4 = new Scene(blockSize, name, plan, colors);
+
+level4.timer = 40;
+level4.defaultScore = 1000;
+level4.playerData.color = "white";
 
 module.exports = level4;

@@ -1,9 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-function Background(canvas, color) {
+function Background(width, height, color) {
     "use strict";
 
-    this.xMax = canvas.width;
-    this.yMax = canvas.height;
+    this.xMax = width;
+    this.yMax = height;
     this.color = color;
 }
 
@@ -84,7 +84,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"../canvas":16,"../fadeinout":19}],4:[function(require,module,exports){
+},{"../canvas":18,"../fadeinout":21}],4:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -155,7 +155,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":20,"./cooldown":4}],6:[function(require,module,exports){
+},{"../input":22,"./cooldown":4}],6:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("./background");
 var Cursor          = require("./cursor");
@@ -182,7 +182,8 @@ function Menu(fontSize, colors, selections, mainTitle) {
 
     // Content
     this.selections = selections;
-    this.background = new Background(canvas, this.colors.background);
+    this.background = new Background(canvas.width, canvas.height,
+            this.colors.background);
 
     this.cursorData = {
         x: this.menuX,
@@ -317,7 +318,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../canvas":16,"../controls":18,"../leaderboard":21,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
+},{"../canvas":18,"../controls":20,"../leaderboard":23,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle) {
@@ -376,7 +377,7 @@ Page.prototype.draw = function() {
 
 module.exports = Page;
 
-},{"../canvas":16}],8:[function(require,module,exports){
+},{"../canvas":18}],8:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -417,8 +418,8 @@ function Player(playerData) {
     this.b = playerData.b;
     this.minW = playerData.b / 2;
     this.maxW = playerData.b * 3;
-    this.dx = 4;
-    this.dy = 4;
+    this.dx = playerData.b / 8;
+    this.dy = playerData.b / 8;
     this.color = playerData.color;
 
     this.pellets = 0;
@@ -430,6 +431,21 @@ function Player(playerData) {
         return path;
     };
 }
+
+Object.defineProperties(Player.prototype, {
+
+    "xC": {
+        get: function() {
+            return this.x + this.w / 2;
+        }
+    },
+
+    "yC": {
+        get: function() {
+            return this.y + this.w / 2;
+        }
+    }
+});
 
 Player.prototype.draw = function(ctx) {
 
@@ -501,19 +517,24 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":17,"../input.js":20}],10:[function(require,module,exports){
+},{"../collision":19,"../input.js":22}],10:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
 
-function Scene(blockSize) {
+function Scene(blockSize, name, plan, colors) {
     "use strict";
 
-    // explicitly defined in level files
     this.blockSize = blockSize;
-    this.plan = [];
-    this.colors = null;
+    this.name = name;
+    this.plan = plan;
+    this.colors = colors;
+    this.mapW = plan[0].length * blockSize;
+    this.mapH = plan.length * blockSize;
+
+    // explicitly defined in level files
     this.timer = 0;
+    this.defaultScore = 0;
 
     // defined in this.init(canvas)
     this.background = null;
@@ -528,23 +549,6 @@ function Scene(blockSize) {
         w: blockSize * 2
     };
 }
-
-Object.defineProperties(Scene.prototype, {
-
-    "mapW": {
-        get: () => {
-            delete this.mapW;
-            this.mapW = this.plan[0].length * this.blockSize;
-        }
-    },
-
-    "mapH": {
-        get: () => {
-            delete this.mapH;
-            this.mapH = this.plan.length * this.blockSize;
-        }
-    }
-});
 
 Scene.prototype.draw = function(ctx) {
 
@@ -562,11 +566,6 @@ Scene.prototype.draw = function(ctx) {
     });
 };
 
-Scene.prototype.update = function(delta) {
-
-    // Does nothing so far...
-};
-
 Scene.prototype.planReader = function() {
 
     this.pellets = 0;
@@ -581,6 +580,21 @@ Scene.prototype.planReader = function() {
             switch (character) {
                 case "#":
                     this.actors.push(new Block(x, y, this.colors.wall,
+                                this.blockSize));
+                    break;
+
+                case "W":
+                    this.actors.push(new Block(x, y, this.colors.water,
+                                this.blockSize));
+                    break;
+
+                case "L":
+                    this.actors.push(new Block(x, y, this.colors.leaves,
+                                this.blockSize));
+                    break;
+
+                case "C":
+                    this.actors.push(new Block(x, y, this.colors.castle,
                                 this.blockSize));
                     break;
 
@@ -602,9 +616,10 @@ Scene.prototype.planReader = function() {
     });
 };
 
-Scene.prototype.init = function(canvas) {
+Scene.prototype.init = function() {
 
-    this.background = new Background(canvas, this.colors.background);
+    this.background = new Background(this.mapW, this.mapH,
+            this.colors.background);
     this.planReader();
 };
 
@@ -613,14 +628,11 @@ module.exports = Scene;
 },{"./background":1,"./block":2,"./pellet":8}],11:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
-var level1 = new Scene(32);
+var blockSize = 32,
+    name = "Goggles",
+    plan, colors, level1;
 
-level1.name = "Goggles";
-level1.defaultScore = 1000;
-
-level1.timer = 20;
-
-level1.plan = [
+plan = [
     "################################",
     "###           ####           ###",
     "##    *   *    ##    *   *    ##",
@@ -641,29 +653,28 @@ level1.plan = [
     "################################"
 ];
 
-level1.playerData.color = "white";
-
-level1.colors = {
+colors = {
     background: "red",
     wall: "midnightblue",
     pellet: "gold"
 };
 
-//level1.planReader();
+level1 = new Scene(blockSize, name, plan, colors);
+
+level1.timer = 20;
+level1.defaultScore = 1000;
+level1.playerData.color = "white";
 
 module.exports = level1;
 
 },{"../Constructors/scene":10}],12:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
-var level2 = new Scene(32);
+var blockSize = 32,
+    name = "Hogan",
+    plan, colors, level2;
 
-level2.name = "Hogan";
-level2.defaultScore = 1000;
-
-level2.timer = 20;
-
-level2.plan = [
+plan = [
     "################################",
     "######                    ######",
     "##        *          *        ##",
@@ -684,29 +695,29 @@ level2.plan = [
     "################################"
 ];
 
-level2.playerData.color = "white";
-
-level2.colors = {
+colors = {
     background: "indigo",
     wall: "magenta",
     pellet: "gold"
 };
 
-//level2.planReader();
+level2 = new Scene(blockSize, name, plan, colors);
+
+level2.timer = 20;
+level2.defaultScore = 1000;
+level2.playerData.color = "white";
 
 module.exports = level2;
 
 },{"../Constructors/scene":10}],13:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
-var level3 = new Scene(16);
+var blockSize = 16,
+    name = "Maise",
+    plan, colors, level3;
 
-level3.name = "Maise";
-level3.defaultScore = 2000;
 
-level3.timer = 50;
-
-level3.plan = [
+plan = [
     "################################################################",
     "#              #           #                                   #",
     "#              #           #                                   #",
@@ -745,29 +756,28 @@ level3.plan = [
     "################################################################"
 ];
 
-level3.playerData.color = "white";
-
-level3.colors = {
+colors = {
     background: "black",
     wall: "green",
     pellet: "gold"
 };
 
-//level3.planReader();
+level3 = new Scene(blockSize, name, plan, colors);
+
+level3.timer = 50;
+level3.defaultScore = 2000;
+level3.playerData.color = "white";
 
 module.exports = level3;
 
 },{"../Constructors/scene":10}],14:[function(require,module,exports){
 var Scene = require("../Constructors/scene");
 
-var level4 = new Scene(32);
+var blockSize = 32,
+    name = "Trash",
+    plan, colors, level4;
 
-level4.name = "Trash";
-level4.defaultScore = 1000;
-
-level4.timer = 40;
-
-level4.plan = [
+plan = [
     "################################",
     "######### @  #                 #",
     "#########    #      *   *      #",
@@ -788,19 +798,90 @@ level4.plan = [
     "################################"
 ];
 
-level4.playerData.color = "white";
-
-level4.colors = {
+colors = {
     background: "gray",
     wall: "sienna",
     pellet: "gold"
 };
 
-//level4.planReader();
+level4 = new Scene(blockSize, name, plan, colors);
+
+level4.timer = 40;
+level4.defaultScore = 1000;
+level4.playerData.color = "white";
 
 module.exports = level4;
 
 },{"../Constructors/scene":10}],15:[function(require,module,exports){
+var Scene = require("../Constructors/scene");
+
+var blockSize = 32,
+    name = "Village",
+    plan, colors, level5;
+
+plan = [
+    "########################################################################",
+    "#                    C C      C  C C  C      C C      L    L  *        #",
+    "#              L     CC CCCCCC CC C CC CCCCCC CC     LLL  LLL     *    #",
+    "#             LLL  L C                                #    LL       L  #",
+    "#   *          #  LLLC                               CCCCC #       LLL #",
+    "#                 LLLC    *              *           CC CC         LLL #",
+    "#  *    L          # C                               CCCCC          #  #",
+    "#      LLL         # C C    C  WCCCCCW         C     CCCCC       L  #  #",
+    "#   L  LLL  L        CCC    CCCCCWWWCCCCCCCCCCCC                LLL    #",
+    "#  LLL  #  LLL                   WWW     *  *                    #     #",
+    "#  LLL  #   #                     W                                    #",
+    "#   #                                                ###  ##    ##     #",
+    "#   #   ## #### ##                                   #           #     #",
+    "#   *   #        #                                       *       #     #",
+    "#                                                    #        *  #     #",
+    "#       #   *                     W                  #       CCC #     #",
+    "#       #                         W                  ##    ### ###     #",
+    "#       #                         W                                    #",
+    "#       #        #                W                                    #",
+    "#       #        #                W                                    #",
+    "#           *    #               WWW                                   #",
+    "#       #        #             WWWWWWW               #   #         CCC #",
+    "#       ###    ###            WWWWWWWWW                   #        CWC #",
+    "#                             WWWWWWWWW            #               CWC #",
+    "#                             WWWWWWWWW               **           CWC #",
+    "#                              WWWWWWW                **           CWC #",
+    "#                                WWW               #               CWC #",
+    "#                                                         #        CWC #",
+    "#      ####    ####        L                         #  #          CCC #",
+    "#      #CC        #        L                                           #",
+    "#      #CC   *  CC#       LLL                                       *  #",
+    "#      #        CC#       LLL                                          #",
+    "#      #          #      LLLLL                ####################     #",
+    "#      # *        #        #                                           #",
+    "#      #          #                             *              *       #",
+    "#      #######    #                                  *    *            #",
+    "#                                                                      #",
+    "#   CCC                          C    C       ####################     #",
+    "#   CWC                          C @  C                                #",
+    "#   CCC                          C    C                                #",
+    "#                               *CCCCCC                                #",
+    "########################################################################"
+];
+
+colors = {
+    background: "black",
+    wall: "saddlebrown",
+    water: "blue",
+    leaves: "green",
+    castle: "grey",
+    pellet: "gold"
+};
+
+level5 = new Scene(blockSize, name, plan, colors);
+
+level5.timer = 60;
+level5.defaultScore = 2000;
+level5.playerData.color = "white";
+
+module.exports = level5;
+
+},{"../Constructors/scene":10}],16:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./mainMenu");
@@ -809,10 +890,12 @@ var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
 var overlay         = require("./overlay");
 var timer           = require("./timer");
+var Camera          = require("./camera");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
 var level3          = require("./Levels/level3");
 var level4          = require("./Levels/level4");
+var level5          = require("./Levels/level5");
 
 var app = {
 
@@ -824,9 +907,11 @@ var app = {
         level1,
         level2,
         level3,
-        level4
+        level4,
+        level5
     ],
 
+    camera: null,
     state: ""
 };
 
@@ -839,7 +924,8 @@ app.sceneLoader = function(i) {
 
     this.scenario = this.scenes[i];
     this.currentScene = i;
-    this.scenario.init(canvas);
+    this.scenario.init();
+    this.camera = new Camera(this.scenario.mapW, this.scenario.mapH);
 
     scoreTracker.timeRemaining = this.scenario.timer;
     scoreTracker.setHiScore(this.scenario.name);
@@ -877,8 +963,13 @@ app.render = function() {
             break;
 
         case "game":
+            canvas.ctx.save();
+            canvas.ctx.translate(-this.camera.camX, -this.camera.camY);
+
             this.scenario.draw(canvas.ctx);
             this.player.draw(canvas.ctx);
+
+            canvas.ctx.restore();
 
             overlay.draw(scoreTracker, this.player.pellets,
                     this.scenario.pellets);
@@ -908,6 +999,8 @@ app.update = function(tStamp) {
         case "game":
             this.player.update(this.keysDown, this.scenario.actors,
                     scoreTracker);
+            this.camera.update(this.player.xC, this.player.yC);
+
             scoreTracker.timeUpdate(timer.delta);
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
@@ -931,7 +1024,44 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./canvas":16,"./input":20,"./mainMenu":23,"./overlay":26,"./scoretracker":27,"./timer":29}],16:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./Levels/level5":15,"./camera":17,"./canvas":18,"./input":22,"./mainMenu":25,"./overlay":28,"./scoretracker":29,"./timer":31}],17:[function(require,module,exports){
+var canvas          = require("./canvas");
+
+function Camera(mapW, mapH) {
+    "use strict";
+
+    this.offsetMaxX = mapW - canvas.width;
+    this.offsetMaxY = mapH - canvas.height;
+    this.offsetMinX = 0;
+    this.offsetMinY = 0;
+
+    this.camX = 0;
+    this.camY = 0;
+}
+
+Camera.prototype.update = function(playerXC, playerYC) {
+
+    this.camX = playerXC - canvas.width / 2;
+    this.camY = playerYC - canvas.height / 2;
+
+    if (this.camX > this.offsetMaxX) {
+        this.camX = this.offsetMaxX;
+
+    } else if (this.camX < this.offsetMinX) {
+        this.camX = this.offsetMinX;
+    }
+
+    if (this.camY > this.offsetMaxY) {
+        this.camY = this.offsetMaxY;
+
+    } else if (this.camY < this.offsetMinY) {
+        this.camY = this.offsetMinY;
+    }
+};
+
+module.exports = Camera;
+
+},{"./canvas":18}],18:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -955,7 +1085,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -965,7 +1095,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var pageTitle = "Movement",
@@ -981,7 +1111,7 @@ var pageTitle = "Movement",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./Constructors/page":7}],19:[function(require,module,exports){
+},{"./Constructors/page":7}],21:[function(require,module,exports){
 module.exports = (function() {
     "use strict";
     var counter = 0,
@@ -1015,7 +1145,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -1083,7 +1213,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var leaderboard = {
@@ -1105,7 +1235,7 @@ leaderboard.populate = function(hiScores) {
 
 module.exports = leaderboard;
 
-},{"./Constructors/page":7}],22:[function(require,module,exports){
+},{"./Constructors/page":7}],24:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1126,7 +1256,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":15}],23:[function(require,module,exports){
+},{"./app":16}],25:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1147,7 +1277,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":6,"./mainTitle":24}],24:[function(require,module,exports){
+},{"./Constructors/menu":6,"./mainTitle":26}],26:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1194,7 +1324,7 @@ module.exports = {
     }
 };
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1231,7 +1361,7 @@ exports.spaceFill = (val, digits) => {
     return valStr;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 var overlay = {
@@ -1268,7 +1398,7 @@ overlay.drawScore = (function() {
 overlay.drawHiScore = (function() {
     "use strict";
     var xL = canvas.width - this.positionUnits * 5,
-        xR = canvas.width - this.positionUnits * 2,
+        xR = canvas.width - this.positionUnits * 1,
         y = this.padding + this.smallFontSize,
         font = `${this.smallFontSize}px ${this.fontFamily}`,
         label = "HiScore";
@@ -1356,7 +1486,7 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
 
 module.exports = overlay;
 
-},{"./canvas":16}],27:[function(require,module,exports){
+},{"./canvas":18}],29:[function(require,module,exports){
 var canvas          = require("./canvas");
 var getStorage      = require("./storage").getStorage;
 var toTenths        = require("./numstring").toTenths;
@@ -1540,7 +1670,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":16,"./numstring":25,"./storage":28}],28:[function(require,module,exports){
+},{"./canvas":18,"./numstring":27,"./storage":30}],30:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
@@ -1569,7 +1699,7 @@ exports.getStorage = function() {
     return storage;
 };
 
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1587,4 +1717,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[22]);
+},{}]},{},[24]);

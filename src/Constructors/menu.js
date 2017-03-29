@@ -24,7 +24,8 @@ function Menu(fontSize, colors, selections, mainTitle) {
 
     // Content
     this.selections = selections;
-    this.background = new Background(canvas, this.colors.background);
+    this.background = new Background(canvas.width, canvas.height,
+            this.colors.background);
 
     this.cursorData = {
         x: this.menuX,

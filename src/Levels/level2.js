@@ -1,13 +1,10 @@
 var Scene = require("../Constructors/scene");
 
-var level2 = new Scene(32);
+var blockSize = 32,
+    name = "Hogan",
+    plan, colors, level2;
 
-level2.name = "Hogan";
-level2.defaultScore = 1000;
-
-level2.timer = 20;
-
-level2.plan = [
+plan = [
     "################################",
     "######                    ######",
     "##        *          *        ##",
@@ -28,14 +25,16 @@ level2.plan = [
     "################################"
 ];
 
-level2.playerData.color = "white";
-
-level2.colors = {
+colors = {
     background: "indigo",
     wall: "magenta",
     pellet: "gold"
 };
 
-//level2.planReader();
+level2 = new Scene(blockSize, name, plan, colors);
+
+level2.timer = 20;
+level2.defaultScore = 1000;
+level2.playerData.color = "white";
 
 module.exports = level2;

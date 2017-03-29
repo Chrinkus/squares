@@ -1,8 +1,8 @@
-function Background(canvas, color) {
+function Background(width, height, color) {
     "use strict";
 
-    this.xMax = canvas.width;
-    this.yMax = canvas.height;
+    this.xMax = width;
+    this.yMax = height;
     this.color = color;
 }
 

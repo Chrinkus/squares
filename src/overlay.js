@@ -34,7 +34,7 @@ overlay.drawScore = (function() {
 overlay.drawHiScore = (function() {
     "use strict";
     var xL = canvas.width - this.positionUnits * 5,
-        xR = canvas.width - this.positionUnits * 2,
+        xR = canvas.width - this.positionUnits * 1,
         y = this.padding + this.smallFontSize,
         font = `${this.smallFontSize}px ${this.fontFamily}`,
         label = "HiScore";

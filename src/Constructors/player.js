@@ -24,6 +24,21 @@ function Player(playerData) {
     };
 }
 
+Object.defineProperties(Player.prototype, {
+
+    "xC": {
+        get: function() {
+            return this.x + this.w / 2;
+        }
+    },
+
+    "yC": {
+        get: function() {
+            return this.y + this.w / 2;
+        }
+    }
+});
+
 Player.prototype.draw = function(ctx) {
 
     ctx.fillStyle = this.color;

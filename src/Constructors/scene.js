@@ -2,14 +2,19 @@ var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
 
-function Scene(blockSize) {
+function Scene(blockSize, name, plan, colors) {
     "use strict";
 
-    // explicitly defined in level files
     this.blockSize = blockSize;
-    this.plan = [];
-    this.colors = null;
+    this.name = name;
+    this.plan = plan;
+    this.colors = colors;
+    this.mapW = plan[0].length * blockSize;
+    this.mapH = plan.length * blockSize;
+
+    // explicitly defined in level files
     this.timer = 0;
+    this.defaultScore = 0;
 
     // defined in this.init(canvas)
     this.background = null;
@@ -24,23 +29,6 @@ function Scene(blockSize) {
         w: blockSize * 2
     };
 }
-
-Object.defineProperties(Scene.prototype, {
-
-    "mapW": {
-        get: () => {
-            delete this.mapW;
-            this.mapW = this.plan[0].length * this.blockSize;
-        }
-    },
-
-    "mapH": {
-        get: () => {
-            delete this.mapH;
-            this.mapH = this.plan.length * this.blockSize;
-        }
-    }
-});
 
 Scene.prototype.draw = function(ctx) {
 
@@ -58,11 +46,6 @@ Scene.prototype.draw = function(ctx) {
     });
 };
 
-Scene.prototype.update = function(delta) {
-
-    // Does nothing so far...
-};
-
 Scene.prototype.planReader = function() {
 
     this.pellets = 0;
@@ -77,6 +60,21 @@ Scene.prototype.planReader = function() {
             switch (character) {
                 case "#":
                     this.actors.push(new Block(x, y, this.colors.wall,
+                                this.blockSize));
+                    break;
+
+                case "W":
+                    this.actors.push(new Block(x, y, this.colors.water,
+                                this.blockSize));
+                    break;
+
+                case "L":
+                    this.actors.push(new Block(x, y, this.colors.leaves,
+                                this.blockSize));
+                    break;
+
+                case "C":
+                    this.actors.push(new Block(x, y, this.colors.castle,
                                 this.blockSize));
                     break;
 
@@ -98,9 +96,10 @@ Scene.prototype.planReader = function() {
     });
 };
 
-Scene.prototype.init = function(canvas) {
+Scene.prototype.init = function() {
 
-    this.background = new Background(canvas, this.colors.background);
+    this.background = new Background(this.mapW, this.mapH,
+            this.colors.background);
     this.planReader();
 };
 

@@ -6,10 +6,12 @@ var Confirmation    = require("./Constructors/confirmation");
 var scoreTracker    = require("./scoretracker");
 var overlay         = require("./overlay");
 var timer           = require("./timer");
+var Camera          = require("./camera");
 var level1          = require("./Levels/level1");
 var level2          = require("./Levels/level2");
 var level3          = require("./Levels/level3");
 var level4          = require("./Levels/level4");
+var level5          = require("./Levels/level5");
 
 var app = {
 
@@ -21,9 +23,11 @@ var app = {
         level1,
         level2,
         level3,
-        level4
+        level4,
+        level5
     ],
 
+    camera: null,
     state: ""
 };
 
@@ -36,7 +40,8 @@ app.sceneLoader = function(i) {
 
     this.scenario = this.scenes[i];
     this.currentScene = i;
-    this.scenario.init(canvas);
+    this.scenario.init();
+    this.camera = new Camera(this.scenario.mapW, this.scenario.mapH);
 
     scoreTracker.timeRemaining = this.scenario.timer;
     scoreTracker.setHiScore(this.scenario.name);
@@ -74,8 +79,13 @@ app.render = function() {
             break;
 
         case "game":
+            canvas.ctx.save();
+            canvas.ctx.translate(-this.camera.camX, -this.camera.camY);
+
             this.scenario.draw(canvas.ctx);
             this.player.draw(canvas.ctx);
+
+            canvas.ctx.restore();
 
             overlay.draw(scoreTracker, this.player.pellets,
                     this.scenario.pellets);
@@ -105,6 +115,8 @@ app.update = function(tStamp) {
         case "game":
             this.player.update(this.keysDown, this.scenario.actors,
                     scoreTracker);
+            this.camera.update(this.player.xC, this.player.yC);
+
             scoreTracker.timeUpdate(timer.delta);
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
