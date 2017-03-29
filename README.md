@@ -4,12 +4,11 @@ Navigate the maze to collect the golden pellets. The more you eat, the more you 
 
 Use WASD or the arrow keys to move.
 
-March 26th, 2017
-- Utilizes browser storage if available to save local hi Scores
-- Level 4 added to the game
-- Several abstractions made to clean up code
+March 28th, 2017
+- Implemented camera object
+- Added Level 5 to game progression
+- Base game complete!
 
 Next goals:
-- Begin necessary work on level 5 tools
 - Consider what is needed for more engaging feedback to the player
 - Decide on extent of required commenting/documentation for future reference
