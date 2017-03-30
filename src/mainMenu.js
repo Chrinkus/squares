@@ -10,7 +10,8 @@ var font = 42,
     selections = [
         "new game",
         "leaderboard",
-        "controls"
+        "controls",
+        "credits"
     ],
     mainMenu = null;
 

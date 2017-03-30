@@ -4,6 +4,7 @@ var Cursor          = require("./cursor");
 var Confirmation    = require("./confirmation");
 var controls        = require("../controls");
 var leaderboard     = require("../leaderboard");
+var credits         = require("../credits");
 
 function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";
@@ -93,6 +94,7 @@ Menu.prototype.draw = function(ctx) {
 
         case "credits":
             // credits
+            credits.draw();
             break;
 
         default:
@@ -149,8 +151,14 @@ Menu.prototype.select = function(i) {
             break;
 
         case "credits":
-            // Choose a level to start at
-            console.log("credits selected");
+            this.menuState = "credits";
+
+            this.confirmation = new Confirmation(() => {
+                delete this.confirmation;
+
+                this.menuState = "mainmenu";
+                this.mainConfirm();
+            }, " to return ");
             break;
 
         default:

@@ -84,7 +84,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"../canvas":18,"../fadeinout":21}],4:[function(require,module,exports){
+},{"../canvas":18,"../fadeinout":22}],4:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -155,13 +155,14 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../input":22,"./cooldown":4}],6:[function(require,module,exports){
+},{"../input":23,"./cooldown":4}],6:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("./background");
 var Cursor          = require("./cursor");
 var Confirmation    = require("./confirmation");
 var controls        = require("../controls");
 var leaderboard     = require("../leaderboard");
+var credits         = require("../credits");
 
 function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";
@@ -251,6 +252,7 @@ Menu.prototype.draw = function(ctx) {
 
         case "credits":
             // credits
+            credits.draw();
             break;
 
         default:
@@ -307,8 +309,14 @@ Menu.prototype.select = function(i) {
             break;
 
         case "credits":
-            // Choose a level to start at
-            console.log("credits selected");
+            this.menuState = "credits";
+
+            this.confirmation = new Confirmation(() => {
+                delete this.confirmation;
+
+                this.menuState = "mainmenu";
+                this.mainConfirm();
+            }, " to return ");
             break;
 
         default:
@@ -318,7 +326,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../canvas":18,"../controls":20,"../leaderboard":23,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
+},{"../canvas":18,"../controls":20,"../credits":21,"../leaderboard":24,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle) {
@@ -516,7 +524,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"../collision":19,"../input.js":22}],10:[function(require,module,exports){
+},{"../collision":19,"../input.js":23}],10:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("./background");
@@ -1023,7 +1031,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./Levels/level5":15,"./camera":17,"./canvas":18,"./input":22,"./mainMenu":25,"./overlay":28,"./scoretracker":29,"./timer":31}],17:[function(require,module,exports){
+},{"./Constructors/confirmation":3,"./Constructors/player":9,"./Levels/level1":11,"./Levels/level2":12,"./Levels/level3":13,"./Levels/level4":14,"./Levels/level5":15,"./camera":17,"./canvas":18,"./input":23,"./mainMenu":26,"./overlay":29,"./scoretracker":30,"./timer":32}],17:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 function Camera(mapW, mapH) {
@@ -1111,6 +1119,32 @@ var pageTitle = "Movement",
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
 },{"./Constructors/page":7}],21:[function(require,module,exports){
+var Page            = require("./Constructors/page");
+
+var pageTitle = "squares",
+    pageFields = [
+        ["game by", "Chris Schick"],
+        ["", ""],
+        ["thanks to", "David Wesst,"],
+        ["", "Marijn Haverbeke,"],
+        ["", "Nicholas C. Zakas,"],
+        ["", "Codecademy, NodeSchool,"],
+        ["", "Mozilla Developer Network"],
+        ["", ""],
+        ["& especially", "my wife, Caitlin"]
+    ],
+    columnStyle = "left",
+    credits;
+
+credits = new Page(pageTitle, pageFields, columnStyle);
+
+credits.fieldXR = credits.headX;
+credits.fieldXL = credits.headX - 50;
+credits.leftColumnAlign = "right";
+
+module.exports = credits;
+
+},{"./Constructors/page":7}],22:[function(require,module,exports){
 module.exports = (function() {
     "use strict";
     var counter = 0,
@@ -1144,7 +1178,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -1225,7 +1259,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var Page            = require("./Constructors/page");
 
 var leaderboard = {
@@ -1247,7 +1281,7 @@ leaderboard.populate = function(hiScores) {
 
 module.exports = leaderboard;
 
-},{"./Constructors/page":7}],24:[function(require,module,exports){
+},{"./Constructors/page":7}],25:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1268,7 +1302,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":16}],25:[function(require,module,exports){
+},{"./app":16}],26:[function(require,module,exports){
 var Menu        = require("./Constructors/menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1281,7 +1315,8 @@ var font = 42,
     selections = [
         "new game",
         "leaderboard",
-        "controls"
+        "controls",
+        "credits"
     ],
     mainMenu = null;
 
@@ -1289,7 +1324,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./Constructors/menu":6,"./mainTitle":26}],26:[function(require,module,exports){
+},{"./Constructors/menu":6,"./mainTitle":27}],27:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1336,7 +1371,7 @@ module.exports = {
     }
 };
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1373,7 +1408,7 @@ exports.spaceFill = (val, digits) => {
     return valStr;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 var overlay = {
@@ -1498,7 +1533,7 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
 
 module.exports = overlay;
 
-},{"./canvas":18}],29:[function(require,module,exports){
+},{"./canvas":18}],30:[function(require,module,exports){
 var canvas          = require("./canvas");
 var getStorage      = require("./storage").getStorage;
 var toTenths        = require("./numstring").toTenths;
@@ -1682,7 +1717,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":18,"./numstring":27,"./storage":30}],30:[function(require,module,exports){
+},{"./canvas":18,"./numstring":28,"./storage":31}],31:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
@@ -1711,7 +1746,7 @@ exports.getStorage = function() {
     return storage;
 };
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1729,4 +1764,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[24]);
+},{}]},{},[25]);
