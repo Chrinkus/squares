@@ -329,7 +329,7 @@ module.exports = Menu;
 },{"../canvas":18,"../controls":20,"../credits":21,"../leaderboard":24,"./background":1,"./confirmation":3,"./cursor":5}],7:[function(require,module,exports){
 var canvas          = require("../canvas");
 
-function Page(pageTitle, pageFields, columnStyle) {
+function Page(pageTitle, pageFields, columnStyle, fieldFontSize) {
     "use strict";
     var xC = canvas.width / 2,
         yC = canvas.height / 2;
@@ -343,7 +343,7 @@ function Page(pageTitle, pageFields, columnStyle) {
     this.headerFontSize = 48;
     this.headerFont = this.headerFontSize + "px monospace";
     this.headerLineHeight = Math.floor(this.headerFontSize * 1.2);
-    this.fieldFontSize = 32;
+    this.fieldFontSize = fieldFontSize || 32;
     this.fieldFont = this.fieldFontSize + "px monospace";
     this.fieldLineHeight = Math.floor(this.fieldFontSize * 1.2);
     this.textAreaWidth = columnStyle === "spread" ? 400 : 300;
@@ -1125,18 +1125,24 @@ var pageTitle = "squares",
     pageFields = [
         ["game by", "Chris Schick"],
         ["", ""],
-        ["thanks to", "David Wesst,"],
-        ["", "Marijn Haverbeke,"],
-        ["", "Nicholas C. Zakas,"],
-        ["", "Codecademy, NodeSchool,"],
+        ["print resources", "Eloquent Javascript"],
+        ["", "  by Marijn Haverbeke,"],
+        ["", "Javascript: The Good Parts"],
+        ["", "  by Douglas Crockford,"],
+        ["", "Maintainable Javascript"],
+        ["", "  by Nicholas C. Zakas"],
+        ["", ""],
+        ["online resources", "Codecademy, NodeSchool, 2ality"],
         ["", "Mozilla Developer Network"],
         ["", ""],
-        ["& especially", "my wife, Caitlin"]
+        ["special thanks for their", "David Wesst &"],
+        ["love, support & encouragement", "my beautiful wife Caitlin"]
     ],
     columnStyle = "left",
+    fieldFontSize = 20,
     credits;
 
-credits = new Page(pageTitle, pageFields, columnStyle);
+credits = new Page(pageTitle, pageFields, columnStyle, fieldFontSize);
 
 credits.fieldXR = credits.headX;
 credits.fieldXL = credits.headX - 50;

@@ -1,6 +1,6 @@
 var canvas          = require("../canvas");
 
-function Page(pageTitle, pageFields, columnStyle) {
+function Page(pageTitle, pageFields, columnStyle, fieldFontSize) {
     "use strict";
     var xC = canvas.width / 2,
         yC = canvas.height / 2;
@@ -14,7 +14,7 @@ function Page(pageTitle, pageFields, columnStyle) {
     this.headerFontSize = 48;
     this.headerFont = this.headerFontSize + "px monospace";
     this.headerLineHeight = Math.floor(this.headerFontSize * 1.2);
-    this.fieldFontSize = 32;
+    this.fieldFontSize = fieldFontSize || 32;
     this.fieldFont = this.fieldFontSize + "px monospace";
     this.fieldLineHeight = Math.floor(this.fieldFontSize * 1.2);
     this.textAreaWidth = columnStyle === "spread" ? 400 : 300;

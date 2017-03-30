@@ -4,18 +4,24 @@ var pageTitle = "squares",
     pageFields = [
         ["game by", "Chris Schick"],
         ["", ""],
-        ["thanks to", "David Wesst,"],
-        ["", "Marijn Haverbeke,"],
-        ["", "Nicholas C. Zakas,"],
-        ["", "Codecademy, NodeSchool,"],
+        ["print resources", "Eloquent Javascript"],
+        ["", "  by Marijn Haverbeke,"],
+        ["", "Javascript: The Good Parts"],
+        ["", "  by Douglas Crockford,"],
+        ["", "Maintainable Javascript"],
+        ["", "  by Nicholas C. Zakas"],
+        ["", ""],
+        ["online resources", "Codecademy, NodeSchool, 2ality"],
         ["", "Mozilla Developer Network"],
         ["", ""],
-        ["& especially", "my wife, Caitlin"]
+        ["special thanks for their", "David Wesst &"],
+        ["love, support & encouragement", "my beautiful wife Caitlin"]
     ],
     columnStyle = "left",
+    fieldFontSize = 20,
     credits;
 
-credits = new Page(pageTitle, pageFields, columnStyle);
+credits = new Page(pageTitle, pageFields, columnStyle, fieldFontSize);
 
 credits.fieldXR = credits.headX;
 credits.fieldXL = credits.headX - 50;
