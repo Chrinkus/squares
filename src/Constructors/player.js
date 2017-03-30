@@ -10,8 +10,7 @@ function Player(playerData) {
     this.b = playerData.b;
     this.minW = playerData.b / 2;
     this.maxW = playerData.b * 3;
-    this.dx = playerData.b / 8;
-    this.dy = playerData.b / 8;
+    this.d = playerData.b / 8;
     this.color = playerData.color;
 
     this.pellets = 0;

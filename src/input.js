@@ -34,18 +34,31 @@ exports.keysDown = () => {
 
 exports.move8 = (mover, keysDown) => {
     "use strict";
+    var x = 0,
+        y = 0,
+        d;
 
     if (87 in keysDown || 38 in keysDown) {
-        mover.y -= mover.dy;
+        y -= mover.d;
     }
     if (83 in keysDown || 40 in keysDown) {
-        mover.y += mover.dy;
+        y += mover.d;
     }
     if (65 in keysDown || 37 in keysDown) {
-        mover.x -= mover.dx;
+        x -= mover.d;
     }
     if (68 in keysDown || 39 in keysDown) {
-        mover.x += mover.dx;
+        x += mover.d;
+    }
+
+    // Correct diagonal speed boost
+    if (x && y) {
+        d = Math.round(Math.sqrt(mover.d * 2));
+        mover.x += x < 0 ? -d : d;
+        mover.y += y < 0 ? -d : d;
+    } else {
+        mover.x += x;
+        mover.y += y;
     }
 };
 
