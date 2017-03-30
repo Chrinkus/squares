@@ -163,6 +163,11 @@ var canvas          = require("./canvas");
 
 function Camera(mapW, mapH) {
     "use strict";
+    
+    // INLINE TEST
+    if (typeof mapW !== "number" || typeof mapH !== "number") {
+        throw new Error("Camera received: " + mapW + ", " + mapH);
+    }
 
     this.offsetMaxX = mapW - canvas.width;
     this.offsetMaxY = mapH - canvas.height;
