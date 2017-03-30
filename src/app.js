@@ -1,17 +1,17 @@
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
-var mainMenu        = require("./mainMenu");
-var Player          = require("./Constructors/player");
-var Confirmation    = require("./Constructors/confirmation");
+var mainMenu        = require("./menu/mainMenu");
+var Player          = require("./player");
+var Confirmation    = require("./confirmation");
 var scoreTracker    = require("./scoretracker");
 var overlay         = require("./overlay");
 var timer           = require("./timer");
 var Camera          = require("./camera");
-var level1          = require("./Levels/level1");
-var level2          = require("./Levels/level2");
-var level3          = require("./Levels/level3");
-var level4          = require("./Levels/level4");
-var level5          = require("./Levels/level5");
+var level1          = require("./levels/level1");
+var level2          = require("./levels/level2");
+var level3          = require("./levels/level3");
+var level4          = require("./levels/level4");
+var level5          = require("./levels/level5");
 
 var app = {
 

@@ -1,4 +1,4 @@
-var Page            = require("./Constructors/page");
+var Page            = require("./page");
 
 var pageTitle = "squares",
     pageFields = [

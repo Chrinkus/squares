@@ -1,5 +1,5 @@
-var collision = require("../collision");
-var move8 = require("../input.js").move8;
+var collision       = require("./collision");
+var move8           = require("./input").move8;
 
 function Player(playerData) {
     "use strict";

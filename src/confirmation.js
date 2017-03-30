@@ -1,5 +1,5 @@
-var canvas      = require("../canvas");
-var fadeInOut   = require("../fadeinout");
+var canvas      = require("./canvas");
+var fadeInOut   = require("./fadeinout");
 
 function Confirmation(f, msg) {
     "use strict";

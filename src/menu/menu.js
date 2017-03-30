@@ -1,10 +1,10 @@
 var canvas          = require("../canvas");
-var Background      = require("./background");
+var Background      = require("../background");
+var Confirmation    = require("../confirmation");
 var Cursor          = require("./cursor");
-var Confirmation    = require("./confirmation");
-var controls        = require("../controls");
-var leaderboard     = require("../leaderboard");
-var credits         = require("../credits");
+var controls        = require("./controls");
+var leaderboard     = require("./leaderboard");
+var credits         = require("./credits");
 
 function Menu(fontSize, colors, selections, mainTitle) {
     "use strict";

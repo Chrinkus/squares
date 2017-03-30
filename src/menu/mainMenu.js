@@ -1,4 +1,4 @@
-var Menu        = require("./Constructors/menu");
+var Menu        = require("./menu");
 var mainTitle   = require("./mainTitle");
 
 var font = 42,

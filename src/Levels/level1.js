@@ -1,4 +1,4 @@
-var Scene = require("../Constructors/scene");
+var Scene = require("./scene");
 
 var blockSize = 32,
     name = "Goggles",

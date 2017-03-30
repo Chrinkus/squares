@@ -1,6 +1,6 @@
 var Block       = require("./block");
 var Pellet      = require("./pellet");
-var Background  = require("./background");
+var Background  = require("../background");
 
 function Scene(blockSize, name, plan, colors) {
     "use strict";
