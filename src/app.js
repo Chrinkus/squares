@@ -15,6 +15,7 @@ var level5          = require("./levels/level5");
 
 var app = {
 
+    audioCtx: new (window.AudioContext || window.webkitAudioContext)(),
     keysDown: keysDown(),
     player: null,
     scenario: null,
@@ -46,7 +47,7 @@ app.sceneLoader = function(i) {
     scoreTracker.timeRemaining = this.scenario.timer;
     scoreTracker.setHiScore(this.scenario.name);
 
-    this.player = new Player(this.scenario.playerData);
+    this.player = new Player(this.scenario.playerData, this.audioCtx);
 
     if (this.player.x === 0) {
         this.player.x = canvas.width / 2 - this.player.w / 2;
@@ -63,7 +64,7 @@ app.init = function() {
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
-    }, scoreTracker.hiScores);
+    }, scoreTracker.hiScores, this.audioCtx);
 
     this.state = "mainmenu";
 };
@@ -126,7 +127,7 @@ app.update = function(tStamp) {
                     delete this.confirmation;
                     scoreTracker.reset();
                     this.sceneLoader(this.currentScene + 1);
-                }, " to continue ");
+                }, " to continue ", this.audioCtx);
             }
             break;
 

@@ -1,7 +1,8 @@
 var moveCursor  = require("../input").moveCursor;
 var Cooldown    = require("./cooldown");
+var Kick        = require("../Audio/kick");
 
-function Cursor(menu) {
+function Cursor(menu, audioCtx) {
     "use strict";
     this.menu = menu;
 
@@ -16,6 +17,7 @@ function Cursor(menu) {
     this.offSet = menu.lineHeight;
 
     this.cooldown = null;
+    this.moveSound = new Kick(audioCtx);
 
     this.path = function(y) {
         var path = new Path2D();
@@ -43,6 +45,7 @@ Cursor.prototype.update = function(keysDown, delta) {
         this.cooldown = new Cooldown(250, () => {
             delete this.cooldown;
         });
+        this.moveSound.trigger();
     }
 };
 

@@ -1,7 +1,8 @@
 var collision       = require("./collision");
 var move8           = require("./input").move8;
+var Pickup          = require("./Audio/pickup");
 
-function Player(playerData) {
+function Player(playerData, audioCtx) {
     "use strict";
 
     this.x = playerData.x;
@@ -14,6 +15,7 @@ function Player(playerData) {
     this.color = playerData.color;
 
     this.pellets = 0;
+    this.pickup = new Pickup(audioCtx);
 
     this.path = function(x, y) {
         var path = new Path2D();
@@ -59,6 +61,7 @@ Player.prototype.grow = function() {
 };
 
 Player.prototype.update = function(keysDown, actors, scoreTracker) {
+    let soundPlayed = false;
 
     // Process move
     var snapshot = {
@@ -83,6 +86,11 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
                 scoreTracker.scoreInc(100);
                 this.pellets += 1;
+
+                if (!soundPlayed) {
+                    this.pickup.trigger();
+                    soundPlayed = true;
+                }
 
                 if (this.w < this.maxW) {
                     this.grow();

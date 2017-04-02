@@ -1,4 +1,71 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+// Kick Drum Synthesis
+//
+// Special thanks to Chris Lowis for the article:
+// https://dev.opera.com/articles/drum-sounds-webaudio/
+
+function Kick(ctx) {
+    "use strict";
+    this.ctx = ctx;
+}
+
+Kick.prototype.setup = function() {
+    this.osc = this.ctx.createOscillator();
+    this.gainOsc = this.ctx.createGain();
+    this.osc.connect(this.gainOsc);
+    this.gainOsc.connect(this.ctx.destination);
+};
+
+Kick.prototype.trigger = function() {
+    let time = this.ctx.currentTime;
+
+    this.setup();
+
+    this.osc.frequency.setValueAtTime(150, time);
+    this.gainOsc.gain.setValueAtTime(1, time);
+
+    this.osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+    this.gainOsc.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+    this.osc.start(time);
+    this.osc.stop(time + 0.5);
+};
+
+module.exports = Kick;
+
+},{}],2:[function(require,module,exports){
+function Pickup(ctx) {
+    "use strict";
+    this.ctx = ctx;
+}
+
+Pickup.prototype.setup = function() {
+    this.osc = this.ctx.createOscillator();
+    this.gainEnv = this.ctx.createGain();
+    this.osc.connect(this.gainEnv);
+    this.gainEnv.connect(this.ctx.destination);
+};
+
+Pickup.prototype.trigger = function() {
+    let now = this.ctx.currentTime;
+    let dur = 0.5;
+    let freq = 220;
+
+    this.setup();
+
+    this.osc.frequency.setValueAtTime(freq, now);
+    this.gainEnv.gain.setValueAtTime(0.2, now);
+
+    this.osc.frequency.setValueAtTime(freq * 2, now + 0.1);
+    this.gainEnv.gain.linearRampToValueAtTime(0.01, now + dur);
+
+    this.osc.start(now);
+    this.osc.stop(now + dur);
+};
+
+module.exports = Pickup;
+
+},{}],3:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./menu/mainMenu");
@@ -16,6 +83,7 @@ var level5          = require("./levels/level5");
 
 var app = {
 
+    audioCtx: new (window.AudioContext || window.webkitAudioContext)(),
     keysDown: keysDown(),
     player: null,
     scenario: null,
@@ -47,7 +115,7 @@ app.sceneLoader = function(i) {
     scoreTracker.timeRemaining = this.scenario.timer;
     scoreTracker.setHiScore(this.scenario.name);
 
-    this.player = new Player(this.scenario.playerData);
+    this.player = new Player(this.scenario.playerData, this.audioCtx);
 
     if (this.player.x === 0) {
         this.player.x = canvas.width / 2 - this.player.w / 2;
@@ -64,7 +132,7 @@ app.init = function() {
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
-    }, scoreTracker.hiScores);
+    }, scoreTracker.hiScores, this.audioCtx);
 
     this.state = "mainmenu";
 };
@@ -127,7 +195,7 @@ app.update = function(tStamp) {
                     delete this.confirmation;
                     scoreTracker.reset();
                     this.sceneLoader(this.currentScene + 1);
-                }, " to continue ");
+                }, " to continue ", this.audioCtx);
             }
             break;
 
@@ -141,7 +209,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./camera":3,"./canvas":4,"./confirmation":6,"./input":8,"./levels/level1":10,"./levels/level2":11,"./levels/level3":12,"./levels/level4":13,"./levels/level5":14,"./menu/mainMenu":23,"./overlay":28,"./player":29,"./scoretracker":30,"./timer":32}],2:[function(require,module,exports){
+},{"./camera":5,"./canvas":6,"./confirmation":8,"./input":10,"./levels/level1":12,"./levels/level2":13,"./levels/level3":14,"./levels/level4":15,"./levels/level5":16,"./menu/mainMenu":25,"./overlay":30,"./player":31,"./scoretracker":32,"./timer":34}],4:[function(require,module,exports){
 function Background(width, height, color) {
     "use strict";
 
@@ -158,7 +226,7 @@ Background.prototype.draw = function(ctx) {
 
 module.exports = Background;
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 function Camera(mapW, mapH) {
@@ -200,7 +268,7 @@ Camera.prototype.update = function(playerXC, playerYC) {
 
 module.exports = Camera;
 
-},{"./canvas":4}],4:[function(require,module,exports){
+},{"./canvas":6}],6:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -224,7 +292,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -234,11 +302,12 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var canvas      = require("./canvas");
 var fadeInOut   = require("./fadeinout");
+var Kick        = require("./Audio/kick");
 
-function Confirmation(f, msg) {
+function Confirmation(f, msg, audioCtx) {
     "use strict";
 
     this.f = f;
@@ -249,6 +318,7 @@ function Confirmation(f, msg) {
     this.font = "24px monospace";
     this.alpha = 1;
     this.display = `( Press SPACEBAR${this.msg})`;
+    this.sound = new Kick(audioCtx);
 }
 
 Confirmation.prototype.draw = function() {
@@ -267,6 +337,7 @@ Confirmation.prototype.update = function(keysDown) {
 
     if (32 in keysDown) {
         delete keysDown[32];
+        this.sound.trigger();
         return this.f();
     }
 
@@ -275,7 +346,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"./canvas":4,"./fadeinout":7}],7:[function(require,module,exports){
+},{"./Audio/kick":1,"./canvas":6,"./fadeinout":9}],9:[function(require,module,exports){
 module.exports = (function() {
     "use strict";
     var counter = 0,
@@ -309,7 +380,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -390,7 +461,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 function Block(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -418,7 +489,7 @@ Block.prototype.draw = function(ctx) {
 
 module.exports = Block;
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -460,7 +531,7 @@ level1.playerData.color = "white";
 
 module.exports = level1;
 
-},{"./scene":16}],11:[function(require,module,exports){
+},{"./scene":18}],13:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -502,7 +573,7 @@ level2.playerData.color = "white";
 
 module.exports = level2;
 
-},{"./scene":16}],12:[function(require,module,exports){
+},{"./scene":18}],14:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 16,
@@ -563,7 +634,7 @@ level3.playerData.color = "white";
 
 module.exports = level3;
 
-},{"./scene":16}],13:[function(require,module,exports){
+},{"./scene":18}],15:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -605,7 +676,7 @@ level4.playerData.color = "white";
 
 module.exports = level4;
 
-},{"./scene":16}],14:[function(require,module,exports){
+},{"./scene":18}],16:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -674,7 +745,7 @@ level5.playerData.color = "white";
 
 module.exports = level5;
 
-},{"./scene":16}],15:[function(require,module,exports){
+},{"./scene":18}],17:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -702,7 +773,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("../background");
@@ -810,7 +881,7 @@ Scene.prototype.init = function() {
 
 module.exports = Scene;
 
-},{"../background":2,"./block":9,"./pellet":15}],17:[function(require,module,exports){
+},{"../background":4,"./block":11,"./pellet":17}],19:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -831,7 +902,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":1}],18:[function(require,module,exports){
+},{"./app":3}],20:[function(require,module,exports){
 var Page            = require("./page");
 
 var pageTitle = "Movement",
@@ -847,7 +918,7 @@ var pageTitle = "Movement",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./page":26}],19:[function(require,module,exports){
+},{"./page":28}],21:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -867,7 +938,7 @@ Cooldown.prototype.increment = function(delta) {
 
 module.exports = Cooldown;
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var Page            = require("./page");
 
 var pageTitle = "squares",
@@ -899,11 +970,12 @@ credits.leftColumnAlign = "right";
 
 module.exports = credits;
 
-},{"./page":26}],21:[function(require,module,exports){
+},{"./page":28}],23:[function(require,module,exports){
 var moveCursor  = require("../input").moveCursor;
 var Cooldown    = require("./cooldown");
+var Kick        = require("../Audio/kick");
 
-function Cursor(menu) {
+function Cursor(menu, audioCtx) {
     "use strict";
     this.menu = menu;
 
@@ -918,6 +990,7 @@ function Cursor(menu) {
     this.offSet = menu.lineHeight;
 
     this.cooldown = null;
+    this.moveSound = new Kick(audioCtx);
 
     this.path = function(y) {
         var path = new Path2D();
@@ -945,12 +1018,13 @@ Cursor.prototype.update = function(keysDown, delta) {
         this.cooldown = new Cooldown(250, () => {
             delete this.cooldown;
         });
+        this.moveSound.trigger();
     }
 };
 
 module.exports = Cursor;
 
-},{"../input":8,"./cooldown":19}],22:[function(require,module,exports){
+},{"../Audio/kick":1,"../input":10,"./cooldown":21}],24:[function(require,module,exports){
 var Page            = require("./page");
 
 var leaderboard = {
@@ -972,7 +1046,7 @@ leaderboard.populate = function(hiScores) {
 
 module.exports = leaderboard;
 
-},{"./page":26}],23:[function(require,module,exports){
+},{"./page":28}],25:[function(require,module,exports){
 var Menu        = require("./menu");
 var mainTitle   = require("./mainTitle");
 
@@ -994,7 +1068,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./mainTitle":24,"./menu":25}],24:[function(require,module,exports){
+},{"./mainTitle":26,"./menu":27}],26:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1041,7 +1115,7 @@ module.exports = {
     }
 };
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("../background");
 var Confirmation    = require("../confirmation");
@@ -1086,7 +1160,6 @@ function Menu(fontSize, colors, selections, mainTitle) {
         this.cursorData.x = this.menuX - 40;
     }
 
-    this.cursor = new Cursor(this);
 }
 
 Menu.prototype.mainConfirm = function() {
@@ -1094,12 +1167,15 @@ Menu.prototype.mainConfirm = function() {
     this.confirmation = new Confirmation(() => {
         delete this.confirmation;
         this.select(this.cursor.i);
-    }, " to confirm selection ");
+    }, " to confirm selection ", this.audioCtx);
 };
 
-Menu.prototype.init = function(sceneLoaderHook, hiScores) {
+Menu.prototype.init = function(sceneLoaderHook, hiScores, audioCtx) {
     this.sceneLoaderHook = sceneLoaderHook;
     leaderboard.populate(hiScores);
+    this.audioCtx = audioCtx;
+
+    this.cursor = new Cursor(this, audioCtx);
     this.mainConfirm();
 };
 
@@ -1180,7 +1256,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ");
+            }, " to return ", this.audioCtx);
             break;
 
         case "controls":
@@ -1191,7 +1267,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ");
+            }, " to return ", this.audioCtx);
             break;
 
         case "credits":
@@ -1202,7 +1278,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ");
+            }, " to return ", this.audioCtx);
             break;
 
         default:
@@ -1212,7 +1288,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../background":2,"../canvas":4,"../confirmation":6,"./controls":18,"./credits":20,"./cursor":21,"./leaderboard":22}],26:[function(require,module,exports){
+},{"../background":4,"../canvas":6,"../confirmation":8,"./controls":20,"./credits":22,"./cursor":23,"./leaderboard":24}],28:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle, fieldFontSize) {
@@ -1271,7 +1347,7 @@ Page.prototype.draw = function() {
 
 module.exports = Page;
 
-},{"../canvas":4}],27:[function(require,module,exports){
+},{"../canvas":6}],29:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1308,7 +1384,7 @@ exports.spaceFill = (val, digits) => {
     return valStr;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 var overlay = {
@@ -1433,11 +1509,12 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
 
 module.exports = overlay;
 
-},{"./canvas":4}],29:[function(require,module,exports){
+},{"./canvas":6}],31:[function(require,module,exports){
 var collision       = require("./collision");
 var move8           = require("./input").move8;
+var Pickup          = require("./Audio/pickup");
 
-function Player(playerData) {
+function Player(playerData, audioCtx) {
     "use strict";
 
     this.x = playerData.x;
@@ -1450,6 +1527,7 @@ function Player(playerData) {
     this.color = playerData.color;
 
     this.pellets = 0;
+    this.pickup = new Pickup(audioCtx);
 
     this.path = function(x, y) {
         var path = new Path2D();
@@ -1495,6 +1573,7 @@ Player.prototype.grow = function() {
 };
 
 Player.prototype.update = function(keysDown, actors, scoreTracker) {
+    let soundPlayed = false;
 
     // Process move
     var snapshot = {
@@ -1520,6 +1599,11 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
                 scoreTracker.scoreInc(100);
                 this.pellets += 1;
 
+                if (!soundPlayed) {
+                    this.pickup.trigger();
+                    soundPlayed = true;
+                }
+
                 if (this.w < this.maxW) {
                     this.grow();
                     scoreTracker.multiUpdate(this.w, this.b);
@@ -1544,7 +1628,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"./collision":5,"./input":8}],30:[function(require,module,exports){
+},{"./Audio/pickup":2,"./collision":7,"./input":10}],32:[function(require,module,exports){
 var canvas          = require("./canvas");
 var getStorage      = require("./storage").getStorage;
 var toTenths        = require("./numstring").toTenths;
@@ -1728,7 +1812,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":4,"./numstring":27,"./storage":31}],31:[function(require,module,exports){
+},{"./canvas":6,"./numstring":29,"./storage":33}],33:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
@@ -1757,7 +1841,7 @@ exports.getStorage = function() {
     return storage;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -1775,4 +1859,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[17]);
+},{}]},{},[19]);

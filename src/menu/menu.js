@@ -42,7 +42,6 @@ function Menu(fontSize, colors, selections, mainTitle) {
         this.cursorData.x = this.menuX - 40;
     }
 
-    this.cursor = new Cursor(this);
 }
 
 Menu.prototype.mainConfirm = function() {
@@ -50,12 +49,15 @@ Menu.prototype.mainConfirm = function() {
     this.confirmation = new Confirmation(() => {
         delete this.confirmation;
         this.select(this.cursor.i);
-    }, " to confirm selection ");
+    }, " to confirm selection ", this.audioCtx);
 };
 
-Menu.prototype.init = function(sceneLoaderHook, hiScores) {
+Menu.prototype.init = function(sceneLoaderHook, hiScores, audioCtx) {
     this.sceneLoaderHook = sceneLoaderHook;
     leaderboard.populate(hiScores);
+    this.audioCtx = audioCtx;
+
+    this.cursor = new Cursor(this, audioCtx);
     this.mainConfirm();
 };
 
@@ -136,7 +138,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ");
+            }, " to return ", this.audioCtx);
             break;
 
         case "controls":
@@ -147,7 +149,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ");
+            }, " to return ", this.audioCtx);
             break;
 
         case "credits":
@@ -158,7 +160,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ");
+            }, " to return ", this.audioCtx);
             break;
 
         default:
