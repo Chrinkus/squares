@@ -12,10 +12,11 @@ var level2          = require("./levels/level2");
 var level3          = require("./levels/level3");
 var level4          = require("./levels/level4");
 var level5          = require("./levels/level5");
+var audio           = require("./Audio/audio");
 
 var app = {
 
-    audioCtx: new (window.AudioContext || window.webkitAudioContext)(),
+    audioCtx: audio.ctx,
     keysDown: keysDown(),
     player: null,
     scenario: null,
@@ -36,7 +37,7 @@ app.sceneLoader = function(i) {
     "use strict";
 
     if (!this.scenes[i]) {
-        return this.init();
+        return this.init(true);
     }
 
     this.scenario = this.scenes[i];
@@ -57,8 +58,12 @@ app.sceneLoader = function(i) {
     this.state = "game";
 };
 
-app.init = function() {
+app.init = function(reset) {
     "use strict";
+
+    if (!reset) {
+        audio.populate();
+    }
 
     scoreTracker.getHiScores(this.scenes);
 
@@ -118,6 +123,7 @@ app.update = function(tStamp) {
                     scoreTracker);
             this.camera.update(this.player.xC, this.player.yC);
 
+            audio.update(timer.delta, this.currentScene);
             scoreTracker.timeUpdate(timer.delta);
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
@@ -132,6 +138,7 @@ app.update = function(tStamp) {
             break;
 
         case "complete":
+            audio.update(timer.delta, this.currentScene);
             this.confirmation.update(this.keysDown, timer.delta);
 
         default:

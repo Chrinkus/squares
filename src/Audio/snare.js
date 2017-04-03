@@ -49,8 +49,8 @@ Snare.prototype.setup = function() {
     this.oscGain.connect(this.ctx.destination);
 };
 
-Snare.prototype.trigger = function() {
-    let time = this.ctx.currentTime;
+Snare.prototype.trigger = function(triggerTime) {
+    let time = this.ctx.currentTime + (triggerTime || 0);
 
     this.setup();
 

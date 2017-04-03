@@ -13,7 +13,7 @@ Pickup.prototype.setup = function() {
 Pickup.prototype.trigger = function() {
     let now = this.ctx.currentTime;
     let dur = 0.5;
-    let freq = 220;
+    let freq = 246.94;
 
     this.setup();
 

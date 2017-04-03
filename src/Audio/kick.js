@@ -15,8 +15,8 @@ Kick.prototype.setup = function() {
     this.gainOsc.connect(this.ctx.destination);
 };
 
-Kick.prototype.trigger = function() {
-    let time = this.ctx.currentTime;
+Kick.prototype.trigger = function(triggerTime) {
+    let time = this.ctx.currentTime + (triggerTime || 0);
 
     this.setup();
 
