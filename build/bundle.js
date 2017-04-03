@@ -1,5 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 let Tone        = require("./tone");
+let LfoTone     = require("./lfotone");
 let Kick        = require("./kick");
 let Snare       = require("./snare");
 let Hihat       = require("./hihat");
@@ -18,6 +19,12 @@ let audio = {
             sched: []
         },
         bass: {
+            sched: []
+        }
+    },
+
+    voices2: {
+        lead: {
             sched: []
         }
     },
@@ -61,6 +68,16 @@ let audio = {
         ]
     },
 
+    voiceSchedule2: {
+        lead: [
+            "A4,hq", "", "", "", "", "", "F#/Gb4,q", "",
+            "C5,qe", "", "", "B4,q", "", "A4,q", "", "G4,e",
+            "A4,he", "", "", "", "", "E4,e", "G4,e", "D4,he",
+            "", "", "", "", "D4,e", "E4,e", "G4,e", "F#/Gb4,e"
+        ]
+    },
+
+
     rhythmSchedule: {
         kick:  [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,
                 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,],
@@ -74,13 +91,19 @@ let audio = {
 
     rhythmSchedule2: {
         kick:  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,],
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0,
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0,],
 
         snare: [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0,
-                0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0,],
+                0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1,
+                0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0,
+                0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1,],
 
         hihat: [1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0,]
+                0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,
+                1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,]
     }
 };
 
@@ -90,6 +113,8 @@ audio.populate = function() {
 
     this.voices.lead.sound = new Tone(this.ctx, "triangle");
     this.voices.bass.sound = new Tone(this.ctx, "sawtooth");
+
+    this.voices2.lead.sound = new LfoTone(this.ctx, "triangle");
 
     this.rhythm.kick.sound = new Kick(this.ctx);
     this.rhythm.snare.sound = new Snare(this.ctx);
@@ -113,6 +138,22 @@ audio.populate = function() {
             }
         });
     }
+
+    for (prop in this.voiceSchedule2) {
+        this.voiceSchedule2[prop].forEach((entry, i) => {
+
+            if (entry) {
+                let data = entry.split(",");
+                
+                this.voices2[prop].sched.push({
+                    freq: scale[data[0]],
+                    dur: this.meter.getDur(data[1]),
+                    time: i * this.meter.eighth
+                });
+            }
+        });
+    }
+
 
     for (prop in this.rhythmSchedule) {
 
@@ -139,9 +180,11 @@ audio.queueNext = function(scene) {
 
     switch (scene) {
         case 4:
+            this.voices2.lead.sched.forEach(ele => {
+                this.voices2.lead.sound.play(this.counter / 1000 + ele.time,
+                        ele.freq, ele.dur);
+            });
         case 3:
-            this.loopTime = 4000;
-
             this.rhythm2.kick.sched.forEach(ele => {
                 this.rhythm2.kick.sound.trigger(this.counter / 1000 + ele);
             });
@@ -178,20 +221,6 @@ audio.queueNext = function(scene) {
         default:
             // no default
     }
-    /*
-    for (prop in this.voices) {
-        this.voices[prop].sched.forEach(ele => {
-            this.voices[prop].sound.play(this.counter / 1000 + ele.time,
-                    ele.freq, ele.dur);
-        });
-    }
-
-    for (prop in this.rhythm) {
-        this.rhythm[prop].sched.forEach(ele => {
-            this.rhythm[prop].sound.trigger(this.counter / 1000 + ele);
-        });
-    }
-    */
 
     this.counter = this.counter + this.loopTime;
 };
@@ -207,14 +236,13 @@ audio.update = function(delta, scene) {
 
 audio.resetCounter = function() {
     this.counter = 1;
-    this.loopTime = 8000;
 };
 
 if (typeof module !== "undefined" && module.exports) {
     module.exports = audio;   
 }
 
-},{"../timer":40,"./hihat":2,"./kick":3,"./meter":4,"./scale":6,"./snare":7,"./tone":8}],2:[function(require,module,exports){
+},{"../timer":41,"./hihat":2,"./kick":3,"./lfotone":4,"./meter":5,"./scale":7,"./snare":8,"./tone":9}],2:[function(require,module,exports){
 function Hihat(ctx) {
     "use strict";
     this.ctx = ctx;
@@ -290,6 +318,48 @@ Kick.prototype.trigger = function(triggerTime) {
 module.exports = Kick;
 
 },{}],4:[function(require,module,exports){
+// Fixed Lfo modulated oscillator
+function LfoTone(ctx, type) {
+    "use strict";
+    this.ctx = ctx;
+    this.type = type;
+}
+
+LfoTone.prototype.setup = function() {
+    this.lfo = this.ctx.createOscillator();
+    this.lfoEnv = this.ctx.createGain();
+    this.osc = this.ctx.createOscillator();
+    this.oscEnv = this.ctx.createGain();
+
+    this.lfo.frequency.value = 12;
+    this.lfoEnv.gain.value = 50;
+
+    this.osc.type = this.type;
+
+    this.lfo.connect(this.lfoEnv);
+    this.lfoEnv.connect(this.osc.detune);
+    this.osc.connect(this.oscEnv);
+    this.oscEnv.connect(this.ctx.destination);
+};
+
+LfoTone.prototype.play = function(triggerTime, freq, dur) {
+    let time = this.ctx.currentTime + triggerTime;
+    this.setup();
+
+    this.osc.frequency.setValueAtTime(freq, time);
+    this.oscEnv.gain.setValueAtTime(0.2, time);
+
+    this.osc.start(time);
+    this.lfo.start(time);
+    this.osc.stop(time + dur);
+    this.lfo.stop(time + dur);
+};
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = LfoTone;
+}
+
+},{}],5:[function(require,module,exports){
 function Meter(tempo) {
     "use strict";
     this.tempo = tempo;
@@ -334,7 +404,7 @@ Meter.prototype.getDur = function(string) {
 
 module.exports = Meter;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 function Pickup(ctx) {
     "use strict";
     this.ctx = ctx;
@@ -366,7 +436,7 @@ Pickup.prototype.trigger = function() {
 
 module.exports = Pickup;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = (function() {
     "use strict";
 
@@ -395,7 +465,7 @@ module.exports = (function() {
     return scale;
 }());
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // Snare Drum Synthesis
 //
 // Special thanks to Chris Lowis for the article:
@@ -467,7 +537,7 @@ Snare.prototype.trigger = function(triggerTime) {
 
 module.exports = Snare;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 function Tone(ctx, type) {
     "use strict";
     this.ctx = ctx;
@@ -508,7 +578,7 @@ tone.play(now + 4 * dur, 196, dur / 2);
 tone.play(now + 6 * dur, 220, dur);
 */
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./menu/mainMenu");
@@ -660,7 +730,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Audio/audio":1,"./camera":11,"./canvas":12,"./confirmation":14,"./input":16,"./levels/level1":18,"./levels/level2":19,"./levels/level3":20,"./levels/level4":21,"./levels/level5":22,"./menu/mainMenu":31,"./overlay":36,"./player":37,"./scoretracker":38,"./timer":40}],10:[function(require,module,exports){
+},{"./Audio/audio":1,"./camera":12,"./canvas":13,"./confirmation":15,"./input":17,"./levels/level1":19,"./levels/level2":20,"./levels/level3":21,"./levels/level4":22,"./levels/level5":23,"./menu/mainMenu":32,"./overlay":37,"./player":38,"./scoretracker":39,"./timer":41}],11:[function(require,module,exports){
 function Background(width, height, color) {
     "use strict";
 
@@ -677,7 +747,7 @@ Background.prototype.draw = function(ctx) {
 
 module.exports = Background;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 function Camera(mapW, mapH) {
@@ -719,7 +789,7 @@ Camera.prototype.update = function(playerXC, playerYC) {
 
 module.exports = Camera;
 
-},{"./canvas":12}],12:[function(require,module,exports){
+},{"./canvas":13}],13:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -743,7 +813,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -753,7 +823,7 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var canvas      = require("./canvas");
 var fadeInOut   = require("./fadeinout");
 var Kick        = require("./Audio/kick");
@@ -797,7 +867,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"./Audio/kick":3,"./canvas":12,"./fadeinout":15}],15:[function(require,module,exports){
+},{"./Audio/kick":3,"./canvas":13,"./fadeinout":16}],16:[function(require,module,exports){
 module.exports = (function() {
     "use strict";
     var counter = 0,
@@ -831,7 +901,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -912,7 +982,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 function Block(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -940,7 +1010,7 @@ Block.prototype.draw = function(ctx) {
 
 module.exports = Block;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -982,7 +1052,7 @@ level1.playerData.color = "white";
 
 module.exports = level1;
 
-},{"./scene":24}],19:[function(require,module,exports){
+},{"./scene":25}],20:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -1024,7 +1094,7 @@ level2.playerData.color = "white";
 
 module.exports = level2;
 
-},{"./scene":24}],20:[function(require,module,exports){
+},{"./scene":25}],21:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 16,
@@ -1085,7 +1155,7 @@ level3.playerData.color = "white";
 
 module.exports = level3;
 
-},{"./scene":24}],21:[function(require,module,exports){
+},{"./scene":25}],22:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -1127,7 +1197,7 @@ level4.playerData.color = "white";
 
 module.exports = level4;
 
-},{"./scene":24}],22:[function(require,module,exports){
+},{"./scene":25}],23:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -1196,7 +1266,7 @@ level5.playerData.color = "white";
 
 module.exports = level5;
 
-},{"./scene":24}],23:[function(require,module,exports){
+},{"./scene":25}],24:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -1224,7 +1294,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("../background");
@@ -1332,7 +1402,7 @@ Scene.prototype.init = function() {
 
 module.exports = Scene;
 
-},{"../background":10,"./block":17,"./pellet":23}],25:[function(require,module,exports){
+},{"../background":11,"./block":18,"./pellet":24}],26:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1353,7 +1423,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":9}],26:[function(require,module,exports){
+},{"./app":10}],27:[function(require,module,exports){
 var Page            = require("./page");
 
 var pageTitle = "Movement",
@@ -1369,7 +1439,7 @@ var pageTitle = "Movement",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./page":34}],27:[function(require,module,exports){
+},{"./page":35}],28:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -1389,7 +1459,7 @@ Cooldown.prototype.increment = function(delta) {
 
 module.exports = Cooldown;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var Page            = require("./page");
 
 var pageTitle = "squares",
@@ -1421,7 +1491,7 @@ credits.leftColumnAlign = "right";
 
 module.exports = credits;
 
-},{"./page":34}],29:[function(require,module,exports){
+},{"./page":35}],30:[function(require,module,exports){
 var moveCursor  = require("../input").moveCursor;
 var Cooldown    = require("./cooldown");
 var Kick        = require("../Audio/kick");
@@ -1475,7 +1545,7 @@ Cursor.prototype.update = function(keysDown, delta) {
 
 module.exports = Cursor;
 
-},{"../Audio/kick":3,"../input":16,"./cooldown":27}],30:[function(require,module,exports){
+},{"../Audio/kick":3,"../input":17,"./cooldown":28}],31:[function(require,module,exports){
 var Page            = require("./page");
 
 var leaderboard = {
@@ -1497,7 +1567,7 @@ leaderboard.populate = function(hiScores) {
 
 module.exports = leaderboard;
 
-},{"./page":34}],31:[function(require,module,exports){
+},{"./page":35}],32:[function(require,module,exports){
 var Menu        = require("./menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1519,7 +1589,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./mainTitle":32,"./menu":33}],32:[function(require,module,exports){
+},{"./mainTitle":33,"./menu":34}],33:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1566,7 +1636,7 @@ module.exports = {
     }
 };
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("../background");
 var Confirmation    = require("../confirmation");
@@ -1739,7 +1809,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../background":10,"../canvas":12,"../confirmation":14,"./controls":26,"./credits":28,"./cursor":29,"./leaderboard":30}],34:[function(require,module,exports){
+},{"../background":11,"../canvas":13,"../confirmation":15,"./controls":27,"./credits":29,"./cursor":30,"./leaderboard":31}],35:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle, fieldFontSize) {
@@ -1798,7 +1868,7 @@ Page.prototype.draw = function() {
 
 module.exports = Page;
 
-},{"../canvas":12}],35:[function(require,module,exports){
+},{"../canvas":13}],36:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1835,7 +1905,7 @@ exports.spaceFill = (val, digits) => {
     return valStr;
 };
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 var overlay = {
@@ -1960,7 +2030,7 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
 
 module.exports = overlay;
 
-},{"./canvas":12}],37:[function(require,module,exports){
+},{"./canvas":13}],38:[function(require,module,exports){
 var collision       = require("./collision");
 var move8           = require("./input").move8;
 var Pickup          = require("./Audio/pickup");
@@ -2079,7 +2149,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"./Audio/pickup":5,"./collision":13,"./input":16}],38:[function(require,module,exports){
+},{"./Audio/pickup":6,"./collision":14,"./input":17}],39:[function(require,module,exports){
 var canvas          = require("./canvas");
 var getStorage      = require("./storage").getStorage;
 var toTenths        = require("./numstring").toTenths;
@@ -2263,7 +2333,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":12,"./numstring":35,"./storage":39}],39:[function(require,module,exports){
+},{"./canvas":13,"./numstring":36,"./storage":40}],40:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
@@ -2292,7 +2362,7 @@ exports.getStorage = function() {
     return storage;
 };
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -2310,4 +2380,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[25]);
+},{}]},{},[26]);
