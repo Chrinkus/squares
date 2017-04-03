@@ -65,6 +65,7 @@ app.init = function(reset) {
         audio.populate();
     }
 
+    audio.resetCounter();
     scoreTracker.getHiScores(this.scenes);
 
     mainMenu.init((i) => {

@@ -18,7 +18,7 @@ Pickup.prototype.trigger = function() {
     this.setup();
 
     this.osc.frequency.setValueAtTime(freq, now);
-    this.gainEnv.gain.setValueAtTime(0.2, now);
+    this.gainEnv.gain.setValueAtTime(0.15, now);
 
     this.osc.frequency.setValueAtTime(freq * 2, now + 0.1);
     this.gainEnv.gain.linearRampToValueAtTime(0.01, now + dur);
