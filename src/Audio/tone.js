@@ -1,17 +1,18 @@
-function Tone(ctx, type) {
+function Tone(ctx, type, master) {
     "use strict";
     this.ctx = ctx;
     this.type = type;
+    this.master = master;
 }
 
 Tone.prototype.setup = function() {
     this.osc = this.ctx.createOscillator();
-    this.gainEnv = this.ctx.createGain();
+    this.oscEnv = this.ctx.createGain();
 
     this.osc.type = this.type;
 
-    this.osc.connect(this.gainEnv);
-    this.gainEnv.connect(this.ctx.destination);
+    this.osc.connect(this.oscEnv);
+    this.oscEnv.connect(this.master);
 };
 
 Tone.prototype.play = function(triggerTime, freq, dur) {
@@ -19,13 +20,15 @@ Tone.prototype.play = function(triggerTime, freq, dur) {
     this.setup();
 
     this.osc.frequency.setValueAtTime(freq, time);
-    this.gainEnv.gain.setValueAtTime(0.2, time);
+    this.oscEnv.gain.setValueAtTime(1, time);
 
     this.osc.start(time);
     this.osc.stop(time + dur);
 };
 
-module.exports = Tone;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Tone;
+}
 /*
 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let now = audioCtx.currentTime;

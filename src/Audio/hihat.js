@@ -1,6 +1,7 @@
-function Hihat(ctx) {
+function Hihat(ctx, master) {
     "use strict";
     this.ctx = ctx;
+    this.master = master;
 }
 
 Hihat.prototype.setup = function() {
@@ -19,7 +20,7 @@ Hihat.prototype.setup = function() {
     this.osc.connect(this.bandpass);
     this.bandpass.connect(this.highpass);
     this.highpass.connect(this.gainEnv);
-    this.gainEnv.connect(this.ctx.destination);
+    this.gainEnv.connect(this.master);
 };
 
 Hihat.prototype.trigger = function(triggerTime) {
@@ -35,4 +36,6 @@ Hihat.prototype.trigger = function(triggerTime) {
     this.osc.stop(time + 0.05);
 };
 
-module.exports = Hihat;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Hihat;
+}

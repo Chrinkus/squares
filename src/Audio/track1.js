@@ -1,4 +1,10 @@
+var Tone        = require("./tone");
+var Kick        = require("./kick");
+var Snare       = require("./snare");
+var Hihat       = require("./hihat");
+var Part        = require("./part");
 var Meter       = require("./meter");
+var scale       = require("./scale");
 
 var track = (function() {
     "use strict";
@@ -12,8 +18,7 @@ var track = (function() {
         prop;
 
     voiceParts.forEach(part => {
-        voices[part] = Object.create(null);
-        voices[part].schedule = [];
+        voices[part] = new Part(part);
     });
 
     voicePlan = {
@@ -47,8 +52,7 @@ var track = (function() {
     }
     
     rhythmParts.forEach(part => {
-        rhythm[part] = Object.create(null);
-        rhythm[part].schedule = [];
+        rhythm[part] = new Part(part);
     });
 
     rhythmPlan = {
@@ -66,7 +70,9 @@ var track = (function() {
 
         rhythmPlan[prop].forEach((entry, i) => {
             if (entry) {
-                rhythm[prop].schedule.push(i * meter.eighth);
+                rhythm[prop].schedule.push({
+                    when: i * meter.eighth
+                });
             }
         });
     }
@@ -77,6 +83,19 @@ var track = (function() {
     };
 }());
 
+track.init = function(ctx, masterVoices, masterRhythm) {
+    "use strict";
+    this.voices.lead.sound = new Tone(ctx, "triangle", masterVoices);
+    this.voices.bass.sound = new Tone(ctx, "sawtooth", masterVoices);
+
+    this.rhythm.kick.sound = new Kick(ctx, masterRhythm);
+    this.rhythm.snare.sound = new Snare(ctx, masterRhythm);
+    this.rhythm.hihat.sound = new Hihat(ctx, masterRhythm);
+};
+
 if (typeof module !== "undefined" && module.exports) {
     module.exports = track;
 }
+
+console.log(track.voices.lead.schedule);
+console.log(track.rhythm.kick.schedule);

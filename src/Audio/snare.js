@@ -3,9 +3,10 @@
 // Special thanks to Chris Lowis for the article:
 // https://dev.opera.com/articles/drum-sounds-webaudio/
 
-function Snare(ctx) {
+function Snare(ctx, master) {
     "use strict";
     this.ctx = ctx;
+    this.master = master;
 }
 
 Snare.prototype.noiseBuffer = function() {
@@ -39,14 +40,14 @@ Snare.prototype.setup = function() {
 
     this.noiseGain = this.ctx.createGain();
     noiseFilter.connect(this.noiseGain);
-    this.noiseGain.connect(this.ctx.destination);
+    this.noiseGain.connect(this.master);
 
     this.osc = this.ctx.createOscillator();
     this.osc.type = "triangle";
 
     this.oscGain = this.ctx.createGain();
     this.osc.connect(this.oscGain);
-    this.oscGain.connect(this.ctx.destination);
+    this.oscGain.connect(this.master);
 };
 
 Snare.prototype.trigger = function(triggerTime) {
@@ -67,4 +68,6 @@ Snare.prototype.trigger = function(triggerTime) {
     this.noise.stop(time + 0.02);
 };
 
-module.exports = Snare;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Snare;
+}
