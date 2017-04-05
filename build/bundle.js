@@ -618,6 +618,7 @@ app.sceneLoader = function(i) {
     "use strict";
 
     if (!this.scenes[i]) {
+        audio.ctx.suspend();
         return this.init(true);
     }
 
@@ -642,10 +643,9 @@ app.sceneLoader = function(i) {
 app.init = function(reset) {
     "use strict";
 
-    if (!reset) {
-        audio.populate();
-    }
 
+    audio.ctx.resume();
+    audio.populate();
     audio.resetCounter();
     scoreTracker.getHiScores(this.scenes);
 
