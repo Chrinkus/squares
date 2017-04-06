@@ -6,6 +6,7 @@ function Tone(ctx, type, master) {
 }
 
 Tone.prototype.setup = function() {
+    "use strict";
     this.osc = this.ctx.createOscillator();
     this.oscEnv = this.ctx.createGain();
 
@@ -16,6 +17,7 @@ Tone.prototype.setup = function() {
 };
 
 Tone.prototype.play = function(triggerTime, freq, dur) {
+    "use strict";
     let time = this.ctx.currentTime + triggerTime;
     this.setup();
 

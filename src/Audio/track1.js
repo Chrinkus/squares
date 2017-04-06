@@ -8,11 +8,12 @@ var scale       = require("./scale");
 
 var track = (function() {
     "use strict";
-    let voices = Object.create(null),
-        rhythm = Object.create(null),
-        voiceParts = ["lead", "bass"],
-        rhythmParts = ["kick", "snare", "hihat"],
-        meter = new Meter(120),
+    let voices          = Object.create(null),
+        rhythm          = Object.create(null),
+        voiceParts      = ["lead", "bass"],
+        rhythmParts     = ["kick", "snare", "hihat"],
+        meter           = new Meter(120),
+        units           = "eighth",
         voicePlan,
         rhythmPlan,
         prop;
@@ -37,6 +38,8 @@ var track = (function() {
     };
 
     for (prop in voicePlan) {
+
+        voices[prop].loopTime = voicePlan[prop].length * meter[units];
         
         voicePlan[prop].forEach((entry, i) => {
             if (entry) {
@@ -45,7 +48,7 @@ var track = (function() {
                 voices[prop].schedule.push({
                     frequency: scale[data[0]],
                     duration: meter.getDur(data[1]),
-                    when: i * meter.eighth
+                    when: i * meter[units]
                 });
             }
         });
@@ -68,10 +71,12 @@ var track = (function() {
 
     for (prop in rhythmPlan) {
 
+        rhythm[prop].loopTime = rhythmPlan[prop].length * meter[units];
+
         rhythmPlan[prop].forEach((entry, i) => {
             if (entry) {
                 rhythm[prop].schedule.push({
-                    when: i * meter.eighth
+                    when: i * meter[units]
                 });
             }
         });
@@ -97,5 +102,6 @@ if (typeof module !== "undefined" && module.exports) {
     module.exports = track;
 }
 
-console.log(track.voices.lead.schedule);
-console.log(track.rhythm.kick.schedule);
+//console.log(track.voices.lead.schedule);
+//console.log(track.rhythm.kick.schedule);
+//console.log(track.rhythm);

@@ -10,6 +10,7 @@ function Kick(ctx, master) {
 }
 
 Kick.prototype.setup = function() {
+    "use strict";
     this.osc = this.ctx.createOscillator();
     this.oscEnv = this.ctx.createGain();
 
@@ -18,6 +19,7 @@ Kick.prototype.setup = function() {
 };
 
 Kick.prototype.trigger = function(triggerTime) {
+    "use strict";
     let time = this.ctx.currentTime + (triggerTime || 0);
 
     this.setup();

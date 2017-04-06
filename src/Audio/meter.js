@@ -10,6 +10,7 @@ function Meter(tempo) {
 }
 
 Meter.prototype.getDur = function(string) {
+    "use strict";
     let dur = 0,
         l = string.length,
         i;

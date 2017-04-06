@@ -10,6 +10,7 @@ function Snare(ctx, master) {
 }
 
 Snare.prototype.noiseBuffer = function() {
+    "use strict";
     // sampleRate = 44100 Hz
     let bufferSize = this.ctx.sampleRate;
     // creates a buffer w/1 channel, 44100 individual samples, @ 44100 Hz
@@ -28,6 +29,7 @@ Snare.prototype.noiseBuffer = function() {
 };
 
 Snare.prototype.setup = function() {
+    "use strict";
     let noiseFilter;
 
     this.noise = this.ctx.createBufferSource();
@@ -51,6 +53,7 @@ Snare.prototype.setup = function() {
 };
 
 Snare.prototype.trigger = function(triggerTime) {
+    "use strict";
     let time = this.ctx.currentTime + (triggerTime || 0);
 
     this.setup();

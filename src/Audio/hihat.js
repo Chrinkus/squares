@@ -5,6 +5,7 @@ function Hihat(ctx, master) {
 }
 
 Hihat.prototype.setup = function() {
+    "use strict";
     this.osc = this.ctx.createOscillator();
     this.osc.type = "square";
 
@@ -23,8 +24,9 @@ Hihat.prototype.setup = function() {
     this.gainEnv.connect(this.master);
 };
 
-Hihat.prototype.trigger = function(triggerTime) {
-    let time = this.ctx.currentTime + triggerTime;
+Hihat.prototype.play = function(dataObj, offset) {
+    "use strict";
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
     this.osc.frequency.setValueAtTime(330, time);
