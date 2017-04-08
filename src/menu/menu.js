@@ -49,15 +49,15 @@ Menu.prototype.mainConfirm = function() {
     this.confirmation = new Confirmation(() => {
         delete this.confirmation;
         this.select(this.cursor.i);
-    }, " to confirm selection ", this.audioCtx);
+    }, " to confirm selection ", this.soundEffect);
 };
 
-Menu.prototype.init = function(sceneLoaderHook, hiScores, audioCtx) {
+Menu.prototype.init = function(sceneLoaderHook, hiScores, soundEffect) {
     this.sceneLoaderHook = sceneLoaderHook;
     leaderboard.populate(hiScores);
-    this.audioCtx = audioCtx;
+    this.soundEffect = soundEffect;
 
-    this.cursor = new Cursor(this, audioCtx);
+    this.cursor = new Cursor(this);
     this.mainConfirm();
 };
 
@@ -138,7 +138,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ", this.audioCtx);
+            }, " to return ", this.soundEffect);
             break;
 
         case "controls":
@@ -149,7 +149,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ", this.audioCtx);
+            }, " to return ", this.soundEffect);
             break;
 
         case "credits":
@@ -160,7 +160,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ", this.audioCtx);
+            }, " to return ", this.soundEffect);
             break;
 
         default:

@@ -1,16 +1,17 @@
-function Pickup(ctx) {
+function Pickup(ctx, master) {
     "use strict";
     this.ctx = ctx;
+    this.master = master || null;
 }
 
 Pickup.prototype.setup = function() {
     this.osc = this.ctx.createOscillator();
     this.gainEnv = this.ctx.createGain();
     this.osc.connect(this.gainEnv);
-    this.gainEnv.connect(this.ctx.destination);
+    this.gainEnv.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Pickup.prototype.trigger = function() {
+Pickup.prototype.play = function() {
     let now = this.ctx.currentTime;
     let dur = 0.5;
     let freq = 246.94;
@@ -27,4 +28,6 @@ Pickup.prototype.trigger = function() {
     this.osc.stop(now + dur);
 };
 
-module.exports = Pickup;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Pickup;
+}

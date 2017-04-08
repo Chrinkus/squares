@@ -2,41 +2,37 @@ function Tone(ctx, type, master) {
     "use strict";
     this.ctx = ctx;
     this.type = type;
-    this.master = master;
+    this.master = master || null;
 }
 
 Tone.prototype.setup = function() {
     this.osc = this.ctx.createOscillator();
-    this.oscEnv = this.ctx.createGain();
+    this.gainEnv = this.ctx.createGain();
 
     this.osc.type = this.type;
 
-    this.osc.connect(this.oscEnv);
-    this.oscEnv.connect(this.master);
+    this.osc.connect(this.gainEnv);
+    this.gainEnv.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Tone.prototype.play = function(triggerTime, freq, dur) {
-    let time = this.ctx.currentTime + triggerTime;
+Tone.prototype.play = function(offset, dataObj) {
+    /* dataObj
+     *   frequency  "number"    sound in Hz
+     *   duration   "number"    held length of note
+     *   when       "number"    time location in loop (not used here)
+     *   gain       "number"    between -1 and 1 for track mixing
+     */
+
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
-    this.osc.frequency.setValueAtTime(freq, time);
-    this.oscEnv.gain.setValueAtTime(1, time);
+    this.osc.frequency.setValueAtTime(dataObj.frequency, time);
+    this.gainEnv.gain.setValueAtTime(dataObj.gain, time);
 
     this.osc.start(time);
-    this.osc.stop(time + dur);
+    this.osc.stop(time + dataObj.duration);
 };
 
 if (typeof module !== "undefined" && module.exports) {
     module.exports = Tone;
 }
-/*
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let now = audioCtx.currentTime;
-
-let tone = new Tone(audioCtx, "sawtooth");
-let dur = 0.5;
-tone.play(now, 110, dur);
-tone.play(now + 2 * dur, 164.81, dur * 2);
-tone.play(now + 4 * dur, 196, dur / 2);
-tone.play(now + 6 * dur, 220, dur);
-*/

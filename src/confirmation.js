@@ -2,7 +2,7 @@ var canvas      = require("./canvas");
 var fadeInOut   = require("./fadeinout");
 var Kick        = require("./Audio/kick");
 
-function Confirmation(f, msg, audioCtx) {
+function Confirmation(f, msg, soundEffect) {
     "use strict";
 
     this.f = f;
@@ -13,7 +13,7 @@ function Confirmation(f, msg, audioCtx) {
     this.font = "24px monospace";
     this.alpha = 1;
     this.display = `( Press SPACEBAR${this.msg})`;
-    this.sound = new Kick(audioCtx);
+    this.soundEffect = soundEffect;
 }
 
 Confirmation.prototype.draw = function() {
@@ -32,7 +32,7 @@ Confirmation.prototype.update = function(keysDown) {
 
     if (32 in keysDown) {
         delete keysDown[32];
-        this.sound.trigger();
+        this.soundEffect.play();
         return this.f();
     }
 

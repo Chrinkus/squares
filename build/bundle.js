@@ -1,256 +1,139 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-let Tone        = require("./tone");
-let LfoTone     = require("./lfotone");
-let Kick        = require("./kick");
-let Snare       = require("./snare");
-let Hihat       = require("./hihat");
-let scale       = require("./scale");
-let Meter       = require("./meter");
-let timer       = require("../timer");
+let track1          = require("./track1");
+let track2          = require("./track2");
+let Pickup          = require("./pickup");
 
-let audio = {
-    ctx: new (window.AudioContext || window.webkitAudioContext)(),
-    meter: new Meter(120),
-    loopTime: 8000,
-    counter: 1,
+let audio = Object.create(null);
 
-    voices: {
-        lead: {
-            sched: []
-        },
-        bass: {
-            sched: []
-        }
-    },
+audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-    voices2: {
-        lead: {
-            sched: []
-        }
-    },
+audio.setRoutingGraph = function() {
+    "use strict";
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.masterRhythm = this.ctx.createGain();
+    this.masterVoices = this.ctx.createGain();
+    this.masterSFX = this.ctx.createGain();
 
-    rhythm: {
-        kick: {
-            sched: []
-        },
-        snare: {
-            sched: []
-        },
-        hihat: {
-            sched: []
-        }
-    },
+    this.masterRhythm.connect(this.compressor);
+    this.masterVoices.connect(this.compressor);
+    this.masterSFX.connect(this.compressor);
 
-    rhythm2: {
-        kick: {
-            sched: []
-        },
-        snare: {
-            sched: []
-        },
-        hihat: {
-            sched: []
-        }
-    },
-
-    voiceSchedule: {
-        lead: [
-            "A3,hq", "", "", "", "", "", "F#/Gb3,q", "",
-            "C4,qe", "", "", "B3,q", "", "A3,q", "", "G3,e",
-            "A3,he", "", "", "", "", "E3,e", "G3,e", "D3,he",
-            "", "", "", "", "D3,e", "E3,e", "G3,e", "F#/Gb3,e"
-        ],
-        bass: [
-            "D2,e", "", "", "D2,e", "", "", "", "",
-            "D2,e", "", "", "D2,e", "", "", "", "",
-            "C2,e", "", "", "C2,e", "", "", "", "",
-            "G2,e", "", "", "G2,e", "", "", "", ""
-        ]
-    },
-
-    voiceSchedule2: {
-        lead: [
-            "A4,hq", "", "", "", "", "", "F#/Gb4,q", "",
-            "C5,qe", "", "", "B4,q", "", "A4,q", "", "G4,e",
-            "A4,he", "", "", "", "", "E4,e", "G4,e", "D4,he",
-            "", "", "", "", "D4,e", "E4,e", "G4,e", "F#/Gb4,e"
-        ]
-    },
-
-
-    rhythmSchedule: {
-        kick:  [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,
-                1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,],
-
-        snare: [0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0,
-                0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0,],
-
-        hihat: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
-    },
-
-    rhythmSchedule2: {
-        kick:  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0,
-                1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0,],
-
-        snare: [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0,
-                0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1,
-                0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0,
-                0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1,],
-
-        hihat: [1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,
-                1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,]
-    }
+    this.compressor.connect(this.ctx.destination);
 };
 
-audio.populate = function() {
+audio.init = function() {
     "use strict";
-    let prop;
+    this.setRoutingGraph();
 
-    this.voices.lead.sound = new Tone(this.ctx, "triangle");
-    this.voices.bass.sound = new Tone(this.ctx, "sawtooth");
-
-    this.voices2.lead.sound = new LfoTone(this.ctx, "triangle");
-
-    this.rhythm.kick.sound = new Kick(this.ctx);
-    this.rhythm.snare.sound = new Snare(this.ctx);
-    this.rhythm.hihat.sound = new Hihat(this.ctx);
-
-    this.rhythm2.kick.sound = new Kick(this.ctx);
-    this.rhythm2.snare.sound = new Snare(this.ctx);
-    this.rhythm2.hihat.sound = new Hihat(this.ctx);
-
-    for (prop in this.voiceSchedule) {
-        this.voiceSchedule[prop].forEach((entry, i) => {
-
-            if (entry) {
-                let data = entry.split(",");
-                
-                this.voices[prop].sched.push({
-                    freq: scale[data[0]],
-                    dur: this.meter.getDur(data[1]),
-                    time: i * this.meter.eighth
-                });
-            }
-        });
-    }
-
-    for (prop in this.voiceSchedule2) {
-        this.voiceSchedule2[prop].forEach((entry, i) => {
-
-            if (entry) {
-                let data = entry.split(",");
-                
-                this.voices2[prop].sched.push({
-                    freq: scale[data[0]],
-                    dur: this.meter.getDur(data[1]),
-                    time: i * this.meter.eighth
-                });
-            }
-        });
-    }
-
-
-    for (prop in this.rhythmSchedule) {
-
-        this.rhythmSchedule[prop].forEach((entry, i) => {
-            if (entry) {
-                this.rhythm[prop].sched.push(i * this.meter.eighth);
-            }
-        });
-    }
-
-    for (prop in this.rhythmSchedule2) {
-
-        this.rhythmSchedule2[prop].forEach((entry, i) => {
-            if (entry) {
-                this.rhythm2[prop].sched.push(i * this.meter.sixteenth);
-            }
-        });
-    }
+    // Init SFX
+    this.pickup = new Pickup(this.ctx, this.masterSFX);
 };
 
-audio.queueNext = function(scene) {
+audio.loadTrack = function(track) {
     "use strict";
-    let prop;
+    this.track = track;
+    this.track.init(this.ctx, this.masterVoices, this.masterRhythm);
+};
 
-    switch (scene) {
-        case 4:
-            this.voices2.lead.sched.forEach(ele => {
-                this.voices2.lead.sound.play(this.counter / 1000 + ele.time,
-                        ele.freq, ele.dur);
-            });
-        case 3:
-            this.rhythm2.kick.sched.forEach(ele => {
-                this.rhythm2.kick.sound.trigger(this.counter / 1000 + ele);
-            });
-            this.rhythm2.snare.sched.forEach(ele => {
-                this.rhythm2.snare.sound.trigger(this.counter / 1000 + ele);
-            });
-            this.rhythm2.hihat.sched.forEach(ele => {
-                this.rhythm2.hihat.sound.trigger(this.counter / 1000 + ele);
-            });
+audio.progress = function(i) {
+    /* SQUARES SPECIFIC
+     * While most of the audio object is meant to be repurposed, this method
+     * is specific to what needs to happen in Squares
+     */
+    "use strict";
+    let that = this;
+
+    function activate(arr) {
+        arr.forEach(entry => that.track[entry].active = true);
+    }
+
+    switch(i) {
+        case 0:
+            this.loadTrack(track1);
+            activate(["bass", "hihat"]);
+            this.track.start(this.ctx.currentTime + 0.1);
+            break;
+
+        case 1:
+            activate(["kick", "snare"]);
             break;
 
         case 2:
-            this.voices.lead.sched.forEach(ele => {
-                this.voices.lead.sound.play(this.counter / 1000 + ele.time,
-                        ele.freq, ele.dur);
-            });
-        case 1:
-            this.rhythm.kick.sched.forEach(ele => {
-                this.rhythm.kick.sound.trigger(this.counter / 1000 + ele);
-            });
+            activate(["lead"]);
+            break;
 
-            this.rhythm.snare.sched.forEach(ele => {
-                this.rhythm.snare.sound.trigger(this.counter / 1000 + ele);
-            });
-        case 0:
-            this.voices.bass.sched.forEach(ele => {
-                this.voices.bass.sound.play(this.counter / 1000 + ele.time,
-                        ele.freq, ele.dur);
-            });
+        case 3:
+            this.track.stop();
+            this.loadTrack(track2);
+            activate(["kick", "snare", "hihat"]);
+            this.track.start(this.ctx.currentTime + 0.1);
+            break;
 
-            this.rhythm.hihat.sched.forEach(ele => {
-                this.rhythm.hihat.sound.trigger(this.counter / 1000 + ele);
-            });
+        case 4:
+            activate(["lead"]);
+            break;
+
+        case 5:
+            this.track.stop();
+            break;
+
         default:
-            // no default
+            console.log("Exceeded audio.progress switch range");
     }
-
-    this.counter = this.counter + this.loopTime;
 };
 
-audio.update = function(delta, scene) {
+audio.queueAhead = function() {
     "use strict";
-    if (this.counter < 40) {
-        this.queueNext(scene);
+    let now             = this.ctx.currentTime,
+        lookAhead       = 0.2,
+        relativeTime    = now - this.track.startTime,
+        lookAheadTime   = relativeTime + lookAhead,
+        prop;
+
+    // TODO - There has to be a better way to do this
+    function scheduler(part) {
+        let relativeMod     = relativeTime % part.loopTime,
+            lookAheadMod    = lookAheadTime % part.loopTime;
+
+        if (lookAheadMod < relativeMod && part.iterator > 1) {
+            part.iterator = 0;
+        } 
+
+        while (part.iterator < part.schedule.length &&
+                part.schedule[part.iterator].when < lookAheadMod) {
+
+            part.queue(part.schedule[part.iterator].when - relativeMod);
+            part.iterator += 1;
+        }
     }
 
-    this.counter -= delta;
-};
+    for (prop in this.track) {
 
-audio.resetCounter = function() {
-    this.counter = 1;
+        if (this.track[prop].active) {
+            scheduler(this.track[prop]);
+        }
+    }
 };
 
 if (typeof module !== "undefined" && module.exports) {
-    module.exports = audio;   
+    module.exports = audio;
 }
 
-},{"../timer":41,"./hihat":2,"./kick":3,"./lfotone":4,"./meter":5,"./scale":7,"./snare":8,"./tone":9}],2:[function(require,module,exports){
-function Hihat(ctx) {
+},{"./pickup":7,"./track1":11,"./track2":12}],2:[function(require,module,exports){
+// Hihat Synthesis
+//
+// Special thanks to Joe Sullivan for the article:
+// joesul.li/van/synthesizing-hi-hats
+
+function Hihat(ctx, master) {
     "use strict";
     this.ctx = ctx;
+    this.master = master || null;
 }
 
 Hihat.prototype.setup = function() {
-    this.osc = this.ctx.createOscillator();
-    this.osc.type = "square";
+    let fundamental = 40,
+        ratios = [2, 3, 4.16, 5.43, 6.79, 8.21];
 
     this.bandpass = this.ctx.createBiquadFilter();
     this.bandpass.type = "bandpass";
@@ -261,26 +144,36 @@ Hihat.prototype.setup = function() {
     this.highpass.frequency.value = 7000;
     
     this.gainEnv = this.ctx.createGain();
-    this.osc.connect(this.bandpass);
+
+    this.oscs = ratios.map(ratio => {
+        let osc = this.ctx.createOscillator();
+        osc.type = "square";
+        osc.frequency.value = fundamental * ratio;
+        osc.connect(this.bandpass);
+        return osc;
+    });
+
     this.bandpass.connect(this.highpass);
     this.highpass.connect(this.gainEnv);
-    this.gainEnv.connect(this.ctx.destination);
+    this.gainEnv.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Hihat.prototype.trigger = function(triggerTime) {
-    let time = this.ctx.currentTime + triggerTime;
+Hihat.prototype.play = function(offset) {
+    let time = this.ctx.currentTime + offset;
     this.setup();
-
-    this.osc.frequency.setValueAtTime(330, time);
 
     this.gainEnv.gain.setValueAtTime(1, time);
     this.gainEnv.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
 
-    this.osc.start(time);
-    this.osc.stop(time + 0.05);
+    this.oscs.forEach(osc => {
+        osc.start(time);
+        osc.stop(time + 0.05);
+    });
 };
 
-module.exports = Hihat;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Hihat;
+}
 
 },{}],3:[function(require,module,exports){
 // Kick Drum Synthesis
@@ -288,21 +181,22 @@ module.exports = Hihat;
 // Special thanks to Chris Lowis for the article:
 // https://dev.opera.com/articles/drum-sounds-webaudio/
 
-function Kick(ctx) {
+function Kick(ctx, master) {
     "use strict";
     this.ctx = ctx;
+    this.master = master || null;
 }
 
 Kick.prototype.setup = function() {
     this.osc = this.ctx.createOscillator();
     this.gainOsc = this.ctx.createGain();
     this.osc.connect(this.gainOsc);
-    this.gainOsc.connect(this.ctx.destination);
+
+    this.gainOsc.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Kick.prototype.trigger = function(triggerTime) {
-    let time = this.ctx.currentTime + (triggerTime || 0);
-
+Kick.prototype.play = function(offset) {
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
     this.osc.frequency.setValueAtTime(150, time);
@@ -315,44 +209,54 @@ Kick.prototype.trigger = function(triggerTime) {
     this.osc.stop(time + 0.5);
 };
 
-module.exports = Kick;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Kick;
+}
 
 },{}],4:[function(require,module,exports){
-// Fixed Lfo modulated oscillator
-function LfoTone(ctx, type) {
+function LfoTone(ctx, type, master) {
     "use strict";
-    this.ctx = ctx;
-    this.type = type;
+    this.ctx        = ctx;
+    this.type       = type;
+    this.master     = master || null;
 }
 
 LfoTone.prototype.setup = function() {
-    this.lfo = this.ctx.createOscillator();
-    this.lfoEnv = this.ctx.createGain();
-    this.osc = this.ctx.createOscillator();
-    this.oscEnv = this.ctx.createGain();
+    this.lfo        = this.ctx.createOscillator();
+    this.gainLfo    = this.ctx.createGain();
+    this.osc        = this.ctx.createOscillator();
+    this.osc.type   = this.type;
+    this.gainOsc    = this.ctx.createGain();
 
-    this.lfo.frequency.value = 12;
-    this.lfoEnv.gain.value = 50;
-
-    this.osc.type = this.type;
-
-    this.lfo.connect(this.lfoEnv);
-    this.lfoEnv.connect(this.osc.detune);
-    this.osc.connect(this.oscEnv);
-    this.oscEnv.connect(this.ctx.destination);
+    this.lfo.connect(this.gainLfo);
+    this.gainLfo.connect(this.osc.detune);
+    this.osc.connect(this.gainOsc);
+    this.gainOsc.connect(this.master ? this.master : this.ctx.destination);
 };
 
-LfoTone.prototype.play = function(triggerTime, freq, dur) {
-    let time = this.ctx.currentTime + triggerTime;
+LfoTone.prototype.play = function(offset, dataObj) {
+    /* dataObj
+     *   oscFrequency   "number"    sound in Hz
+     *   lfoFrequency   "number"    modulation signal in Hz
+     *   duration       "number"    held length of note
+     *   when           "number"    time location in loop (not used here)
+     *   oscGain        "number"    between -1 and 1 for track mixing
+     *   lfoGain        "number"    amplitude of lfo
+     */
+
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
-    this.osc.frequency.setValueAtTime(freq, time);
-    this.oscEnv.gain.setValueAtTime(0.2, time);
+    this.lfo.frequency.setValueAtTime(dataObj.lfoFrequency, time);
+    this.gainLfo.gain.setValueAtTime(dataObj.lfoGain, time);
+
+    this.osc.frequency.setValueAtTime(dataObj.oscFrequency, time);
+    this.gainOsc.gain.setValueAtTime(dataObj.oscGain, time);
 
     this.osc.start(time);
     this.lfo.start(time);
-    this.osc.stop(time + dur);
-    this.lfo.stop(time + dur);
+    this.osc.stop(time + dataObj.duration);
+    this.lfo.stop(time + dataObj.duration);
 };
 
 if (typeof module !== "undefined" && module.exports) {
@@ -360,64 +264,102 @@ if (typeof module !== "undefined" && module.exports) {
 }
 
 },{}],5:[function(require,module,exports){
-function Meter(tempo) {
-    "use strict";
-    this.tempo = tempo;
+let meter = {
 
-    this.quarter    = 60 / tempo;
-    this.half       = this.quarter * 2;
-    this.whole      = this.quarter * 4;
-    this.eighth     = this.quarter / 2;
-    this.sixteenth  = this.quarter / 4;
-}
+    set tempo(value) {
+        this.bpm = value;
 
-Meter.prototype.getDur = function(string) {
-    let dur = 0,
-        l = string.length,
-        i;
+        this.quarter = 60 / value;
+        this.half = this.quarter * 2;
+        this.whole = this.quarter * 4;
+        this.eighth = this.quarter / 2;
+        this.sixteenth = this.quarter / 4;
+    },
 
-    for (i = 0; i < l; i++) {
+    getDur(string) {
+        "use strict";
+        let dur = 0,
+            l = string.length,
+            i;
 
-        switch (string[i]) {
-            case "q":
-                dur += this.quarter;
-                break;
-            case "h":
-                dur += this.half;
-                break;
-            case "w":
-                dur += this.whole;
-                break;
-            case "e":
-                dur += this.eighth;
-                break;
-            case "s":
-                dur += this.sixteenth;
-                break;
-            default:
-                // no default
+        for (i = 0; i < l; i++) {
+
+            switch (string[i]) {
+                case "q":
+                    dur += this.quarter;
+                    break;
+                case "h":
+                    dur += this.half;
+                    break;
+                case "w":
+                    dur += this.whole;
+                    break;
+                case "e":
+                    dur += this.eighth;
+                    break;
+                case "s":
+                    dur += this.sixteenth;
+                    break;
+                default:
+                    // no default
+            }
         }
-    }
 
-    return dur;
+        return dur;
+    }
 };
 
-module.exports = Meter;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = meter;
+}
 
 },{}],6:[function(require,module,exports){
-function Pickup(ctx) {
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// Part - Rhythm or Voice
+// 
+// Properties
+//   Part.name      {String}    "lead", "kick"
+//   Part.sound     {Object}    containing audioGraph
+//   Part.schedule  {Array}     of data objects {when:, freq:, dur:}
+//   Part.loopTime  {Number}    seconds long
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+
+function Part(name) {
+    "use strict";
+    this.name = name;
+    this.sound = null;
+    this.schedule = [];
+    this.loopTime = 0;
+    this.iterator = 0;
+}
+
+Part.prototype.queue = function(offset) {
+    if (offset < 0) {
+        offset += this.loopTime;
+    }
+
+    this.sound.play(offset, this.schedule[this.iterator]);
+};
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Part;
+}
+
+},{}],7:[function(require,module,exports){
+function Pickup(ctx, master) {
     "use strict";
     this.ctx = ctx;
+    this.master = master || null;
 }
 
 Pickup.prototype.setup = function() {
     this.osc = this.ctx.createOscillator();
     this.gainEnv = this.ctx.createGain();
     this.osc.connect(this.gainEnv);
-    this.gainEnv.connect(this.ctx.destination);
+    this.gainEnv.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Pickup.prototype.trigger = function() {
+Pickup.prototype.play = function() {
     let now = this.ctx.currentTime;
     let dur = 0.5;
     let freq = 246.94;
@@ -434,10 +376,12 @@ Pickup.prototype.trigger = function() {
     this.osc.stop(now + dur);
 };
 
-module.exports = Pickup;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Pickup;
+}
 
-},{}],7:[function(require,module,exports){
-module.exports = (function() {
+},{}],8:[function(require,module,exports){
+var scale = (function() {
     "use strict";
 
     const A = 27.5;
@@ -465,15 +409,20 @@ module.exports = (function() {
     return scale;
 }());
 
-},{}],8:[function(require,module,exports){
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = scale;
+}
+
+},{}],9:[function(require,module,exports){
 // Snare Drum Synthesis
 //
 // Special thanks to Chris Lowis for the article:
 // https://dev.opera.com/articles/drum-sounds-webaudio/
 
-function Snare(ctx) {
+function Snare(ctx, master) {
     "use strict";
     this.ctx = ctx;
+    this.master = master || null;
 }
 
 Snare.prototype.noiseBuffer = function() {
@@ -507,19 +456,18 @@ Snare.prototype.setup = function() {
 
     this.noiseGain = this.ctx.createGain();
     noiseFilter.connect(this.noiseGain);
-    this.noiseGain.connect(this.ctx.destination);
+    this.noiseGain.connect(this.master ? this.master : this.ctx.destination);
 
     this.osc = this.ctx.createOscillator();
     this.osc.type = "triangle";
 
     this.oscGain = this.ctx.createGain();
     this.osc.connect(this.oscGain);
-    this.oscGain.connect(this.ctx.destination);
+    this.oscGain.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Snare.prototype.trigger = function(triggerTime) {
-    let time = this.ctx.currentTime + (triggerTime || 0);
-
+Snare.prototype.play = function(offset) {
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
     this.noiseGain.gain.setValueAtTime(1, time);
@@ -535,13 +483,16 @@ Snare.prototype.trigger = function(triggerTime) {
     this.noise.stop(time + 0.02);
 };
 
-module.exports = Snare;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Snare;
+}
 
-},{}],9:[function(require,module,exports){
-function Tone(ctx, type) {
+},{}],10:[function(require,module,exports){
+function Tone(ctx, type, master) {
     "use strict";
     this.ctx = ctx;
     this.type = type;
+    this.master = master || null;
 }
 
 Tone.prototype.setup = function() {
@@ -551,34 +502,308 @@ Tone.prototype.setup = function() {
     this.osc.type = this.type;
 
     this.osc.connect(this.gainEnv);
-    this.gainEnv.connect(this.ctx.destination);
+    this.gainEnv.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Tone.prototype.play = function(triggerTime, freq, dur) {
-    let time = this.ctx.currentTime + triggerTime;
+Tone.prototype.play = function(offset, dataObj) {
+    /* dataObj
+     *   frequency  "number"    sound in Hz
+     *   duration   "number"    held length of note
+     *   when       "number"    time location in loop (not used here)
+     *   gain       "number"    between -1 and 1 for track mixing
+     */
+
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
-    this.osc.frequency.setValueAtTime(freq, time);
-    this.gainEnv.gain.setValueAtTime(0.2, time);
+    this.osc.frequency.setValueAtTime(dataObj.frequency, time);
+    this.gainEnv.gain.setValueAtTime(dataObj.gain, time);
 
     this.osc.start(time);
-    this.osc.stop(time + dur);
+    this.osc.stop(time + dataObj.duration);
 };
 
-module.exports = Tone;
-/*
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let now = audioCtx.currentTime;
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = Tone;
+}
 
-let tone = new Tone(audioCtx, "sawtooth");
-let dur = 0.5;
-tone.play(now, 110, dur);
-tone.play(now + 2 * dur, 164.81, dur * 2);
-tone.play(now + 4 * dur, 196, dur / 2);
-tone.play(now + 6 * dur, 220, dur);
-*/
+},{}],11:[function(require,module,exports){
+let Tone        = require("./tone");
+let Kick        = require("./kick");
+let Snare       = require("./snare");
+let Hihat       = require("./hihat");
+let Part        = require("./part");
+let meter       = require("./meter");
+let scale       = require("./scale");
 
-},{}],10:[function(require,module,exports){
+let track = (function() {
+    "use strict";
+    let track           = Object.create(null),
+        voiceParts      = ["lead", "bass"],
+        rhythmParts     = ["kick", "snare", "hihat"],
+        units           = "eighth",
+        voicePlan,
+        rhythmPlan,
+        prop;
+
+    meter.tempo = 120;
+
+    // Define track properties
+    voiceParts.forEach(part => {
+        track[part] = new Part(part);
+    });
+
+    rhythmParts.forEach(part => {
+        track[part] = new Part(part);
+    });
+
+    // The music
+    voicePlan = {
+        lead: [
+            "A3,hq", "", "", "", "", "", "F#/Gb3,q", "",
+            "C4,qe", "", "", "B3,q", "", "A3,q", "", "G3,e",
+            "A3,he", "", "", "", "", "E3,e", "G3,e", "D3,he",
+            "", "", "", "", "D3,e", "E3,e", "G3,e", "F#/Gb3,e"
+        ],
+        bass: [
+            "D2,e", "", "", "D2,e", "", "", "", "",
+            "D2,e", "", "", "D2,e", "", "", "", "",
+            "C2,e", "", "", "C2,e", "", "", "", "",
+            "G2,e", "", "", "G2,e", "", "", "", ""
+        ]
+    };
+
+    rhythmPlan = {
+        kick:  [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,
+                1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0,],
+
+        snare: [0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0,
+                0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0,],
+
+        hihat: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+    };
+
+    // Parse music
+    for (prop in voicePlan) {
+
+        voicePlan[prop].forEach((entry, i) => {
+            if (entry) {
+                let data = entry.split(",");
+                
+                track[prop].schedule.push({
+                    frequency: scale[data[0]],
+                    duration: meter.getDur(data[1]),
+                    when: i * meter[units],
+                    gain: 1
+                });
+            }
+        });
+
+        track[prop].loopTime = voicePlan[prop].length * meter[units];
+        track[prop].active = false;
+    }
+    
+    for (prop in rhythmPlan) {
+
+        rhythmPlan[prop].forEach((entry, i) => {
+            if (entry) {
+                track[prop].schedule.push({
+                    when: i * meter[units],
+                    gain: 1
+                });
+            }
+        });
+
+        track[prop].loopTime = rhythmPlan[prop].length * meter[units];
+        track[prop].active = false;
+    }
+
+    return track;
+}());
+
+track.mix = function(masterVoices) {
+    "use strict";
+    masterVoices.gain.value = 0.2;
+    this.bass.schedule.forEach(entry => entry.gain = 0.8);
+};
+
+track.init = function(ctx, masterVoices, masterRhythm) {
+    "use strict";
+    this.startTime = 0;
+
+    this.lead.sound = new Tone(ctx, "triangle", masterVoices);
+    this.bass.sound = new Tone(ctx, "sawtooth", masterVoices);
+
+    this.kick.sound = new Kick(ctx, masterRhythm);
+    this.snare.sound = new Snare(ctx, masterRhythm);
+    this.hihat.sound = new Hihat(ctx, masterRhythm);
+
+    this.mix(masterVoices);
+};
+
+track.start = function(time) {
+    "use strict";
+    this.startTime = time;
+};
+
+track.stop = function() {
+    "use strict";
+    let prop;
+
+    this.startTime = 0;
+
+    for (prop in this) {
+        if (this[prop].active) {
+            this[prop].active = false;
+            this[prop].iterator = 0;
+        }
+    }
+};
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = track;
+}
+
+},{"./hihat":2,"./kick":3,"./meter":5,"./part":6,"./scale":8,"./snare":9,"./tone":10}],12:[function(require,module,exports){
+let LfoTone     = require("./lfotone");
+let Kick        = require("./kick");
+let Snare       = require("./snare");
+let Hihat       = require("./hihat");
+let Part        = require("./part");
+let meter       = require("./meter");
+let scale       = require("./scale");
+
+let track = (function() {
+    "use strict";
+    let track           = Object.create(null),
+        voiceParts      = ["lead"],
+        rhythmParts     = ["kick", "snare", "hihat"],
+        units           = "sixteenth",
+        voicePlan,
+        rhythmPlan,
+        prop;
+
+    meter.tempo = 120;
+
+    // Define track properties
+    voiceParts.forEach(part => {
+        track[part] = new Part(part);
+    });
+
+    rhythmParts.forEach(part => {
+        track[part] = new Part(part);
+    });
+
+    // The music
+    voicePlan = {
+        lead: [
+            "A4,hq", "", "", "", "", "", "F#/Gb4,q", "",
+            "C5,qe", "", "", "B4,q", "", "A4,q", "", "G4,e",
+            "A4,he", "", "", "", "", "E4,e", "G4,e", "D4,he",
+            "", "", "", "", "D4,e", "E4,e", "G4,e", "F#/Gb4,e"
+        ]
+    };
+
+    rhythmPlan = {
+        kick:  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0,
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0,],
+
+        snare: [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0,
+                0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1,
+                0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0,
+                0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1,],
+
+        hihat: [1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,
+                1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0,]
+    };
+
+    // Parse music
+    for (prop in voicePlan) {
+
+        voicePlan[prop].forEach((entry, i) => {
+            if (entry) {
+                let data = entry.split(",");
+                
+                track[prop].schedule.push({
+                    oscFrequency: scale[data[0]],
+                    duration: meter.getDur(data[1]),
+                    when: i * meter["eighth"],
+                    oscGain: 1,
+                    lfoFrequency: 12,
+                    lfoGain: 50
+                });
+            }
+        });
+
+        track[prop].loopTime = voicePlan[prop].length * meter["eighth"];
+        track[prop].active = false;
+    }
+    
+    for (prop in rhythmPlan) {
+
+        rhythmPlan[prop].forEach((entry, i) => {
+            if (entry) {
+                track[prop].schedule.push({
+                    when: i * meter[units],
+                    gain: 1
+                });
+            }
+        });
+
+        track[prop].loopTime = rhythmPlan[prop].length * meter[units];
+        track[prop].active = false;
+    }
+
+    return track;
+}());
+
+track.mix = function(masterVoices) {
+    "use strict";
+    masterVoices.gain.value = 0.2;
+};
+
+track.init = function(ctx, masterVoices, masterRhythm) {
+    "use strict";
+    this.startTime = 0;
+
+    this.lead.sound = new LfoTone(ctx, "triangle", masterVoices);
+
+    this.kick.sound = new Kick(ctx, masterRhythm);
+    this.snare.sound = new Snare(ctx, masterRhythm);
+    this.hihat.sound = new Hihat(ctx, masterRhythm);
+
+    this.mix(masterVoices);
+};
+
+track.start = function(time) {
+    "use strict";
+    this.startTime = time;
+};
+
+track.stop = function() {
+    "use strict";
+    let prop;
+
+    this.startTime = 0;
+
+    for (prop in this) {
+        if (this[prop].active) {
+            this[prop].active = false;
+            this[prop].iterator = 0;
+        }
+    }
+};
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = track;
+}
+
+},{"./hihat":2,"./kick":3,"./lfotone":4,"./meter":5,"./part":6,"./scale":8,"./snare":9}],13:[function(require,module,exports){
 var canvas          = require("./canvas");
 var keysDown        = require("./input").keysDown;
 var mainMenu        = require("./menu/mainMenu");
@@ -597,7 +822,6 @@ var audio           = require("./Audio/audio");
 
 var app = {
 
-    audioCtx: audio.ctx,
     keysDown: keysDown(),
     player: null,
     scenario: null,
@@ -617,9 +841,10 @@ var app = {
 app.sceneLoader = function(i) {
     "use strict";
 
+    audio.progress(i);
+
     if (!this.scenes[i]) {
-        audio.ctx.suspend();
-        return this.init(true);
+        return this.init();
     }
 
     this.scenario = this.scenes[i];
@@ -630,7 +855,7 @@ app.sceneLoader = function(i) {
     scoreTracker.timeRemaining = this.scenario.timer;
     scoreTracker.setHiScore(this.scenario.name);
 
-    this.player = new Player(this.scenario.playerData, this.audioCtx);
+    this.player = new Player(this.scenario.playerData, audio.pickup);
 
     if (this.player.x === 0) {
         this.player.x = canvas.width / 2 - this.player.w / 2;
@@ -640,18 +865,15 @@ app.sceneLoader = function(i) {
     this.state = "game";
 };
 
-app.init = function(reset) {
+app.init = function() {
     "use strict";
 
-
-    audio.ctx.resume();
-    audio.populate();
-    audio.resetCounter();
+    audio.init();
     scoreTracker.getHiScores(this.scenes);
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
-    }, scoreTracker.hiScores, this.audioCtx);
+    }, scoreTracker.hiScores, audio.pickup);
 
     this.state = "mainmenu";
 };
@@ -705,7 +927,7 @@ app.update = function(tStamp) {
                     scoreTracker);
             this.camera.update(this.player.xC, this.player.yC);
 
-            audio.update(timer.delta, this.currentScene);
+            audio.queueAhead();
             scoreTracker.timeUpdate(timer.delta);
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
@@ -715,12 +937,12 @@ app.update = function(tStamp) {
                     delete this.confirmation;
                     scoreTracker.reset();
                     this.sceneLoader(this.currentScene + 1);
-                }, " to continue ", this.audioCtx);
+                }, " to continue ", audio.pickup);
             }
             break;
 
         case "complete":
-            audio.update(timer.delta, this.currentScene);
+            audio.queueAhead();
             this.confirmation.update(this.keysDown, timer.delta);
 
         default:
@@ -730,7 +952,7 @@ app.update = function(tStamp) {
 
 module.exports = app;
 
-},{"./Audio/audio":1,"./camera":12,"./canvas":13,"./confirmation":15,"./input":17,"./levels/level1":19,"./levels/level2":20,"./levels/level3":21,"./levels/level4":22,"./levels/level5":23,"./menu/mainMenu":32,"./overlay":37,"./player":38,"./scoretracker":39,"./timer":41}],11:[function(require,module,exports){
+},{"./Audio/audio":1,"./camera":15,"./canvas":16,"./confirmation":18,"./input":20,"./levels/level1":22,"./levels/level2":23,"./levels/level3":24,"./levels/level4":25,"./levels/level5":26,"./menu/mainMenu":35,"./overlay":40,"./player":41,"./scoretracker":42,"./timer":44}],14:[function(require,module,exports){
 function Background(width, height, color) {
     "use strict";
 
@@ -747,7 +969,7 @@ Background.prototype.draw = function(ctx) {
 
 module.exports = Background;
 
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 function Camera(mapW, mapH) {
@@ -789,7 +1011,7 @@ Camera.prototype.update = function(playerXC, playerYC) {
 
 module.exports = Camera;
 
-},{"./canvas":13}],13:[function(require,module,exports){
+},{"./canvas":16}],16:[function(require,module,exports){
 module.exports = (function() {
 
     var _canvasRef = document.getElementById("viewport");
@@ -813,7 +1035,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],14:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = (mov, tar) => {
     "use strict";
 
@@ -823,12 +1045,12 @@ module.exports = (mov, tar) => {
            tar.y < mov.y + mov.w;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var canvas      = require("./canvas");
 var fadeInOut   = require("./fadeinout");
 var Kick        = require("./Audio/kick");
 
-function Confirmation(f, msg, audioCtx) {
+function Confirmation(f, msg, soundEffect) {
     "use strict";
 
     this.f = f;
@@ -839,7 +1061,7 @@ function Confirmation(f, msg, audioCtx) {
     this.font = "24px monospace";
     this.alpha = 1;
     this.display = `( Press SPACEBAR${this.msg})`;
-    this.sound = new Kick(audioCtx);
+    this.soundEffect = soundEffect;
 }
 
 Confirmation.prototype.draw = function() {
@@ -858,7 +1080,7 @@ Confirmation.prototype.update = function(keysDown) {
 
     if (32 in keysDown) {
         delete keysDown[32];
-        this.sound.trigger();
+        this.soundEffect.play();
         return this.f();
     }
 
@@ -867,7 +1089,7 @@ Confirmation.prototype.update = function(keysDown) {
 
 module.exports = Confirmation;
 
-},{"./Audio/kick":3,"./canvas":13,"./fadeinout":16}],16:[function(require,module,exports){
+},{"./Audio/kick":3,"./canvas":16,"./fadeinout":19}],19:[function(require,module,exports){
 module.exports = (function() {
     "use strict";
     var counter = 0,
@@ -901,7 +1123,7 @@ module.exports = (function() {
     };
 }());
 
-},{}],17:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 exports.keysDown = () => {
     "use strict";
 
@@ -982,7 +1204,7 @@ exports.moveCursor = (cursor, keysDown) => {
     return moved;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 function Block(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -1010,7 +1232,7 @@ Block.prototype.draw = function(ctx) {
 
 module.exports = Block;
 
-},{}],19:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -1052,7 +1274,7 @@ level1.playerData.color = "white";
 
 module.exports = level1;
 
-},{"./scene":25}],20:[function(require,module,exports){
+},{"./scene":28}],23:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -1094,7 +1316,7 @@ level2.playerData.color = "white";
 
 module.exports = level2;
 
-},{"./scene":25}],21:[function(require,module,exports){
+},{"./scene":28}],24:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 16,
@@ -1155,7 +1377,7 @@ level3.playerData.color = "white";
 
 module.exports = level3;
 
-},{"./scene":25}],22:[function(require,module,exports){
+},{"./scene":28}],25:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -1197,7 +1419,7 @@ level4.playerData.color = "white";
 
 module.exports = level4;
 
-},{"./scene":25}],23:[function(require,module,exports){
+},{"./scene":28}],26:[function(require,module,exports){
 var Scene = require("./scene");
 
 var blockSize = 32,
@@ -1266,7 +1488,7 @@ level5.playerData.color = "white";
 
 module.exports = level5;
 
-},{"./scene":25}],24:[function(require,module,exports){
+},{"./scene":28}],27:[function(require,module,exports){
 function Pellet(x, y, color, blockSize) {
     "use strict";
     var that = this;
@@ -1294,7 +1516,7 @@ Pellet.prototype.draw = function(ctx) {
 
 module.exports = Pellet;
 
-},{}],25:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var Block       = require("./block");
 var Pellet      = require("./pellet");
 var Background  = require("../background");
@@ -1402,7 +1624,7 @@ Scene.prototype.init = function() {
 
 module.exports = Scene;
 
-},{"../background":11,"./block":18,"./pellet":24}],26:[function(require,module,exports){
+},{"../background":14,"./block":21,"./pellet":27}],29:[function(require,module,exports){
 var app = require("./app");
 
 (function() {
@@ -1423,7 +1645,7 @@ var app = require("./app");
 
 }());
 
-},{"./app":10}],27:[function(require,module,exports){
+},{"./app":13}],30:[function(require,module,exports){
 var Page            = require("./page");
 
 var pageTitle = "Movement",
@@ -1439,7 +1661,7 @@ var pageTitle = "Movement",
 
 module.exports = new Page(pageTitle, pageFields, columnStyle);
 
-},{"./page":35}],28:[function(require,module,exports){
+},{"./page":38}],31:[function(require,module,exports){
 function Cooldown(ms, f) {
     "use strict";
     
@@ -1459,7 +1681,7 @@ Cooldown.prototype.increment = function(delta) {
 
 module.exports = Cooldown;
 
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 var Page            = require("./page");
 
 var pageTitle = "squares",
@@ -1491,12 +1713,12 @@ credits.leftColumnAlign = "right";
 
 module.exports = credits;
 
-},{"./page":35}],30:[function(require,module,exports){
+},{"./page":38}],33:[function(require,module,exports){
 var moveCursor  = require("../input").moveCursor;
 var Cooldown    = require("./cooldown");
 var Kick        = require("../Audio/kick");
 
-function Cursor(menu, audioCtx) {
+function Cursor(menu) {
     "use strict";
     this.menu = menu;
 
@@ -1511,7 +1733,6 @@ function Cursor(menu, audioCtx) {
     this.offSet = menu.lineHeight;
 
     this.cooldown = null;
-    this.moveSound = new Kick(audioCtx);
 
     this.path = function(y) {
         var path = new Path2D();
@@ -1539,13 +1760,12 @@ Cursor.prototype.update = function(keysDown, delta) {
         this.cooldown = new Cooldown(250, () => {
             delete this.cooldown;
         });
-        this.moveSound.trigger();
     }
 };
 
 module.exports = Cursor;
 
-},{"../Audio/kick":3,"../input":17,"./cooldown":28}],31:[function(require,module,exports){
+},{"../Audio/kick":3,"../input":20,"./cooldown":31}],34:[function(require,module,exports){
 var Page            = require("./page");
 
 var leaderboard = {
@@ -1567,7 +1787,7 @@ leaderboard.populate = function(hiScores) {
 
 module.exports = leaderboard;
 
-},{"./page":35}],32:[function(require,module,exports){
+},{"./page":38}],35:[function(require,module,exports){
 var Menu        = require("./menu");
 var mainTitle   = require("./mainTitle");
 
@@ -1589,7 +1809,7 @@ mainMenu = new Menu(font, colors, selections, mainTitle);
 
 module.exports = mainMenu;
 
-},{"./mainTitle":33,"./menu":34}],33:[function(require,module,exports){
+},{"./mainTitle":36,"./menu":37}],36:[function(require,module,exports){
 module.exports = {
 
     text: "squares",
@@ -1636,7 +1856,7 @@ module.exports = {
     }
 };
 
-},{}],34:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var canvas          = require("../canvas");
 var Background      = require("../background");
 var Confirmation    = require("../confirmation");
@@ -1688,15 +1908,15 @@ Menu.prototype.mainConfirm = function() {
     this.confirmation = new Confirmation(() => {
         delete this.confirmation;
         this.select(this.cursor.i);
-    }, " to confirm selection ", this.audioCtx);
+    }, " to confirm selection ", this.soundEffect);
 };
 
-Menu.prototype.init = function(sceneLoaderHook, hiScores, audioCtx) {
+Menu.prototype.init = function(sceneLoaderHook, hiScores, soundEffect) {
     this.sceneLoaderHook = sceneLoaderHook;
     leaderboard.populate(hiScores);
-    this.audioCtx = audioCtx;
+    this.soundEffect = soundEffect;
 
-    this.cursor = new Cursor(this, audioCtx);
+    this.cursor = new Cursor(this);
     this.mainConfirm();
 };
 
@@ -1777,7 +1997,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ", this.audioCtx);
+            }, " to return ", this.soundEffect);
             break;
 
         case "controls":
@@ -1788,7 +2008,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ", this.audioCtx);
+            }, " to return ", this.soundEffect);
             break;
 
         case "credits":
@@ -1799,7 +2019,7 @@ Menu.prototype.select = function(i) {
 
                 this.menuState = "mainmenu";
                 this.mainConfirm();
-            }, " to return ", this.audioCtx);
+            }, " to return ", this.soundEffect);
             break;
 
         default:
@@ -1809,7 +2029,7 @@ Menu.prototype.select = function(i) {
 
 module.exports = Menu;
 
-},{"../background":11,"../canvas":13,"../confirmation":15,"./controls":27,"./credits":29,"./cursor":30,"./leaderboard":31}],35:[function(require,module,exports){
+},{"../background":14,"../canvas":16,"../confirmation":18,"./controls":30,"./credits":32,"./cursor":33,"./leaderboard":34}],38:[function(require,module,exports){
 var canvas          = require("../canvas");
 
 function Page(pageTitle, pageFields, columnStyle, fieldFontSize) {
@@ -1868,7 +2088,7 @@ Page.prototype.draw = function() {
 
 module.exports = Page;
 
-},{"../canvas":13}],36:[function(require,module,exports){
+},{"../canvas":16}],39:[function(require,module,exports){
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // toTenths
 //
@@ -1905,7 +2125,7 @@ exports.spaceFill = (val, digits) => {
     return valStr;
 };
 
-},{}],37:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 var canvas          = require("./canvas");
 
 var overlay = {
@@ -2030,12 +2250,12 @@ overlay.draw = function(scoreTracker, playerPellets, scenePellets) {
 
 module.exports = overlay;
 
-},{"./canvas":13}],38:[function(require,module,exports){
+},{"./canvas":16}],41:[function(require,module,exports){
 var collision       = require("./collision");
 var move8           = require("./input").move8;
 var Pickup          = require("./Audio/pickup");
 
-function Player(playerData, audioCtx) {
+function Player(playerData, soundEffect) {
     "use strict";
 
     this.x = playerData.x;
@@ -2048,7 +2268,7 @@ function Player(playerData, audioCtx) {
     this.color = playerData.color;
 
     this.pellets = 0;
-    this.pickup = new Pickup(audioCtx);
+    this.soundEffect = soundEffect;
 
     this.path = function(x, y) {
         var path = new Path2D();
@@ -2121,7 +2341,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
                 this.pellets += 1;
 
                 if (!soundPlayed) {
-                    this.pickup.trigger();
+                    this.soundEffect.play();
                     soundPlayed = true;
                 }
 
@@ -2149,7 +2369,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
 
 module.exports = Player;
 
-},{"./Audio/pickup":6,"./collision":14,"./input":17}],39:[function(require,module,exports){
+},{"./Audio/pickup":7,"./collision":17,"./input":20}],42:[function(require,module,exports){
 var canvas          = require("./canvas");
 var getStorage      = require("./storage").getStorage;
 var toTenths        = require("./numstring").toTenths;
@@ -2333,7 +2553,7 @@ scoreTracker.draw = function(color) {
 
 module.exports = scoreTracker;
 
-},{"./canvas":13,"./numstring":36,"./storage":40}],40:[function(require,module,exports){
+},{"./canvas":16,"./numstring":39,"./storage":43}],43:[function(require,module,exports){
 function storageAvailable(storageType) {
     "use strict";
 
@@ -2362,7 +2582,7 @@ exports.getStorage = function() {
     return storage;
 };
 
-},{}],41:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = {
     previous: 0,
     delta: 0,
@@ -2380,4 +2600,4 @@ module.exports = {
     }
 };
 
-},{}]},{},[26]);
+},{}]},{},[29]);

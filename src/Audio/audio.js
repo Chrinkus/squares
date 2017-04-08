@@ -1,97 +1,119 @@
-let Tone        = require("./tone");
-let LfoTone     = require("./lfotone");
-let Kick        = require("./kick");
-let Snare       = require("./snare");
-let Hihat       = require("./hihat");
-let scale       = require("./scale");
-let timer       = require("../timer");
-let track1      = require("./track1");
-let track2      = require("./track2");
+let track1          = require("./track1");
+let track2          = require("./track2");
+let Pickup          = require("./pickup");
 
-let audio = {
-    ctx: new (window.AudioContext || window.webkitAudioContext)(),
-    loopTime: 8000,
-    counter: 1
+let audio = Object.create(null);
+
+audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+audio.setRoutingGraph = function() {
+    "use strict";
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.masterRhythm = this.ctx.createGain();
+    this.masterVoices = this.ctx.createGain();
+    this.masterSFX = this.ctx.createGain();
+
+    this.masterRhythm.connect(this.compressor);
+    this.masterVoices.connect(this.compressor);
+    this.masterSFX.connect(this.compressor);
+
+    this.compressor.connect(this.ctx.destination);
 };
 
-audio.populate = function() {
+audio.init = function() {
     "use strict";
-    this.voices.lead.sound = new Tone(this.ctx, "triangle");
-    this.voices.bass.sound = new Tone(this.ctx, "sawtooth");
+    this.setRoutingGraph();
 
-    this.voices2.lead.sound = new LfoTone(this.ctx, "triangle");
-
-    this.rhythm.kick.sound = new Kick(this.ctx);
-    this.rhythm.snare.sound = new Snare(this.ctx);
-    this.rhythm.hihat.sound = new Hihat(this.ctx);
-
-    this.rhythm2.kick.sound = new Kick(this.ctx);
-    this.rhythm2.snare.sound = new Snare(this.ctx);
-    this.rhythm2.hihat.sound = new Hihat(this.ctx);
+    // Init SFX
+    this.pickup = new Pickup(this.ctx, this.masterSFX);
 };
 
-audio.queueNext = function(scene) {
+audio.loadTrack = function(track) {
     "use strict";
-    switch (scene) {
-        case 4:
-            this.voices2.lead.sched.forEach(ele => {
-                this.voices2.lead.sound.play(this.counter / 1000 + ele.time,
-                        ele.freq, ele.dur);
-            });
-        case 3:
-            this.rhythm2.kick.sched.forEach(ele => {
-                this.rhythm2.kick.sound.trigger(this.counter / 1000 + ele);
-            });
-            this.rhythm2.snare.sched.forEach(ele => {
-                this.rhythm2.snare.sound.trigger(this.counter / 1000 + ele);
-            });
-            this.rhythm2.hihat.sched.forEach(ele => {
-                this.rhythm2.hihat.sound.trigger(this.counter / 1000 + ele);
-            });
+    this.track = track;
+    this.track.init(this.ctx, this.masterVoices, this.masterRhythm);
+};
+
+audio.progress = function(i) {
+    /* SQUARES SPECIFIC
+     * While most of the audio object is meant to be repurposed, this method
+     * is specific to what needs to happen in Squares
+     */
+    "use strict";
+    let that = this;
+
+    function activate(arr) {
+        arr.forEach(entry => that.track[entry].active = true);
+    }
+
+    switch(i) {
+        case 0:
+            this.loadTrack(track1);
+            activate(["bass", "hihat"]);
+            this.track.start(this.ctx.currentTime + 0.1);
+            break;
+
+        case 1:
+            activate(["kick", "snare"]);
             break;
 
         case 2:
-            this.voices.lead.sched.forEach(ele => {
-                this.voices.lead.sound.play(this.counter / 1000 + ele.time,
-                        ele.freq, ele.dur);
-            });
-        case 1:
-            this.rhythm.kick.sched.forEach(ele => {
-                this.rhythm.kick.sound.trigger(this.counter / 1000 + ele);
-            });
+            activate(["lead"]);
+            break;
 
-            this.rhythm.snare.sched.forEach(ele => {
-                this.rhythm.snare.sound.trigger(this.counter / 1000 + ele);
-            });
-        case 0:
-            this.voices.bass.sched.forEach(ele => {
-                this.voices.bass.sound.play(this.counter / 1000 + ele.time,
-                        ele.freq, ele.dur);
-            });
+        case 3:
+            this.track.stop();
+            this.loadTrack(track2);
+            activate(["kick", "snare", "hihat"]);
+            this.track.start(this.ctx.currentTime + 0.1);
+            break;
 
-            this.rhythm.hihat.sched.forEach(ele => {
-                this.rhythm.hihat.sound.trigger(this.counter / 1000 + ele);
-            });
+        case 4:
+            activate(["lead"]);
+            break;
+
+        case 5:
+            this.track.stop();
+            break;
+
         default:
-            // no default
+            console.log("Exceeded audio.progress switch range");
     }
-
-    this.counter = this.counter + this.loopTime;
 };
 
-audio.update = function(delta, scene) {
+audio.queueAhead = function() {
     "use strict";
-    if (this.counter < 40) {
-        this.queueNext(scene);
+    let now             = this.ctx.currentTime,
+        lookAhead       = 0.2,
+        relativeTime    = now - this.track.startTime,
+        lookAheadTime   = relativeTime + lookAhead,
+        prop;
+
+    // TODO - There has to be a better way to do this
+    function scheduler(part) {
+        let relativeMod     = relativeTime % part.loopTime,
+            lookAheadMod    = lookAheadTime % part.loopTime;
+
+        if (lookAheadMod < relativeMod && part.iterator > 1) {
+            part.iterator = 0;
+        } 
+
+        while (part.iterator < part.schedule.length &&
+                part.schedule[part.iterator].when < lookAheadMod) {
+
+            part.queue(part.schedule[part.iterator].when - relativeMod);
+            part.iterator += 1;
+        }
     }
 
-    this.counter -= delta;
-};
+    for (prop in this.track) {
 
-audio.resetCounter = function() {
-    this.counter = 1;
+        if (this.track[prop].active) {
+            scheduler(this.track[prop]);
+        }
+    }
 };
 
 if (typeof module !== "undefined" && module.exports) {
-    module.exports = audio;   
+    module.exports = audio;
 }

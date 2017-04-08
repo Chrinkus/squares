@@ -6,20 +6,19 @@
 function Kick(ctx, master) {
     "use strict";
     this.ctx = ctx;
-    this.master = master;
+    this.master = master || null;
 }
 
 Kick.prototype.setup = function() {
     this.osc = this.ctx.createOscillator();
-    this.oscEnv = this.ctx.createGain();
+    this.gainOsc = this.ctx.createGain();
+    this.osc.connect(this.gainOsc);
 
-    this.osc.connect(this.oscEnv);
-    this.oscEnv.connect(this.master);
+    this.gainOsc.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Kick.prototype.trigger = function(triggerTime) {
-    let time = this.ctx.currentTime + (triggerTime || 0);
-
+Kick.prototype.play = function(offset) {
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
     this.osc.frequency.setValueAtTime(150, time);

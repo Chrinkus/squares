@@ -16,7 +16,6 @@ var audio           = require("./Audio/audio");
 
 var app = {
 
-    audioCtx: audio.ctx,
     keysDown: keysDown(),
     player: null,
     scenario: null,
@@ -36,9 +35,10 @@ var app = {
 app.sceneLoader = function(i) {
     "use strict";
 
+    audio.progress(i);
+
     if (!this.scenes[i]) {
-        audio.ctx.suspend();
-        return this.init(true);
+        return this.init();
     }
 
     this.scenario = this.scenes[i];
@@ -49,7 +49,7 @@ app.sceneLoader = function(i) {
     scoreTracker.timeRemaining = this.scenario.timer;
     scoreTracker.setHiScore(this.scenario.name);
 
-    this.player = new Player(this.scenario.playerData, this.audioCtx);
+    this.player = new Player(this.scenario.playerData, audio.pickup);
 
     if (this.player.x === 0) {
         this.player.x = canvas.width / 2 - this.player.w / 2;
@@ -59,18 +59,15 @@ app.sceneLoader = function(i) {
     this.state = "game";
 };
 
-app.init = function(reset) {
+app.init = function() {
     "use strict";
 
-
-    audio.ctx.resume();
-    audio.populate();
-    audio.resetCounter();
+    audio.init();
     scoreTracker.getHiScores(this.scenes);
 
     mainMenu.init((i) => {
         this.sceneLoader(i);
-    }, scoreTracker.hiScores, this.audioCtx);
+    }, scoreTracker.hiScores, audio.pickup);
 
     this.state = "mainmenu";
 };
@@ -124,7 +121,7 @@ app.update = function(tStamp) {
                     scoreTracker);
             this.camera.update(this.player.xC, this.player.yC);
 
-            audio.update(timer.delta, this.currentScene);
+            audio.queueAhead();
             scoreTracker.timeUpdate(timer.delta);
             if (this.player.pellets === this.scenario.pellets) {
                 this.state = "complete";
@@ -134,12 +131,12 @@ app.update = function(tStamp) {
                     delete this.confirmation;
                     scoreTracker.reset();
                     this.sceneLoader(this.currentScene + 1);
-                }, " to continue ", this.audioCtx);
+                }, " to continue ", audio.pickup);
             }
             break;
 
         case "complete":
-            audio.update(timer.delta, this.currentScene);
+            audio.queueAhead();
             this.confirmation.update(this.keysDown, timer.delta);
 
         default:

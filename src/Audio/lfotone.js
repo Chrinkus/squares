@@ -1,38 +1,46 @@
-// Fixed Lfo modulated oscillator
-function LfoTone(ctx, type) {
+function LfoTone(ctx, type, master) {
     "use strict";
-    this.ctx = ctx;
-    this.type = type;
+    this.ctx        = ctx;
+    this.type       = type;
+    this.master     = master || null;
 }
 
 LfoTone.prototype.setup = function() {
-    this.lfo = this.ctx.createOscillator();
-    this.lfoEnv = this.ctx.createGain();
-    this.osc = this.ctx.createOscillator();
-    this.oscEnv = this.ctx.createGain();
+    this.lfo        = this.ctx.createOscillator();
+    this.gainLfo    = this.ctx.createGain();
+    this.osc        = this.ctx.createOscillator();
+    this.osc.type   = this.type;
+    this.gainOsc    = this.ctx.createGain();
 
-    this.lfo.frequency.value = 12;
-    this.lfoEnv.gain.value = 50;
-
-    this.osc.type = this.type;
-
-    this.lfo.connect(this.lfoEnv);
-    this.lfoEnv.connect(this.osc.detune);
-    this.osc.connect(this.oscEnv);
-    this.oscEnv.connect(this.ctx.destination);
+    this.lfo.connect(this.gainLfo);
+    this.gainLfo.connect(this.osc.detune);
+    this.osc.connect(this.gainOsc);
+    this.gainOsc.connect(this.master ? this.master : this.ctx.destination);
 };
 
-LfoTone.prototype.play = function(triggerTime, freq, dur) {
-    let time = this.ctx.currentTime + triggerTime;
+LfoTone.prototype.play = function(offset, dataObj) {
+    /* dataObj
+     *   oscFrequency   "number"    sound in Hz
+     *   lfoFrequency   "number"    modulation signal in Hz
+     *   duration       "number"    held length of note
+     *   when           "number"    time location in loop (not used here)
+     *   oscGain        "number"    between -1 and 1 for track mixing
+     *   lfoGain        "number"    amplitude of lfo
+     */
+
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
-    this.osc.frequency.setValueAtTime(freq, time);
-    this.oscEnv.gain.setValueAtTime(0.2, time);
+    this.lfo.frequency.setValueAtTime(dataObj.lfoFrequency, time);
+    this.gainLfo.gain.setValueAtTime(dataObj.lfoGain, time);
+
+    this.osc.frequency.setValueAtTime(dataObj.oscFrequency, time);
+    this.gainOsc.gain.setValueAtTime(dataObj.oscGain, time);
 
     this.osc.start(time);
     this.lfo.start(time);
-    this.osc.stop(time + dur);
-    this.lfo.stop(time + dur);
+    this.osc.stop(time + dataObj.duration);
+    this.lfo.stop(time + dataObj.duration);
 };
 
 if (typeof module !== "undefined" && module.exports) {

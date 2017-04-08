@@ -6,7 +6,7 @@
 function Snare(ctx, master) {
     "use strict";
     this.ctx = ctx;
-    this.master = master;
+    this.master = master || null;
 }
 
 Snare.prototype.noiseBuffer = function() {
@@ -40,19 +40,18 @@ Snare.prototype.setup = function() {
 
     this.noiseGain = this.ctx.createGain();
     noiseFilter.connect(this.noiseGain);
-    this.noiseGain.connect(this.master);
+    this.noiseGain.connect(this.master ? this.master : this.ctx.destination);
 
     this.osc = this.ctx.createOscillator();
     this.osc.type = "triangle";
 
     this.oscGain = this.ctx.createGain();
     this.osc.connect(this.oscGain);
-    this.oscGain.connect(this.master);
+    this.oscGain.connect(this.master ? this.master : this.ctx.destination);
 };
 
-Snare.prototype.trigger = function(triggerTime) {
-    let time = this.ctx.currentTime + (triggerTime || 0);
-
+Snare.prototype.play = function(offset) {
+    let time = this.ctx.currentTime + offset;
     this.setup();
 
     this.noiseGain.gain.setValueAtTime(1, time);

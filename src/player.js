@@ -2,7 +2,7 @@ var collision       = require("./collision");
 var move8           = require("./input").move8;
 var Pickup          = require("./Audio/pickup");
 
-function Player(playerData, audioCtx) {
+function Player(playerData, soundEffect) {
     "use strict";
 
     this.x = playerData.x;
@@ -15,7 +15,7 @@ function Player(playerData, audioCtx) {
     this.color = playerData.color;
 
     this.pellets = 0;
-    this.pickup = new Pickup(audioCtx);
+    this.soundEffect = soundEffect;
 
     this.path = function(x, y) {
         var path = new Path2D();
@@ -88,7 +88,7 @@ Player.prototype.update = function(keysDown, actors, scoreTracker) {
                 this.pellets += 1;
 
                 if (!soundPlayed) {
-                    this.pickup.trigger();
+                    this.soundEffect.play();
                     soundPlayed = true;
                 }
 
