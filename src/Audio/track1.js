@@ -76,8 +76,6 @@ let track = (function() {
     
     for (prop in rhythmPlan) {
 
-        rhythm[prop].loopTime = rhythmPlan[prop].length * meter[units];
-
         rhythmPlan[prop].forEach((entry, i) => {
             if (entry) {
                 track[prop].schedule.push({

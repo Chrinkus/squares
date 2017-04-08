@@ -426,6 +426,7 @@ function Snare(ctx, master) {
 }
 
 Snare.prototype.noiseBuffer = function() {
+    "use strict";
     // sampleRate = 44100 Hz
     let bufferSize = this.ctx.sampleRate;
     // creates a buffer w/1 channel, 44100 individual samples, @ 44100 Hz
@@ -444,6 +445,7 @@ Snare.prototype.noiseBuffer = function() {
 };
 
 Snare.prototype.setup = function() {
+    "use strict";
     let noiseFilter;
 
     this.noise = this.ctx.createBufferSource();
@@ -496,6 +498,7 @@ function Tone(ctx, type, master) {
 }
 
 Tone.prototype.setup = function() {
+    "use strict";
     this.osc = this.ctx.createOscillator();
     this.gainEnv = this.ctx.createGain();
 
@@ -1331,18 +1334,18 @@ plan = [
     "#    *    *    #           #                                   #",
     "#              #           #                                   #",
     "# *  ######  * #           #     #    *   #######   *    #     #",
-    "#    #    #    #     #     #     ##        #   #        ##     #",
-    "#    # @  #    #  *  #     #     # #        # #        # #     #",
-    "#    #    #    #     #     #     #  #        #        #  #     #",
-    "# *  #    #  * #######     #     #   #               #   #     #",
-    "#              #     #     #     #    #             #    #     #",
-    "#    *    *    #     #     #     #     #     *     #     #     #",
-    "#              #           #     #     #     *     #     #     #",
-    "#              #           #     #    #             #    #     #",
-    "#######        #           #     #   #               #   #     #",
-    "#              #           #     #  #        #        #  #     #",
-    "#         *    #     #     #     # #        # #        # #     #",
-    "#              #     #     #     ##        #   #        ##     #",
+    "#    #    #    #     #     #     ##        #####        ##     #",
+    "#    # @  #    #  *  #     #     ###        ###        ###     #",
+    "#    #    #    #     #     #     ####        #        ####     #",
+    "# *  #    #  * #######     #     #####               #####     #",
+    "#              #     #     #     ######             ######     #",
+    "#    *    *    #     #     #     #######     *     #######     #",
+    "#              #           #     #######     *     #######     #",
+    "#              #           #     ######             ######     #",
+    "#######        #           #     #####               #####     #",
+    "#              #           #     ####        #        ####     #",
+    "#         *    #     #     #     ###        ###        ###     #",
+    "#              #     #     #     ##        #####        ##     #",
     "#              #     #######     #    *   #######   *    #     #",
     "#        #######                                               #",
     "#              #                                               #",
