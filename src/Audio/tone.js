@@ -6,6 +6,7 @@ function Tone(ctx, type, master) {
 }
 
 Tone.prototype.setup = function() {
+    "use strict";
     this.osc = this.ctx.createOscillator();
     this.gainEnv = this.ctx.createGain();
 
