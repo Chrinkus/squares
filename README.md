@@ -2,6 +2,8 @@
 
 Navigate the maze to collect the golden pellets. The more you eat, the more you grow, but touch the walls and something something about shrinking that rhymes with grow.
 
+[Playable Here](https://chrinkus.github.io/squares/)
+
 Use WASD or the arrow keys to move.
 
 April 8, 2017
